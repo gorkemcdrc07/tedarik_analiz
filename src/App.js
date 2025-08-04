@@ -108,7 +108,7 @@ function App() {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: process.env.REACT_APP_ODAK_API_KEY
+                        Authorization: process.env.ODAK_API_KEY
                     },
                     body: JSON.stringify(payload),
                 });
