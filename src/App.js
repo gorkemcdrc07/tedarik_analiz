@@ -104,7 +104,7 @@ function App() {
             };
 
             try {
-                const response = await fetch("http://localhost:5000/odak", {
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/odak`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
