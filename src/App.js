@@ -113,16 +113,17 @@ function App() {
                     body: JSON.stringify(payload),
                 });
 
-
                 const result = await response.json();
                 const items = Array.isArray(result.Data) ? result.Data : [];
 
+                // Filtreleme: sadece bugüne ait ve BOS ile başlamayan kayıtlar
                 const filteredItems = items.filter((item) => {
                     const pickupDate = item.PickupDate?.split("T")[0];
+                    const req = item.TMSVehicleRequestDocumentNo;
                     return (
                         pickupDate === today &&
                         item.OrderStatu !== 200 &&
-                        item.TMSVehicleRequestDocumentNo &&
+                        req && !req.startsWith("BOS") &&
                         item.ProjectName
                     );
                 });
@@ -131,30 +132,35 @@ function App() {
 
                 filteredItems.forEach((item) => {
                     const project = item.ProjectName;
-                    const despatch = !!item.TMSDespatchDocumentNo;
-                    const key = `${project}-${item.TMSVehicleRequestDocumentNo}`;
+                    const reqNo = item.TMSVehicleRequestDocumentNo;
+                    const hasDespatch = item.TMSDespatchDocumentNo && !item.TMSDespatchDocumentNo.startsWith("BOS");
 
                     if (!projectMap.has(project)) {
                         projectMap.set(project, {
                             ProjectName: project,
-                            Talep: 0,
-                            Tedarik: 0,
-                            Verilemeyen: 0,
-                            _seenKeys: new Set(),
+                            talepSet: new Set(),
+                            tedarikSet: new Set()
                         });
                     }
 
                     const projData = projectMap.get(project);
-                    if (!projData._seenKeys.has(key)) {
-                        projData._seenKeys.add(key);
-                        projData.Talep += 1;
-                        despatch ? projData.Tedarik++ : projData.Verilemeyen++;
+                    projData.talepSet.add(reqNo);
+                    if (hasDespatch) {
+                        projData.tedarikSet.add(reqNo);
                     }
                 });
 
-                const finalData = Array.from(projectMap.values()).map(p => {
-                    delete p._seenKeys;
-                    return p;
+                const finalData = Array.from(projectMap.values()).map((proj) => ({
+                    ProjectName: proj.ProjectName,
+                    Talep: proj.talepSet.size,
+                    Tedarik: proj.tedarikSet.size,
+                    Verilemeyen: proj.talepSet.size - proj.tedarikSet.size
+                }));
+
+                // Konsolda detaylı göster
+                console.log("🎯 ODAK VERİSİ:");
+                finalData.forEach(p => {
+                    console.log(`${p.ProjectName}: TALEP = ${p.Talep}, TEDARİK = ${p.Tedarik}, VERİLEMEYEN = ${p.Verilemeyen}`);
                 });
 
                 setOdakData(finalData.filter(p => ALLOWED_PROJECTS.has(p.ProjectName)));
@@ -165,6 +171,7 @@ function App() {
 
         fetchOdakData();
     }, []);
+
 
     useEffect(() => {
         if (!data.length || !odakData.length) return;
@@ -182,16 +189,16 @@ function App() {
             for (let row of rows) {
                 const projeAdi = row["PROJE ADI"]?.trim();
                 if (groupList.includes(projeAdi)) {
-                    row["REEL TALEP"] = odak.Talep ?? 0;
-                    row["REEL TEDARİK"] = odak.Tedarik ?? 0;
-                    row["REEL VERİLEMEYEN"] = odak.Verilemeyen ?? 0;
-                    break;
+                    row["REEL TALEP"] += odak.Talep ?? 0;
+                    row["REEL TEDARİK"] += odak.Tedarik ?? 0;
+                    row["REEL VERİLEMEYEN"] += odak.Verilemeyen ?? 0;
                 }
             }
         });
 
         setData([header, ...rows]);
     }, [odakData]);
+
 
     return (
         <div className="app-container">
