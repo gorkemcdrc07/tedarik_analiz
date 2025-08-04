@@ -19,7 +19,10 @@ const columnOrder = [
 ];
 
 const ALLOWED_PROJECTS = new Set([
-    "BUNGE LÜLEBURGAZ FTL", "REKA FTL", "EKSUN GIDA FTL", "SARUHAN FTL",
+    "BUNGE LÜLEBURGAZ FTL",
+    "BUNGE GEBZE FTL",        // ✅ normalize edilen ad
+    "BUNGE PALET",            // ✅ normalize edilen ad
+    "REKA FTL", "EKSUN GIDA FTL", "SARUHAN FTL",
     "PEPSİ FTL", "MUTLU MAKARNA SPOT FTL", "TEKİRDAĞ UN FTL", "AYDINLI MODA FTL",
     "ADKOTURK FTL", "ADKOTURK FTL ENERJİ İÇECEĞİ", "SGS FTL", "BSH FTL",
     "ALTERNA GIDA FTL", "DERYA OFİS FTL", "SAPRO FTL", "MARMARA CAM FTL",
@@ -27,7 +30,6 @@ const ALLOWED_PROJECTS = new Set([
 ]);
 
 const projectMergeMap = {
-    "BUNGE LÜLEBURGAZ FTL": ["BUNGE LÜLEBURGAZ FTL", "BUNGE DİLOVASI-REYSAŞ", "BUNGE PALET"],
     "MODERN KARTON FTL": ["MODERN KARTON-PACKON", "MODERN KARTON-NİŞASTA"]
 };
 
@@ -96,6 +98,15 @@ function App() {
 
     useEffect(() => {
         async function fetchOdakData() {
+            const normalizeProjectName = (name) => {
+                const map = {
+                    "BUNGE DİLOVASI-REYSAŞ": "BUNGE GEBZE FTL",
+                    "BUNGE PALET": "BUNGE PALET",
+                    "BUNGE LÜLEBURGAZ FTL": "BUNGE LÜLEBURGAZ FTL",
+                };
+                return map[name] || name;
+            };
+
             const today = new Date().toISOString().split("T")[0];
             const payload = {
                 startDate: `${today}T00:00:00`,
@@ -131,7 +142,8 @@ function App() {
                 const projectMap = new Map();
 
                 filteredItems.forEach((item) => {
-                    const project = item.ProjectName;
+                    const originalProject = item.ProjectName;
+                    const project = normalizeProjectName(originalProject); // 👈 burada isim dönüşüyor
                     const reqNo = item.TMSVehicleRequestDocumentNo;
                     const hasDespatch = item.TMSDespatchDocumentNo && !item.TMSDespatchDocumentNo.startsWith("BOS");
 
@@ -185,10 +197,9 @@ function App() {
         }));
 
         odakData.forEach((odak) => {
-            const groupList = projectMergeMap[odak.ProjectName] || [odak.ProjectName];
             for (let row of rows) {
                 const projeAdi = row["PROJE ADI"]?.trim();
-                if (groupList.includes(projeAdi)) {
+                if (projeAdi === odak.ProjectName) {
                     row["REEL TALEP"] += odak.Talep ?? 0;
                     row["REEL TEDARİK"] += odak.Tedarik ?? 0;
                     row["REEL VERİLEMEYEN"] += odak.Verilemeyen ?? 0;
