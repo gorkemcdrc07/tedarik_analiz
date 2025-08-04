@@ -1,38 +1,100 @@
-.App {
-  text-align: center;
+/* Genel sayfa yapýsý */
+.app-container {
+    padding: 2rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    min-height: 100vh;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Baþlýk */
+.table-title, h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    font-weight: bold;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Bölüm kutusu */
+.section {
+    margin-bottom: 40px;
+    padding: 20px;
+    border-radius: 12px;
+    background-color: #fdfdfd;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* Odak için ekstra arka plan */
+.odak-section {
+    background-color: #eef7ff;
 }
 
-.App-link {
-  color: #61dafb;
+/* Tablo dýþý kutu */
+.table-wrapper {
+    overflow-x: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    background: #fff;
+    padding: 1rem;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Tablo yapýsý */
+.styled-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    font-size: 14px;
+    font-family: "Segoe UI", sans-serif;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+    /* Tablo baþlýklarý */
+    .styled-table thead tr {
+        background-color: #2c3e50;
+        color: #ffffff;
+        text-align: center;
+    }
+
+    /* Tüm hücreler */
+    .styled-table th,
+    .styled-table td {
+        padding: 10px 12px;
+        border: 1px solid #e3e6f0;
+        text-align: center;
+    }
+
+    /* Alternatif arka plan */
+    .styled-table tbody tr:nth-child(even) {
+        background-color: #fafbfc;
+    }
+
+    /* Hover efekti */
+    .styled-table tbody tr:hover {
+        background-color: #f1f1f1;
+        transition: background 0.2s ease;
+    }
+
+    /* Öne çýkan sütunlar */
+    .styled-table td.etablo {
+        background-color: #eef4ff;
+    }
+
+    .styled-table td.reel {
+        background-color: #fff0f5;
+    }
+
+    /* Footer görünümü */
+    .styled-table tfoot tr {
+        background-color: #f2f2f2;
+        font-weight: bold;
+        border-top: 2px solid #ccc;
+    }
+
+/* Yükleniyor yazýsý */
+.loading {
+    text-align: center;
+    font-size: 1.2rem;
+    font-style: italic;
+    color: #555;
+    margin-top: 2rem;
 }
