@@ -104,7 +104,7 @@ function App() {
             };
 
             try {
-                const response = await fetch("/api/tmsorders/getall", {
+                const response = await fetch("http://localhost:5000/odak", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -112,6 +112,7 @@ function App() {
                     },
                     body: JSON.stringify(payload),
                 });
+
 
                 const result = await response.json();
                 const items = Array.isArray(result.Data) ? result.Data : [];
