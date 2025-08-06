@@ -197,33 +197,37 @@ function Dashboard() {
                             ProjectName: project,
                             talepSet: new Set(),
                             tedarikSet: new Set(),
-                            spotCount: 0,
-                            filoCount: 0,
+                            spotSet: new Set(),  // ✅ yeni
+                            filoSet: new Set(),  // ✅ yeni
                         });
                     }
 
                     const projData = projectMap.get(project);
 
                     projData.talepSet.add(reqNo);
+
                     if (hasDespatch) {
                         projData.tedarikSet.add(reqNo);
                     }
 
+                    // ✅ Benzersiz olarak SPOT/FİLO say
                     if (vehicleWorking.includes("SPOT")) {
-                        projData.spotCount++;
+                        projData.spotSet.add(reqNo);
                     } else if (vehicleWorking.includes("FİLO") || vehicleWorking.includes("FILO")) {
-                        projData.filoCount++;
+                        projData.filoSet.add(reqNo);
                     }
                 });
+
 
                 const finalData = Array.from(projectMap.values()).map((proj) => ({
                     ProjectName: proj.ProjectName,
                     Talep: proj.talepSet.size,
                     Tedarik: proj.tedarikSet.size,
                     Verilemeyen: proj.talepSet.size - proj.tedarikSet.size,
-                    Spot: proj.spotCount,
-                    Filo: proj.filoCount,
+                    Spot: proj.spotSet.size,   // ✅ değiştirildi
+                    Filo: proj.filoSet.size,   // ✅ değiştirildi
                 }));
+
 
                 console.log("🎯 ODAK VERİSİ (PickupDate === bugün):");
                 finalData.forEach(p => {
