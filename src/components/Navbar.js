@@ -7,9 +7,14 @@ const Navbar = () => {
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem("kullanici"));
+        const savedTheme = localStorage.getItem("tema") || "dark";
+
         if (user) {
             setKullaniciIsmi(user.kullanici);
         }
+
+        setTema(savedTheme);
+        document.documentElement.setAttribute("data-theme", savedTheme);
     }, []);
 
     const handleLogout = () => {
@@ -18,8 +23,10 @@ const Navbar = () => {
     };
 
     const toggleTheme = () => {
-        setTema((prev) => (prev === "dark" ? "light" : "dark"));
-        alert(`Tema değiştirildi: ${tema === "dark" ? "Açık" : "Koyu"}`);
+        const newTheme = tema === "dark" ? "light" : "dark";
+        setTema(newTheme);
+        localStorage.setItem("tema", newTheme);
+        document.documentElement.setAttribute("data-theme", newTheme); // ⬅️ BU ÖNEMLİ
     };
 
     return (

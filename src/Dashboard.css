@@ -1,0 +1,17 @@
+﻿.app-container {
+    background-color: var(--dashboard-bg);
+    color: var(--dashboard-text);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.table-wrapper {
+    background-color: var(--table-bg);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.styled-table {
+    color: var(--dashboard-text);
+    background-color: var(--table-bg);
+}
