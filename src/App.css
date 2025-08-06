@@ -1,4 +1,4 @@
-/* Genel sayfa yapısı */
+ï»¿/* Genel sayfa yapÄ±sÄ± */
 .app-container {
     padding: 2rem;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -6,7 +6,7 @@
     min-height: 100vh;
 }
 
-/* Başlık */
+/* BaÅŸlÄ±k */
 .table-title, h2 {
     text-align: center;
     font-size: 2rem;
@@ -15,7 +15,7 @@
     font-weight: bold;
 }
 
-/* Bölüm kutusu */
+/* BÃ¶lÃ¼m kutusu */
 .section {
     margin-bottom: 40px;
     padding: 20px;
@@ -24,12 +24,12 @@
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Odak için ekstra arka plan */
+/* Odak iÃ§in ekstra arka plan */
 .odak-section {
     background-color: #eef7ff;
 }
 
-/* Tablo dışı kutu */
+/* Tablo dÄ±ÅŸÄ± kutu */
 .table-wrapper {
     overflow-x: auto;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -38,7 +38,7 @@
     padding: 1rem;
 }
 
-/* Tablo yapısı */
+/* Tablo yapÄ±sÄ± */
 .styled-table {
     width: 100%;
     min-width: 900px;
@@ -48,14 +48,14 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
-    /* Tablo başlıkları */
+    /* Tablo baÅŸlÄ±klarÄ± */
     .styled-table thead tr {
         background-color: #2c3e50;
         color: #ffffff;
         text-align: center;
     }
 
-    /* Tüm hücreler */
+    /* TÃ¼m hÃ¼creler */
     .styled-table th,
     .styled-table td {
         padding: 10px 12px;
@@ -74,7 +74,7 @@
         transition: background 0.2s ease;
     }
 
-    /* Öne çıkan sütunlar */
+    /* Ã–ne Ã§Ä±kan sÃ¼tunlar */
     .styled-table td.etablo {
         background-color: #eef4ff;
     }
@@ -83,14 +83,14 @@
         background-color: #fff0f5;
     }
 
-    /* Footer görünümü */
+    /* Footer gÃ¶rÃ¼nÃ¼mÃ¼ */
     .styled-table tfoot tr {
         background-color: #f2f2f2;
         font-weight: bold;
         border-top: 2px solid #ccc;
     }
 
-/* Yükleniyor yazısı */
+/* YÃ¼kleniyor yazÄ±sÄ± */
 .loading {
     text-align: center;
     font-size: 1.2rem;

@@ -2,7 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\server",
-    "\\src"
+    "\\src",
+    "\\src\\components"
   ],
+  "SelectedNode": "\\src\\Login.css",
   "PreviewInSolutionExplorer": false
 }
