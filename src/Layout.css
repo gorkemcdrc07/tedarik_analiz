@@ -1,0 +1,13 @@
+﻿/* Layout.css */
+
+.layout-container {
+    display: flex;
+    height: calc(100vh - 60px); /* Navbar yüksekliği kadar eksilt */
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #f9fafb;
+    overflow-y: auto;
+}

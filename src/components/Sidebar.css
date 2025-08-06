@@ -1,0 +1,92 @@
+﻿.sidebar {
+    height: 100vh;
+    background: #111827;
+    color: #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    width: 240px;
+    transition: width 0.3s ease;
+    position: relative;
+    padding-top: 80px; /* 🔽 Daha aşağıdan başlasın */
+}
+
+    .sidebar.closed {
+        width: 60px;
+    }
+
+.sidebar-toggle {
+    position: absolute;
+    top: 20px; /* ⛔ Çok yukarıda duruyordu */
+    left: 100%;
+    transform: translateX(-50%);
+    background: #facc15;
+    color: #111827;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    padding: 6px 10px;
+    cursor: pointer;
+    z-index: 999;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+    transition: background 0.2s ease;
+}
+
+    .sidebar-toggle:hover {
+        background: #eab308;
+    }
+
+.menu-group {
+    margin-bottom: 16px;
+}
+
+.menu-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #facc15;
+    padding: 14px 24px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1f2937;
+    transition: background 0.2s ease;
+}
+
+    .menu-title:hover {
+        background: #374151;
+    }
+
+.arrow {
+    font-size: 12px;
+    margin-left: 10px;
+    color: #facc15;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: #1f2937;
+}
+
+.sidebar li {
+    padding: 12px 28px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #e5e7eb;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+    .sidebar li:hover {
+        background: #374151;
+        color: #fcd34d;
+    }
+
+    .sidebar li.active {
+        background: #374151;
+        color: #facc15;
+        font-weight: 600;
+        border-left: 4px solid #facc15;
+    }
