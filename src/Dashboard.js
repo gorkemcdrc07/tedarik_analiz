@@ -144,10 +144,18 @@ function Dashboard() {
                 return map[name] || name;
             };
 
-            const today = new Date().toISOString().split("T")[0];
+            const today = new Date();
+            const todayStr = today.toISOString().split("T")[0];
+
+            // Geniş tarih aralığı: Bugünden 3 gün öncesine gidiyoruz, çünkü PickupDate bugünü yakalayabilsin
+            const startDateObj = new Date(today);
+            startDateObj.setDate(startDateObj.getDate() - 3);
+            const endDateObj = new Date(today);
+            endDateObj.setDate(endDateObj.getDate() + 3);
+
             const payload = {
-                startDate: `${today}T00:00:00`,
-                endDate: `${today}T23:59:59`,
+                startDate: `${startDateObj.toISOString().split("T")[0]}T00:00:00`,
+                endDate: `${endDateObj.toISOString().split("T")[0]}T23:59:59`,
                 userId: 1,
             };
 
@@ -164,11 +172,12 @@ function Dashboard() {
                 const result = await response.json();
                 const items = Array.isArray(result.Data) ? result.Data : [];
 
+                // 🔥🔥 Sadece PickupDate === bugün olan kayıtları sayıyoruz
                 const filteredItems = items.filter((item) => {
                     const pickupDate = item.PickupDate?.split("T")[0];
                     const req = item.TMSVehicleRequestDocumentNo;
                     return (
-                        pickupDate === today &&
+                        pickupDate === todayStr &&
                         item.OrderStatu !== 200 &&
                         req && !req.startsWith("BOS") &&
                         item.ProjectName
@@ -178,11 +187,10 @@ function Dashboard() {
                 const projectMap = new Map();
 
                 filteredItems.forEach((item) => {
-                    const originalProject = item.ProjectName;
-                    const project = normalizeProjectName(originalProject);
+                    const project = normalizeProjectName(item.ProjectName);
                     const reqNo = item.TMSVehicleRequestDocumentNo;
                     const hasDespatch = item.TMSDespatchDocumentNo && !item.TMSDespatchDocumentNo.startsWith("BOS");
-                    const vehicleWorking = (item?.VehicleWorkingName || "").toUpperCase(); // 👈 sadece buradan bakılıyor
+                    const vehicleWorking = (item?.VehicleWorkingName || "").toUpperCase();
 
                     if (!projectMap.has(project)) {
                         projectMap.set(project, {
@@ -201,7 +209,6 @@ function Dashboard() {
                         projData.tedarikSet.add(reqNo);
                     }
 
-                    // ✅ SPOT / FİLO ayrımı sadece VehicleWorkingName ile
                     if (vehicleWorking.includes("SPOT")) {
                         projData.spotCount++;
                     } else if (vehicleWorking.includes("FİLO") || vehicleWorking.includes("FILO")) {
@@ -218,14 +225,13 @@ function Dashboard() {
                     Filo: proj.filoCount,
                 }));
 
-                // Konsola yazalım
-                console.log("🎯 ODAK VERİSİ:");
+                console.log("🎯 ODAK VERİSİ (PickupDate === bugün):");
                 finalData.forEach(p => {
                     console.log(`${p.ProjectName}: TALEP = ${p.Talep}, TEDARİK = ${p.Tedarik}, VERİLEMEYEN = ${p.Verilemeyen}, SPOT = ${p.Spot}, FİLO = ${p.Filo}`);
                 });
 
                 setOdakData(finalData.filter(p => ALLOWED_PROJECTS.has(p.ProjectName)));
-                setOdakDataRaw(filteredItems); // tüm satırları al
+                setOdakDataRaw(filteredItems); // sadece bugün yüklemesi olan kayıtlar
 
             } catch (err) {
                 console.error("Odak API hatası:", err);
@@ -234,6 +240,7 @@ function Dashboard() {
 
         fetchOdakData();
     }, []);
+
 
 
 
