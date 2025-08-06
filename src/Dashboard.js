@@ -495,11 +495,12 @@ function Dashboard() {
 
                                         // 2️⃣ Yüzdelik oran hesaplamaları
                                         if (col === "TED. %") {
-                                            const totalReelTalep = data.slice(1).reduce((sum, row) => sum + (parseFloat(row["REEL TALEP"]) || 0), 0);
-                                            const totalReelTedarik = data.slice(1).reduce((sum, row) => sum + (parseFloat(row["REEL TEDARİK"]) || 0), 0);
-                                            const ratio = totalReelTalep > 0 ? totalReelTedarik / totalReelTalep : 0;
+                                            const totalTalep = data.slice(1).reduce((sum, row) => sum + (parseFloat(row["TALEP"]) || 0), 0);
+                                            const totalTedarik = data.slice(1).reduce((sum, row) => sum + (parseFloat(row["TEDARİK"]) || 0), 0);
+                                            const ratio = totalTalep > 0 ? totalTedarik / totalTalep : 0;
                                             const percentage = Math.round(ratio * 100);
                                             const color = percentage < 70 ? "#e74c3c" : percentage < 90 ? "#f39c12" : "#27ae60";
+
                                             return (
                                                 <td key={colIdx} style={{ color, fontWeight: "bold", textAlign: "center" }}>
                                                     %{percentage}
@@ -507,18 +508,21 @@ function Dashboard() {
                                             );
                                         }
 
+
                                         if (col === "UYUM") {
-                                            const totalTalep = data.slice(1).reduce((sum, row) => sum + (parseFloat(row["TALEP"]) || 0), 0);
+                                            const totalReelTedarik = data.slice(1).reduce((sum, row) => sum + (parseFloat(row["REEL TEDARİK"]) || 0), 0);
                                             const totalReelTalep = data.slice(1).reduce((sum, row) => sum + (parseFloat(row["REEL TALEP"]) || 0), 0);
-                                            const ratio = totalTalep > 0 ? totalReelTalep / totalTalep : 0;
+                                            const ratio = totalReelTalep > 0 ? totalReelTedarik / totalReelTalep : 0;
                                             const percentage = Math.round(ratio * 100);
                                             const color = percentage < 70 ? "#e74c3c" : percentage < 90 ? "#f39c12" : "#27ae60";
+
                                             return (
                                                 <td key={colIdx} style={{ color, fontWeight: "bold", textAlign: "center" }}>
                                                     %{percentage}
                                                 </td>
                                             );
                                         }
+
 
                                         // 3️⃣ Sayısal sütunların toplamı
                                         const total = data.slice(1).reduce((sum, row) => {
