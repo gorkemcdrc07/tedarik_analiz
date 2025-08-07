@@ -1,11 +1,12 @@
 {
   "ExpandedNodes": [
     "",
+    "\\api",
     "\\public",
     "\\server",
     "\\src",
     "\\src\\components"
   ],
-  "SelectedNode": "\\src\\components\\OdakDetailModal.css",
+  "SelectedNode": "\\api\\snapshot.js",
   "PreviewInSolutionExplorer": false
 }
