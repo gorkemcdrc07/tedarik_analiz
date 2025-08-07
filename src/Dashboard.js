@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+import OdakDetailModal from "./components/OdakDetailModal";
+
 
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
@@ -70,6 +72,10 @@ function Dashboard() {
         ? columnOrder
         : columnOrder.filter(col => !HIDDEN_COLUMNS.includes(col));
     const [odakDataRaw, setOdakDataRaw] = useState([]); // SPOT/FİLO analizinde kullanacağız
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedProject, setSelectedProject] = useState("");
+    const [selectedRecords, setSelectedRecords] = useState([]);
+
 
 
 
@@ -344,17 +350,21 @@ function Dashboard() {
                                     {(isOnur || isTahsin) && <th rowSpan="3">HEDEFSİZ SEFER</th>}
                                 </tr>
                                 <tr>
+                                    {/* E-TABLO / REEL başlıkları */}
                                     {Array(9).fill().map((_, i) => (
                                         <React.Fragment key={i}>
                                             <th>E-TABLO</th>
                                             <th>REEL</th>
                                         </React.Fragment>
                                     ))}
-                                    {(isOnur || isTahsin) && <>
-                                        <th>₺</th><th>SEFER</th>
-                                        <th>₺</th><th>SEFER</th>
-                                    </>}
+                                    {(isOnur || isTahsin) && (
+                                        <>
+                                            <th>₺</th><th>SEFER</th>
+                                            <th>₺</th><th>SEFER</th>
+                                        </>
+                                    )}
                                 </tr>
+                                {/* 3. satır boş tutuluyor — hizalama için */}
                                 <tr></tr>
                             </thead>
 
@@ -363,170 +373,179 @@ function Dashboard() {
 
 
 
-                           <tbody>
-    {(() => {
-        const renderedRows = new Set();
-        return data.slice(1).flatMap((row) => {
-            const projeAdi = row["PROJE ADI"]?.trim();
-            const anaProje = Object.entries(projectMergeMap).find(([_, group]) =>
-                group.includes(projeAdi)
-            )?.[0];
 
-            if (anaProje && renderedRows.has(projeAdi)) return [];
+                            <tbody>
+                                {(() => {
+                                    const renderedRows = new Set();
 
-            const groupRows = anaProje
-                ? data.slice(1).filter((r) =>
-                    projectMergeMap[anaProje].includes(r["PROJE ADI"]?.trim())
-                )
-                : [row];
+                                    return data.slice(1).flatMap((row) => {
+                                        const projeAdi = row["PROJE ADI"]?.trim();
+                                        const anaProje = Object.entries(projectMergeMap).find(([_, group]) =>
+                                            group.includes(projeAdi)
+                                        )?.[0];
 
-            groupRows.forEach((r) =>
-                renderedRows.add(r["PROJE ADI"]?.trim())
-            );
+                                        if (anaProje && renderedRows.has(projeAdi)) return [];
 
-            return groupRows.map((groupRow, groupIdx) => (
-                <tr
-                    key={`row-${groupRow["PROJE ADI"]?.trim() || "bilinmiyor"}-${groupIdx}`}
-                    className={
-                        (() => {
-                            const projeAdi = groupRow["PROJE ADI"]?.trim();
-                            const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
-                            const talep = parseFloat(groupRow["TALEP"]) || 0;
+                                        const groupRows = anaProje
+                                            ? data.slice(1).filter((r) =>
+                                                projectMergeMap[anaProje].includes(r["PROJE ADI"]?.trim())
+                                            )
+                                            : [row];
 
-                            if (reelTalep > talep) return "fazla-reel-talep";
-                            if (uyumsuzKapandi && uyumsuzProjeler.find(p => p.proje === projeAdi)) return "uyumsuz-satir";
-                            return "";
-                        })()
-                    }
-                >
-                    {columnOrder.map((col, colIdx) => {
-                        let value = groupRow[col];
-                        let style = {};
-                        let displayValue = value;
+                                        groupRows.forEach((r) =>
+                                            renderedRows.add(r["PROJE ADI"]?.trim())
+                                        );
 
-                        // Fiyat kolonları için özel gösterim (₺ ve renkli)
-                        // HEDEF, HEDEF ÜSTÜ, HEDEF ALTI için ₺ ve özel renkler
-                        if (["HEDEF", "HEDEF ÜSTÜ", "HEDEF ALTI"].includes(col)) {
-                            const parsed = parseFloat(value);
-                            displayValue = !isNaN(parsed) ? `${parsed.toLocaleString("tr-TR")} ₺` : "0 ₺";
+                                        return groupRows.map((groupRow, groupIdx) => (
+                                            <tr
+                                                key={`row-${groupRow["PROJE ADI"]?.trim() || "bilinmiyor"}-${groupIdx}`}
+                                                className={(() => {
+                                                    const projeAdi = groupRow["PROJE ADI"]?.trim();
+                                                    const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
+                                                    const talep = parseFloat(groupRow["TALEP"]) || 0;
 
-                            if (isNaN(parsed) || parsed === 0) {
-                                style = { color: "#000" }; // 0 için siyah
-                            } else if (parsed < 0) {
-                                style = { color: "#e74c3c", fontWeight: "bold" }; // negatif
-                            } else {
-                                style = { color: "#1e8449", fontWeight: "bold" }; // pozitif
-                            }
-                        }
+                                                    if (reelTalep > talep) return "fazla-reel-talep";
+                                                    if (uyumsuzKapandi && uyumsuzProjeler.find(p => p.proje === projeAdi)) return "uyumsuz-satir";
+                                                    return "";
+                                                })()}
+                                            >
+                                                {columnOrder.map((col, colIdx) => {
+                                                    let value = groupRow[col];
+                                                    let style = {};
+                                                    let displayValue = value;
 
-                        // ✅ TOP. NAVLUN için ₺ ve daima siyah renk
-                        else if (col === "TOP. NAVLUN") {
-                            const parsed = parseFloat(value);
-                            displayValue = !isNaN(parsed) ? `${parsed.toLocaleString("tr-TR")} ₺` : "0 ₺";
-                            style = { color: "#000" }; // Her zaman siyah ve kalın
-                        }
+                                                    // 🔥 Tıklanabilir PROJE ADI
+                                                    if (col === "PROJE ADI") {
+                                                        return (
+                                                            <td
+                                                                key={colIdx}
+                                                                className="clickable-project"
+                                                                style={{ fontWeight: "bold", cursor: "pointer", color: "#2980b9" }}
+                                                                onClick={() => {
+                                                                    const name = groupRow["PROJE ADI"]?.trim();
+                                                                    const normalizeProjectName = (name) => {
+                                                                        const map = {
+                                                                            "BUNGE DİLOVASI-REYSAŞ": "BUNGE GEBZE FTL",
+                                                                            "BUNGE PALET": "BUNGE PALET",
+                                                                            "BUNGE LÜLEBURGAZ FTL": "BUNGE LÜLEBURGAZ FTL",
+                                                                        };
+                                                                        return map[name] || name;
+                                                                    };
+                                                                    const normalized = normalizeProjectName(name);
 
-                        
-
-                        // Sefer kolonları (sayısal)
-                        else if (
-                            ["SEFER_ÜSTÜ", "SEFER_ALTI", "SEFER_HEDEF", "HEDEFSİZ SEFER"].includes(col)
-                        ) {
-                            const parsed = parseFloat(value);
-                            displayValue = !isNaN(parsed) ? parsed.toLocaleString("tr-TR") : 0;
-                        }
-
-                        // TED. % özel biçimlendirme
-                        else if (col === "TED. %") {
-                            const parsed = parseFloat(value);
-                            if (!isNaN(parsed)) {
-                                const percentage = Math.round(parsed * 100);
-                                if (percentage === 0) {
-                                    displayValue = "-";
-                                    style = { color: "#000", fontWeight: "bold" };
-                                } else {
-                                    displayValue = `%${percentage}`;
-                                    style = {
-                                        color: percentage < 70 ? "#e74c3c" : percentage < 90 ? "#f39c12" : "#27ae60",
-                                        fontWeight: "bold",
-                                    };
-                                }
-                            }
-                        }
-
-                        // UYUM sütunu hesaplama
-                        else if (col === "UYUM") {
-                            const reelTedarik = parseFloat(groupRow["REEL TEDARİK"]) || 0;
-                            const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
-                            const uyumRatio = reelTalep > 0 ? reelTedarik / reelTalep : 0;
-                            const percentage = Math.round(uyumRatio * 100);
-                            if (percentage === 0) {
-                                displayValue = "-";
-                                style = { color: "#000", fontWeight: "bold" };
-                            } else {
-                                displayValue = `%${percentage}`;
-                                style = {
-                                    color: percentage < 70 ? "#e74c3c" : percentage < 90 ? "#f39c12" : "#27ae60",
-                                    fontWeight: "bold",
-                                };
-                            }
-                        }
+                                                                    setSelectedProject(name);
+                                                                    const detaylar = odakDataRaw.filter(item =>
+                                                                        normalizeProjectName(item.ProjectName?.trim() || "") === normalized
+                                                                    );
+                                                                    setSelectedRecords(detaylar);
+                                                                    setModalOpen(true);
+                                                                }}
+                                                            >
+                                                                {groupRow[col]}
+                                                            </td>
+                                                        );
+                                                    }
 
 
-                        const isEtablo = ["TALEP", "TEDARİK", "VERİLEMEYEN"].includes(col);
-                        const isReel = ["REEL TALEP", "REEL TEDARİK", "REEL VERİLEMEYEN"].includes(col);
-                        const className = isEtablo ? "etablo" : isReel ? "reel" : "";
+                                                    // ₺ biçimlendirme
+                                                    if (["HEDEF", "HEDEF ÜSTÜ", "HEDEF ALTI"].includes(col)) {
+                                                        const parsed = parseFloat(value);
+                                                        displayValue = !isNaN(parsed) ? `${parsed.toLocaleString("tr-TR")} ₺` : "0 ₺";
+                                                        if (isNaN(parsed) || parsed === 0) style = { color: "#000" };
+                                                        else if (parsed < 0) style = { color: "#e74c3c", fontWeight: "bold" };
+                                                        else style = { color: "#1e8449", fontWeight: "bold" };
+                                                    }
+                                                    else if (col === "TOP. NAVLUN") {
+                                                        const parsed = parseFloat(value);
+                                                        displayValue = !isNaN(parsed) ? `${parsed.toLocaleString("tr-TR")} ₺` : "0 ₺";
+                                                        style = { color: "#000" };
+                                                    }
+                                                    else if (["SEFER_ÜSTÜ", "SEFER_ALTI", "SEFER_HEDEF", "HEDEFSİZ SEFER"].includes(col)) {
+                                                        const parsed = parseFloat(value);
+                                                        displayValue = !isNaN(parsed) ? parsed.toLocaleString("tr-TR") : 0;
+                                                    }
+                                                    else if (col === "TED. %") {
+                                                        const parsed = parseFloat(value);
+                                                        if (!isNaN(parsed)) {
+                                                            const percentage = Math.round(parsed * 100);
+                                                            if (percentage === 0) {
+                                                                displayValue = "-";
+                                                                style = { color: "#000", fontWeight: "bold" };
+                                                            } else {
+                                                                displayValue = `%${percentage}`;
+                                                                style = {
+                                                                    color: percentage < 70 ? "#e74c3c" : percentage < 90 ? "#f39c12" : "#27ae60",
+                                                                    fontWeight: "bold",
+                                                                };
+                                                            }
+                                                        }
+                                                    }
+                                                    else if (col === "UYUM") {
+                                                        const reelTedarik = parseFloat(groupRow["REEL TEDARİK"]) || 0;
+                                                        const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
+                                                        const uyumRatio = reelTalep > 0 ? reelTedarik / reelTalep : 0;
+                                                        const percentage = Math.round(uyumRatio * 100);
+                                                        if (percentage === 0) {
+                                                            displayValue = "-";
+                                                            style = { color: "#000", fontWeight: "bold" };
+                                                        } else {
+                                                            displayValue = `%${percentage}`;
+                                                            style = {
+                                                                color: percentage < 70 ? "#e74c3c" : percentage < 90 ? "#f39c12" : "#27ae60",
+                                                                fontWeight: "bold",
+                                                            };
+                                                        }
+                                                    }
 
-                        if (isEtablo || isReel) {
-                            if (isReel && groupIdx === 0) {
-                                return (
-                                    <td key={colIdx} rowSpan={groupRows.length} style={style} className={className}>
-                                        {displayValue || 0}
-                                    </td>
-                                );
-                            } else if (isEtablo) {
-                                return (
-                                    <td key={colIdx} style={style} className={className}>
-                                        {displayValue || 0}
-                                    </td>
-                                );
-                            } else {
-                                return null;
-                            }
-                        }
+                                                    const isEtablo = ["TALEP", "TEDARİK", "VERİLEMEYEN"].includes(col);
+                                                    const isReel = ["REEL TALEP", "REEL TEDARİK", "REEL VERİLEMEYEN"].includes(col);
+                                                    const className = isEtablo ? "etablo" : isReel ? "reel" : "";
 
-                        const talep = parseFloat(groupRow["TALEP"]) || 0;
-                        const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
+                                                    if (isEtablo || isReel) {
+                                                        if (isReel && groupIdx === 0) {
+                                                            return (
+                                                                <td key={colIdx} rowSpan={groupRows.length} style={style} className={className}>
+                                                                    {displayValue || 0}
+                                                                </td>
+                                                            );
+                                                        } else if (isEtablo) {
+                                                            return (
+                                                                <td key={colIdx} style={style} className={className}>
+                                                                    {displayValue || 0}
+                                                                </td>
+                                                            );
+                                                        } else {
+                                                            return null;
+                                                        }
+                                                    }
 
-                        const talep0Columns = new Set([
-                            "SPOT", "FİLO", "TESİSTE", "GELECEK", "YÜKLENDİ"
-                        ]);
+                                                    const talep = parseFloat(groupRow["TALEP"]) || 0;
+                                                    const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
 
-                        const reelTalep0Columns = new Set([
-                            "REEL SPOT", "REEL FİLO", "REEL TESİSTE", "REEL GELECEK", "REEL YÜKLENDİ"
-                        ]);
+                                                    const talep0Columns = new Set(["SPOT", "FİLO", "TESİSTE", "GELECEK", "YÜKLENDİ"]);
+                                                    const reelTalep0Columns = new Set(["REEL SPOT", "REEL FİLO", "REEL TESİSTE", "REEL GELECEK", "REEL YÜKLENDİ"]);
 
-                        let finalDisplay;
-                        if (talep === 0 && talep0Columns.has(col)) {
-                            finalDisplay = "-";
-                        } else if (reelTalep === 0 && reelTalep0Columns.has(col)) {
-                            finalDisplay = "-";
-                        } else {
-                            finalDisplay = displayValue ?? 0;
-                        }
+                                                    let finalDisplay;
+                                                    if (talep === 0 && talep0Columns.has(col)) {
+                                                        finalDisplay = "-";
+                                                    } else if (reelTalep === 0 && reelTalep0Columns.has(col)) {
+                                                        finalDisplay = "-";
+                                                    } else {
+                                                        finalDisplay = displayValue ?? 0;
+                                                    }
 
-                        return (
-                            <td key={colIdx} style={style}>
-                                {finalDisplay}
-                            </td>
-                        );
+                                                    return (
+                                                        <td key={colIdx} style={style}>
+                                                            {finalDisplay}
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        ));
+                                    });
+                                })()}
+                            </tbody>
 
-                    })}
-                </tr>
-            ));
-        });
-    })()}
-</tbody>
 
                             <tfoot>
                                 <tr>
@@ -602,6 +621,14 @@ function Dashboard() {
                     </div>
                 ) : (
                     <p className="loading">Yükleniyor...</p>
+                )}
+
+                {modalOpen && (
+                    <OdakDetailModal
+                        projectName={selectedProject}
+                        records={selectedRecords}
+                        onClose={() => setModalOpen(false)}
+                    />
                 )}
             </div>
         </div>
