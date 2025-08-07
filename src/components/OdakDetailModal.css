@@ -48,12 +48,18 @@
     padding-bottom: 0.75rem;
 }
 
+/* Scrollable content wrapper */
+.table-wrapper {
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Table styles */
 .detail-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
-    overflow-y: auto;
-    flex: 1;
+    min-width: 1000px;
 }
 
     .detail-table thead th {
