@@ -20,8 +20,8 @@ code {
 
 [data-theme="dark"] {
     --dashboard-bg: #1e1e1e;
-    --dashboard-text: #f1f1f1;
-    --table-bg: #2c2c2c;
+    --dashboard-text: black;
+    --table-bg: black;
 }
 
 /* Genel gövdeye uygulanacak renkler */

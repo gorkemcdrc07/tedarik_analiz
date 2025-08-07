@@ -434,6 +434,29 @@ function Dashboard() {
                             const parsed = parseFloat(value);
                             if (!isNaN(parsed)) {
                                 const percentage = Math.round(parsed * 100);
+                                if (percentage === 0) {
+                                    displayValue = "-";
+                                    style = { color: "#000", fontWeight: "bold" };
+                                } else {
+                                    displayValue = `%${percentage}`;
+                                    style = {
+                                        color: percentage < 70 ? "#e74c3c" : percentage < 90 ? "#f39c12" : "#27ae60",
+                                        fontWeight: "bold",
+                                    };
+                                }
+                            }
+                        }
+
+                        // UYUM sütunu hesaplama
+                        else if (col === "UYUM") {
+                            const reelTedarik = parseFloat(groupRow["REEL TEDARİK"]) || 0;
+                            const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
+                            const uyumRatio = reelTalep > 0 ? reelTedarik / reelTalep : 0;
+                            const percentage = Math.round(uyumRatio * 100);
+                            if (percentage === 0) {
+                                displayValue = "-";
+                                style = { color: "#000", fontWeight: "bold" };
+                            } else {
                                 displayValue = `%${percentage}`;
                                 style = {
                                     color: percentage < 70 ? "#e74c3c" : percentage < 90 ? "#f39c12" : "#27ae60",
@@ -442,18 +465,6 @@ function Dashboard() {
                             }
                         }
 
-                        // UYUM sütunu hesaplama
-                        else if (col === "UYUM") {
-                            const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
-                            const talep = parseFloat(groupRow["TALEP"]) || 0;
-                            const uyumRatio = talep > 0 ? reelTalep / talep : 0;
-                            const percentage = Math.round(uyumRatio * 100);
-                            displayValue = `%${percentage}`;
-                            style = {
-                                color: percentage < 70 ? "#e74c3c" : percentage < 90 ? "#f39c12" : "#27ae60",
-                                fontWeight: "bold",
-                            };
-                        }
 
                         const isEtablo = ["TALEP", "TEDARİK", "VERİLEMEYEN"].includes(col);
                         const isReel = ["REEL TALEP", "REEL TEDARİK", "REEL VERİLEMEYEN"].includes(col);
@@ -477,11 +488,32 @@ function Dashboard() {
                             }
                         }
 
+                        const talep = parseFloat(groupRow["TALEP"]) || 0;
+                        const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
+
+                        const talep0Columns = new Set([
+                            "SPOT", "FİLO", "TESİSTE", "GELECEK", "YÜKLENDİ"
+                        ]);
+
+                        const reelTalep0Columns = new Set([
+                            "REEL SPOT", "REEL FİLO", "REEL TESİSTE", "REEL GELECEK", "REEL YÜKLENDİ"
+                        ]);
+
+                        let finalDisplay;
+                        if (talep === 0 && talep0Columns.has(col)) {
+                            finalDisplay = "-";
+                        } else if (reelTalep === 0 && reelTalep0Columns.has(col)) {
+                            finalDisplay = "-";
+                        } else {
+                            finalDisplay = displayValue ?? 0;
+                        }
+
                         return (
                             <td key={colIdx} style={style}>
-                                {displayValue || 0}
+                                {finalDisplay}
                             </td>
                         );
+
                     })}
                 </tr>
             ));
