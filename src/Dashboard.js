@@ -36,6 +36,7 @@ function Dashboard() {
     const userObj = JSON.parse(localStorage.getItem("kullanici") || "{}");
     const user = (userObj.kullanici || "").trim().toUpperCase();
     const isOnur = user === "ONUR KEREM ÖZTÜRK";
+    const isTahsin = user === "TAHSİN BENLİ";
     const columnOrder = [
         "PROJE ADI",
         "TALEP", "REEL TALEP",
@@ -47,7 +48,7 @@ function Dashboard() {
         "TESİSTE", "REEL TESİSTE",
         "GELECEK", "REEL GELECEK",
         "YÜKLENDİ", "REEL YÜKLENDİ",
-        ...(isOnur ? [
+        ...(isOnur || isTahsin ? [  // 👈 burada ikisini de kapsıyor
             "TOP. NAVLUN",
             "HEDEF ÜSTÜ", "SEFER_ÜSTÜ",
             "HEDEF ALTI", "SEFER_ALTI",
@@ -65,7 +66,7 @@ function Dashboard() {
         "HEDEF ALTI", "SEFER_ALTI", "SEFER_HEDEF", "HEDEFSİZ SEFER"
     ];
 
-    const visibleColumns = isOnur
+    const visibleColumns = (isOnur || isTahsin)
         ? columnOrder
         : columnOrder.filter(col => !HIDDEN_COLUMNS.includes(col));
     const [odakDataRaw, setOdakDataRaw] = useState([]); // SPOT/FİLO analizinde kullanacağız
@@ -335,27 +336,29 @@ function Dashboard() {
                                     <th colSpan="2">TESİSTE</th>
                                     <th colSpan="2">GELECEK</th>
                                     <th colSpan="2">YÜKLENDİ</th>
-                                    {isOnur && <th rowSpan="3">TOP. NAVLUN</th>}
-                                    {isOnur && <th colSpan="2">HEDEF ÜSTÜ</th>}
-                                    {isOnur && <th colSpan="2">HEDEF ALTI</th>}
-                                    {isOnur && <th rowSpan="3">HEDEF</th>}
-                                    {isOnur && <th rowSpan="3">SEFER</th>}
-                                    {isOnur && <th rowSpan="3">HEDEFSİZ SEFER</th>}
+                                    {(isOnur || isTahsin) && <th rowSpan="3">TOP. NAVLUN</th>}
+                                    {(isOnur || isTahsin) && <th colSpan="2">HEDEF ÜSTÜ</th>}
+                                    {(isOnur || isTahsin) && <th colSpan="2">HEDEF ALTI</th>}
+                                    {(isOnur || isTahsin) && <th rowSpan="3">HEDEF</th>}
+                                    {(isOnur || isTahsin) && <th rowSpan="3">SEFER</th>}
+                                    {(isOnur || isTahsin) && <th rowSpan="3">HEDEFSİZ SEFER</th>}
                                 </tr>
                                 <tr>
-                                    {Array(9).fill().map(() => (
-                                        <>
+                                    {Array(9).fill().map((_, i) => (
+                                        <React.Fragment key={i}>
                                             <th>E-TABLO</th>
                                             <th>REEL</th>
-                                        </>
+                                        </React.Fragment>
                                     ))}
-                                    {isOnur && <>
+                                    {(isOnur || isTahsin) && <>
                                         <th>₺</th><th>SEFER</th>
                                         <th>₺</th><th>SEFER</th>
                                     </>}
                                 </tr>
-                                <tr></tr> {/* Sadece hizalama için boş satır */}
+                                <tr></tr>
                             </thead>
+
+
 
 
 
@@ -384,12 +387,16 @@ function Dashboard() {
             return groupRows.map((groupRow, groupIdx) => (
                 <tr
                     key={`row-${groupRow["PROJE ADI"]?.trim() || "bilinmiyor"}-${groupIdx}`}
-
                     className={
-                        uyumsuzKapandi &&
-                            uyumsuzProjeler.find(p => p.proje === groupRow["PROJE ADI"]?.trim())
-                            ? "uyumsuz-satir"
-                            : ""
+                        (() => {
+                            const projeAdi = groupRow["PROJE ADI"]?.trim();
+                            const reelTalep = parseFloat(groupRow["REEL TALEP"]) || 0;
+                            const talep = parseFloat(groupRow["TALEP"]) || 0;
+
+                            if (reelTalep > talep) return "fazla-reel-talep";
+                            if (uyumsuzKapandi && uyumsuzProjeler.find(p => p.proje === projeAdi)) return "uyumsuz-satir";
+                            return "";
+                        })()
                     }
                 >
                     {columnOrder.map((col, colIdx) => {
