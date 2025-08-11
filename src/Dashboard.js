@@ -50,12 +50,13 @@ function Dashboard() {
         "TESİSTE", "REEL TESİSTE",
         "GELECEK", "REEL GELECEK",
         "YÜKLENDİ", "REEL YÜKLENDİ",
-        ...(isOnur || isTahsin ? [  // 👈 burada ikisini de kapsıyor
+        ...(isOnur || isTahsin ? [
             "TOP. NAVLUN",
             "HEDEF ÜSTÜ", "SEFER_ÜSTÜ",
             "HEDEF ALTI", "SEFER_ALTI",
             "HEDEF", "SEFER_HEDEF",
-            "HEDEFSİZ SEFER"
+            "HEDEFSİZ SEFER",
+            "GELİR"               // 👈 eklendi
         ] : [])
     ];
 
@@ -65,7 +66,8 @@ function Dashboard() {
     const [uyumsuzKapandi, setUyumsuzKapandi] = useState(false);
     const HIDDEN_COLUMNS = [
         "TOP. NAVLUN", "HEDEF ÜSTÜ", "SEFER_ÜSTÜ",
-        "HEDEF ALTI", "SEFER_ALTI", "SEFER_HEDEF", "HEDEFSİZ SEFER"
+        "HEDEF ALTI", "SEFER_ALTI", "SEFER_HEDEF", "HEDEFSİZ SEFER",
+        "GELİR" // 👈 eklendi
     ];
 
     const visibleColumns = (isOnur || isTahsin)
@@ -348,6 +350,8 @@ function Dashboard() {
                                     {(isOnur || isTahsin) && <th rowSpan="3">HEDEF</th>}
                                     {(isOnur || isTahsin) && <th rowSpan="3">SEFER</th>}
                                     {(isOnur || isTahsin) && <th rowSpan="3">HEDEFSİZ SEFER</th>}
+                                    {(isOnur || isTahsin) && <th rowSpan="3">GELİR</th>}
+
                                 </tr>
                                 <tr>
                                     {/* E-TABLO / REEL başlıkları */}
@@ -446,7 +450,6 @@ function Dashboard() {
                                                         );
                                                     }
 
-
                                                     // ₺ biçimlendirme
                                                     if (["HEDEF", "HEDEF ÜSTÜ", "HEDEF ALTI"].includes(col)) {
                                                         const parsed = parseFloat(value);
@@ -455,7 +458,7 @@ function Dashboard() {
                                                         else if (parsed < 0) style = { color: "#e74c3c", fontWeight: "bold" };
                                                         else style = { color: "#1e8449", fontWeight: "bold" };
                                                     }
-                                                    else if (col === "TOP. NAVLUN") {
+                                                    else if (col === "TOP. NAVLUN" || col === "GELİR") { // 👈 GELİR eklendi
                                                         const parsed = parseFloat(value);
                                                         displayValue = !isNaN(parsed) ? `${parsed.toLocaleString("tr-TR")} ₺` : "0 ₺";
                                                         style = { color: "#000" };
@@ -547,6 +550,7 @@ function Dashboard() {
                             </tbody>
 
 
+
                             <tfoot>
                                 <tr>
                                     {columnOrder.map((col, colIdx) => {
@@ -596,9 +600,9 @@ function Dashboard() {
                                         let style = { fontWeight: "bold", textAlign: "center" };
 
                                         // 4️⃣ ₺ olan kolonlar biçimlendirme
-                                        if (["TOP. NAVLUN", "HEDEF", "HEDEF ÜSTÜ", "HEDEF ALTI"].includes(col)) {
-                                            displayValue += " ₺";
-                                            style.color = col === "TOP. NAVLUN"
+                                        if (["TOP. NAVLUN", "HEDEF", "HEDEF ÜSTÜ", "HEDEF ALTI", "GELİR"].includes(col)) {
+                                            displayValue = `${total.toLocaleString("tr-TR")} ₺`;
+                                            style.color = col === "TOP. NAVLUN" || col === "GELİR"
                                                 ? "#000"
                                                 : total < 0 ? "#e74c3c" : total === 0 ? "#000" : "#1e8449";
                                         }
