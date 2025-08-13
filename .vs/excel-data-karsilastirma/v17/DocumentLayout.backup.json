@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\api\\reel-api\\tmsdespatchincomeexpenses\\addincome.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:api\\reel-api\\tmsdespatchincomeexpenses\\addincome.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\GelirGider\\GelirEkleme.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\GelirGider\\GelirEkleme.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
@@ -82,7 +86,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -94,7 +98,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
+              "Title": "addincome.js",
+              "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\api\\reel-api\\tmsdespatchincomeexpenses\\addincome.js",
+              "RelativeDocumentMoniker": "api\\reel-api\\tmsdespatchincomeexpenses\\addincome.js",
+              "ToolTip": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\api\\reel-api\\tmsdespatchincomeexpenses\\addincome.js",
+              "RelativeToolTip": "api\\reel-api\\tmsdespatchincomeexpenses\\addincome.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwBoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-08-13T10:50:18.701Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "[...slug].js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\api\\reel-api\\[...slug].js",
               "RelativeDocumentMoniker": "api\\reel-api\\[...slug].js",
@@ -107,7 +124,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "login.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\api\\reel-auth\\login.js",
               "RelativeDocumentMoniker": "api\\reel-auth\\login.js",
@@ -120,7 +137,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "tokenManager.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\auth\\tokenManager.js",
               "RelativeDocumentMoniker": "src\\auth\\tokenManager.js",
@@ -133,7 +150,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "GelirEkleme.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\GelirGider\\GelirEkleme.js",
               "RelativeDocumentMoniker": "src\\GelirGider\\GelirEkleme.js",
@@ -146,7 +163,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "GelirEkleme.css",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\GelirGider\\GelirEkleme.css",
               "RelativeDocumentMoniker": "src\\GelirGider\\GelirEkleme.css",
@@ -154,11 +171,12 @@
               "RelativeToolTip": "src\\GelirGider\\GelirEkleme.css",
               "ViewState": "AgIAAHsBAAAAAAAAAAAAwKsBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-12T09:48:33.867Z"
+              "WhenOpened": "2025-08-12T09:48:33.867Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "supabaseClient.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\supabaseClient.js",
               "RelativeDocumentMoniker": "src\\supabaseClient.js",
@@ -166,11 +184,12 @@
               "RelativeToolTip": "src\\supabaseClient.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-12T10:43:23.173Z"
+              "WhenOpened": "2025-08-12T10:43:23.173Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "Login.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\Login.js",
               "RelativeDocumentMoniker": "src\\Login.js",
@@ -178,11 +197,12 @@
               "RelativeToolTip": "src\\Login.js",
               "ViewState": "AgIAAEUAAAAAAAAAAAAwwGcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-12T13:38:04.638Z"
+              "WhenOpened": "2025-08-12T13:38:04.638Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "setupProxy.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\setupProxy.js",
               "RelativeDocumentMoniker": "src\\setupProxy.js",
@@ -190,11 +210,12 @@
               "RelativeToolTip": "src\\setupProxy.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-12T14:22:01.896Z"
+              "WhenOpened": "2025-08-12T14:22:01.896Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "index.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\server\\index.js",
               "RelativeDocumentMoniker": "server\\index.js",
@@ -202,11 +223,12 @@
               "RelativeToolTip": "server\\index.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-04T07:57:03.24Z"
+              "WhenOpened": "2025-08-04T07:57:03.24Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "OdakDetailModal.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\components\\OdakDetailModal.js",
               "RelativeDocumentMoniker": "src\\components\\OdakDetailModal.js",
@@ -214,11 +236,12 @@
               "RelativeToolTip": "src\\components\\OdakDetailModal.js",
               "ViewState": "AgIAAAwAAAAAAAAAAAAuwC4AAABPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-07T11:37:08.664Z"
+              "WhenOpened": "2025-08-07T11:37:08.664Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "OdakDetailModal.css",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\components\\OdakDetailModal.css",
               "RelativeDocumentMoniker": "src\\components\\OdakDetailModal.css",
@@ -226,11 +249,12 @@
               "RelativeToolTip": "src\\components\\OdakDetailModal.css",
               "ViewState": "AgIAACwAAAAAAAAAAAAYwFsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-07T11:37:37.5Z"
+              "WhenOpened": "2025-08-07T11:37:37.5Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "Navbar.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\components\\Navbar.js",
               "RelativeDocumentMoniker": "src\\components\\Navbar.js",
@@ -238,11 +262,12 @@
               "RelativeToolTip": "src\\components\\Navbar.js",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-06T04:15:30.843Z"
+              "WhenOpened": "2025-08-06T04:15:30.843Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "App.css",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\App.css",
               "RelativeDocumentMoniker": "src\\App.css",
@@ -250,11 +275,12 @@
               "RelativeToolTip": "src\\App.css",
               "ViewState": "AgIAAFMAAAAAAAAAAAAYwGkAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-01T05:36:13.158Z"
+              "WhenOpened": "2025-08-01T05:36:13.158Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "AnaSayfa.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\AnaSayfa.js",
               "RelativeDocumentMoniker": "src\\AnaSayfa.js",
@@ -262,11 +288,12 @@
               "RelativeToolTip": "src\\AnaSayfa.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-06T04:15:00.294Z"
+              "WhenOpened": "2025-08-06T04:15:00.294Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "Layout.css",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\Layout.css",
               "RelativeDocumentMoniker": "src\\Layout.css",
@@ -274,11 +301,12 @@
               "RelativeToolTip": "src\\Layout.css",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-06T06:09:13.216Z"
+              "WhenOpened": "2025-08-06T06:09:13.216Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 18,
               "Title": "package.json",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\package.json",
               "RelativeDocumentMoniker": "package.json",
@@ -286,11 +314,12 @@
               "RelativeToolTip": "package.json",
               "ViewState": "AgIAAA4AAAAAAAAAAAAkwBwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-01T06:41:16.583Z"
+              "WhenOpened": "2025-08-01T06:41:16.583Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "Login.css",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\Login.css",
               "RelativeDocumentMoniker": "src\\Login.css",
@@ -298,11 +327,12 @@
               "RelativeToolTip": "src\\Login.css",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-05T14:05:42.047Z"
+              "WhenOpened": "2025-08-05T14:05:42.047Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "package.json",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\server\\package.json",
               "RelativeDocumentMoniker": "server\\package.json",
@@ -310,7 +340,8 @@
               "RelativeToolTip": "server\\package.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-04T07:57:27.98Z"
+              "WhenOpened": "2025-08-04T07:57:27.98Z",
+              "EditorCaption": ""
             }
           ]
         }
