@@ -3,8 +3,10 @@
     "",
     "\\api",
     "\\api\\reel-api",
+    "\\api\\reel-api\\tmsdespatchincomeexpenses",
     "\\api\\reel-auth",
     "\\src"
   ],
+  "SelectedNode": "\\api\\reel-api\\tmsdespatchincomeexpenses\\addincome.js",
   "PreviewInSolutionExplorer": false
 }
