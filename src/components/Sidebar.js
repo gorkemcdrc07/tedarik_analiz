@@ -3,7 +3,8 @@ import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
-    const [openSections, setOpenSections] = useState({});
+    // İstersen "GELİR & GİDER" açık başlasın
+    const [openSections, setOpenSections] = useState({ "GELİR & GİDER": true });
 
     const menuGroups = [
         {
@@ -24,7 +25,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     const routeMap = {
         "Tedarik Analiz": "/dashboard",
         "Gelir Ekleme": "/GelirGider/GelirEkleme",
-        // "Gider Ekleme": "/GelirGider/GiderEkleme",
+        "Gider Ekleme": "/GelirGider/GiderEkleme", // ✅ eklendi
         // "Eskalasyon Hesabı": "/GelirGider/Eskalasyon",
         // "Sipariş Oluştur": "/Siparis/Olustur",
         // "Teslim Noktaları": "/Siparis/TeslimNoktalari",
@@ -48,14 +49,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                             onClick={() => toggleSection(group.title)}
                         >
                             {group.title}
-                            <span className="arrow">{openSections[group.title] ? "▾" : "▸"}</span>
+                            <span className="arrow">
+                                {openSections[group.title] ? "▾" : "▸"}
+                            </span>
                         </div>
 
                         {openSections[group.title] && (
                             <ul>
                                 {group.items.map((item) => {
                                     const to = routeMap[item];
-                                    // Eğer bu item için path tanımlamadıysan, pasif <span> göster
+                                    // path tanımlı değilse pasif göster
                                     if (!to) {
                                         return (
                                             <li key={item}>

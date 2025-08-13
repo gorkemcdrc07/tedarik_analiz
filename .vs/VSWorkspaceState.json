@@ -5,8 +5,11 @@
     "\\api\\reel-api",
     "\\api\\reel-api\\tmsdespatchincomeexpenses",
     "\\api\\reel-auth",
-    "\\src"
+    "\\src",
+    "\\src\\auth",
+    "\\src\\components",
+    "\\src\\GelirGider"
   ],
-  "SelectedNode": "\\api\\reel-api\\tmsdespatchincomeexpenses\\addincome.js",
+  "SelectedNode": "\\src\\GelirGider\\GelirEkleme.css",
   "PreviewInSolutionExplorer": false
 }
