@@ -7,17 +7,19 @@ export default async function handler(req, res) {
         return res.status(204).end();
     }
 
-    // Saðlýk kontrolü (kolay test)
-    const slug = Array.isArray(req.query.slug)
-        ? req.query.slug
-        : (req.query.slug ? [req.query.slug] : []);
-    if (slug[0] === "__health") {
+    // [...slug] => req.query.slug bir dizi olur
+    const parts = Array.isArray(req.query.slug) ? req.query.slug : [];
+
+    // Basit saðlýk kontrolü: GET /api/reel-api/_health
+    if (parts.length === 1 && parts[0] === "_health") {
         res.setHeader("Access-Control-Allow-Origin", "*");
-        return res.status(200).send("ok");
+        return res.status(200).json({ ok: true });
     }
 
-    const url = "https://tms.odaklojistik.com.tr/api/" + slug.join("/");
+    // Upstream URL'yi kur
+    const upstreamUrl = "https://tms.odaklojistik.com.tr/api/" + parts.join("/");
 
+    // Gerekli header'larý geçir
     const headers = new Headers();
     if (req.headers["authorization"]) headers.set("authorization", req.headers["authorization"]);
     if (req.headers["content-type"]) headers.set("content-type", req.headers["content-type"]);
@@ -25,13 +27,17 @@ export default async function handler(req, res) {
     const init = {
         method: req.method,
         headers,
-        body: ["GET", "HEAD"].includes(req.method) ? undefined : JSON.stringify(req.body ?? {}),
+        body: /^(GET|HEAD)$/i.test(req.method) ? undefined : JSON.stringify(req.body ?? {}),
     };
 
     try {
-        const upstream = await fetch(url, init);
+        const upstream = await fetch(upstreamUrl, init);
         const text = await upstream.text();
+
+        // CORS + content-type (Vercel'in 404 sayfasýný bastýrmak için önemli)
         res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Content-Type", upstream.headers.get("content-type") || "application/json; charset=utf-8");
+
         res.status(upstream.status).send(text);
     } catch (e) {
         res.status(502).json({ error: "Upstream error", detail: String(e) });

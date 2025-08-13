@@ -6,6 +6,7 @@ export default async function handler(req, res) {
         return res.status(204).end();
     }
     if (req.method !== "POST") {
+        res.setHeader("Access-Control-Allow-Origin", "*");
         return res.status(405).json({ error: "Method not allowed" });
     }
 
@@ -13,10 +14,12 @@ export default async function handler(req, res) {
         const upstream = await fetch("https://tms.odaklojistik.com.tr/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(req.body),
+            body: JSON.stringify(req.body ?? {}),
         });
+
         const text = await upstream.text();
         res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Content-Type", upstream.headers.get("content-type") || "application/json; charset=utf-8");
         res.status(upstream.status).send(text);
     } catch (e) {
         res.status(502).json({ error: "Upstream error", detail: String(e) });
