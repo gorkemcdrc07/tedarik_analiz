@@ -370,7 +370,12 @@ export default function GelirEkleme() {
 
             // Her ortamda kendi backend proxy'ne git
             // Local (CRA) için: setupProxy.js '/reel-api'yi tms'ye proxylıyor
-            const endpoint = "/reel-api/api/tmsdespatchincomeexpenses/addincome";
+            // src/GelirGider/GelirEkleme.js
+
+            const endpoint =
+                process.env.NODE_ENV === "production"
+                    ? "/api/reel-api/tmsdespatchincomeexpenses/addincome"      // Vercel route
+                    : "/reel-api/api/tmsdespatchincomeexpenses/addincome";     // setupProxy -> https://tms.../api/...
             let ok = 0, fail = 0;
 
             for (let r = 0; r < previewRows.length; r++) {
