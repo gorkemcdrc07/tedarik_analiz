@@ -368,11 +368,9 @@ export default function GelirEkleme() {
                 return Number.isFinite(n) && n > 0 ? n : null;
             };
 
-            const endpoint =
-                process.env.NODE_ENV === "development"
-                    ? "/reel-api/api/tmsdespatchincomeexpenses/addincome"
-                    : "https://tms.odaklojistik.com.tr/api/tmsdespatchincomeexpenses/addincome";
-
+            // Her ortamda kendi backend proxy'ne git
+            // Local (CRA) için: setupProxy.js '/reel-api'yi tms'ye proxylıyor
+            const endpoint = "/reel-api/api/tmsdespatchincomeexpenses/addincome";
             let ok = 0, fail = 0;
 
             for (let r = 0; r < previewRows.length; r++) {

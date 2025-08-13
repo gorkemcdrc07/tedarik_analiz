@@ -1,30 +1,32 @@
-﻿// src/auth/tokenManager.js
-
-const STORAGE_KEY = "reel_api_token_v1";
+﻿const STORAGE_KEY = "reel_api_token_v1";
 const SKEW_MS = 60 * 1000; // token bitmeden 60 sn önce yenile
 let current = null;        // { token, exp }
 let refreshInFlight = null;
 let timerId = null;
 
-// DEV'de proxy (/reel-auth) kullan, PROD'da gerçek host
+/**
+ * ✅ Local (setupProxy) ve Prod (API route) uyumlu base path
+ * Local:  http://localhost:3000/reel-auth/api/auth/login
+ * Prod:   https://senin-domain.com/api/reel-auth/api/auth/login
+ */
 const AUTH_BASE =
-    process.env.NODE_ENV === "development"
-        ? "/reel-auth"
-        : "https://tms.odaklojistik.com.tr";
+    process.env.NODE_ENV === "production"
+        ? "/api/reel-auth" // prod API route
+        : "/reel-auth";    // local setupProxy path
 
-// İstersen env ile tamamen override edebilirsin
-const TOKEN_URL =
-    process.env.REACT_APP_REEL_LOGIN_URL || `${AUTH_BASE}/api/auth/login`;
+const TOKEN_URL = `${AUTH_BASE}/api/auth/login`;
 
 // ------------------------
 // Yardımcılar
 // ------------------------
 const safeParse = (s, fallback = null) => {
-    try { return JSON.parse(s); } catch { return fallback; }
+    try {
+        return JSON.parse(s);
+    } catch {
+        return fallback;
+    }
 };
 
-// Login.js localStorage'a Reel_kullanici / Reel_sifre yazıyor.
-// Yedek olarak tüm kullanıcı objesinden de okumayı dener.
 function getReelCreds() {
     const userFromLS = localStorage.getItem("Reel_kullanici") || "";
     const passFromLS = localStorage.getItem("Reel_sifre") || "";
@@ -72,7 +74,6 @@ function scheduleRefresh() {
     }, delay);
 }
 
-// Sunucu yanıtı farklı isimlendirebilir: token + ttl’yi esnek yakala
 function extractTokenAndTtl(responseJson) {
     const d = responseJson || {};
     const nested = d.data || {};
@@ -89,20 +90,22 @@ function extractTokenAndTtl(responseJson) {
     return { token, ttlSec: Number(ttlSec) };
 }
 
-// ------------------------
-// Token alma / yenileme
-// ------------------------
 async function requestNewToken() {
     const { userName, password } = getReelCreds();
     if (!userName || !password) {
         throw new Error("REEL kullanıcı bilgileri bulunamadı (localStorage).");
     }
 
-    const res = await fetch(TOKEN_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userName, password }),
-    });
+    let res;
+    try {
+        res = await fetch(TOKEN_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userName, password }),
+        });
+    } catch (err) {
+        throw new Error("Login isteği atılamadı (ağ/SSL). " + String(err));
+    }
 
     if (!res.ok) {
         const text = await res.text().catch(() => "");
@@ -119,8 +122,9 @@ async function requestNewToken() {
     saveToStorage(current);
     scheduleRefresh();
 
-    // 🔵 Konsola yaz
-    console.log("%c[REEL] Yeni token alındı:", "color:#10b981", token);
+    if (process.env.NODE_ENV !== "production") {
+        console.log("%c[REEL] Yeni token alındı:", "color:#10b981", token);
+    }
 
     return token;
 }
@@ -146,9 +150,6 @@ export function invalidateToken() {
     timerId = null;
 }
 
-// ------------------------
-// Yetkili istek yardımcıları
-// ------------------------
 export async function authorizedFetch(input, init = {}) {
     const t = await getToken();
     const headers = new Headers(init.headers || {});
@@ -166,7 +167,6 @@ export async function authorizedFetch(input, init = {}) {
     return res;
 }
 
-// JSON post/get için kolaylık (opsiyonel)
 export async function authorizedJson(url, method, bodyObj) {
     const res = await authorizedFetch(url, {
         method,
@@ -175,7 +175,11 @@ export async function authorizedJson(url, method, bodyObj) {
     });
     const text = await res.text();
     let json;
-    try { json = JSON.parse(text); } catch { json = { raw: text }; }
+    try {
+        json = JSON.parse(text);
+    } catch {
+        json = { raw: text };
+    }
     if (!res.ok) {
         const msg = (json && (json.message || json.error)) || text || "İstek başarısız";
         throw new Error(`${res.status}: ${msg}`);
@@ -183,7 +187,6 @@ export async function authorizedJson(url, method, bodyObj) {
     return json;
 }
 
-// 🔧 İstediğin yerden çağırıp anlık token’ı loglamak için
 export async function debugLogToken() {
     const t = await getToken();
     console.log("%c[REEL] Aktif token:", "color:#a855f7", t);
