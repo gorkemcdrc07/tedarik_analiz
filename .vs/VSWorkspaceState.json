@@ -1,11 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\public",
-    "\\src",
-    "\\src\\auth",
-    "\\src\\components",
-    "\\src\\GelirGider"
+    "\\api",
+    "\\api\\reel-api",
+    "\\api\\reel-auth",
+    "\\src"
   ],
   "SelectedNode": "\\src\\setupProxy.js",
   "PreviewInSolutionExplorer": false
