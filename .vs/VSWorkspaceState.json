@@ -1,11 +1,12 @@
 {
   "ExpandedNodes": [
     "",
-    "\\api",
     "\\public",
-    "\\server",
     "\\src",
-    "\\src\\components"
+    "\\src\\auth",
+    "\\src\\components",
+    "\\src\\GelirGider"
   ],
+  "SelectedNode": "\\src\\setupProxy.js",
   "PreviewInSolutionExplorer": false
 }
