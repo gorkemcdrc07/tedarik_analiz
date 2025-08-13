@@ -102,8 +102,7 @@
               "RelativeToolTip": "api\\reel-api\\[...path].js",
               "ViewState": "AgIAAAsAAAAAAAAAAAAuwC0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-13T09:07:42.565Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-13T09:07:42.565Z"
             },
             {
               "$type": "Document",
@@ -115,8 +114,7 @@
               "RelativeToolTip": "api\\reel-auth\\login.js",
               "ViewState": "AgIAAAEAAAAAAAAAAAAuwCMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-13T09:05:38.844Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-13T09:05:38.844Z"
             },
             {
               "$type": "Document",
@@ -126,7 +124,7 @@
               "RelativeDocumentMoniker": "src\\auth\\tokenManager.js",
               "ToolTip": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\auth\\tokenManager.js",
               "RelativeToolTip": "src\\auth\\tokenManager.js",
-              "ViewState": "AgIAAKAAAAAAAAAAAAAuwMIAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAJAAAAAAAAAAAAAuwLIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2025-08-12T13:33:47.155Z",
               "EditorCaption": ""
@@ -139,7 +137,7 @@
               "RelativeDocumentMoniker": "src\\GelirGider\\GelirEkleme.js",
               "ToolTip": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\GelirGider\\GelirEkleme.js",
               "RelativeToolTip": "src\\GelirGider\\GelirEkleme.js",
-              "ViewState": "AgIAAGEBAAAAAAAAAAAhwHABAAAOAAAAAAAAAA==",
+              "ViewState": "AgIAABoCAAAAAAAAAAAAADsCAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2025-08-11T12:56:55.296Z",
               "EditorCaption": ""
@@ -154,8 +152,7 @@
               "RelativeToolTip": "src\\GelirGider\\GelirEkleme.css",
               "ViewState": "AgIAAHsBAAAAAAAAAAAAwKsBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-12T09:48:33.867Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T09:48:33.867Z"
             },
             {
               "$type": "Document",
@@ -167,8 +164,7 @@
               "RelativeToolTip": "src\\supabaseClient.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-12T10:43:23.173Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T10:43:23.173Z"
             },
             {
               "$type": "Document",
@@ -180,8 +176,7 @@
               "RelativeToolTip": "src\\Login.js",
               "ViewState": "AgIAAEUAAAAAAAAAAAAwwGcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-12T13:38:04.638Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T13:38:04.638Z"
             },
             {
               "$type": "Document",
@@ -193,8 +188,7 @@
               "RelativeToolTip": "src\\setupProxy.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-12T14:22:01.896Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-12T14:22:01.896Z"
             },
             {
               "$type": "Document",
@@ -206,8 +200,7 @@
               "RelativeToolTip": "server\\index.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-04T07:57:03.24Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-04T07:57:03.24Z"
             },
             {
               "$type": "Document",
@@ -219,8 +212,7 @@
               "RelativeToolTip": "src\\components\\OdakDetailModal.js",
               "ViewState": "AgIAAAwAAAAAAAAAAAAuwC4AAABPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-07T11:37:08.664Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-07T11:37:08.664Z"
             },
             {
               "$type": "Document",
@@ -232,8 +224,7 @@
               "RelativeToolTip": "src\\components\\OdakDetailModal.css",
               "ViewState": "AgIAACwAAAAAAAAAAAAYwFsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-07T11:37:37.5Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-07T11:37:37.5Z"
             },
             {
               "$type": "Document",
@@ -245,8 +236,7 @@
               "RelativeToolTip": "src\\components\\Navbar.js",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-06T04:15:30.843Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-06T04:15:30.843Z"
             },
             {
               "$type": "Document",
@@ -258,8 +248,7 @@
               "RelativeToolTip": "src\\App.css",
               "ViewState": "AgIAAFMAAAAAAAAAAAAYwGkAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-01T05:36:13.158Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-01T05:36:13.158Z"
             },
             {
               "$type": "Document",
@@ -271,8 +260,7 @@
               "RelativeToolTip": "src\\AnaSayfa.js",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-08-06T04:15:00.294Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-06T04:15:00.294Z"
             },
             {
               "$type": "Document",
@@ -284,8 +272,7 @@
               "RelativeToolTip": "src\\Layout.css",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-06T06:09:13.216Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-06T06:09:13.216Z"
             },
             {
               "$type": "Document",
@@ -297,8 +284,7 @@
               "RelativeToolTip": "package.json",
               "ViewState": "AgIAAA4AAAAAAAAAAAAkwBwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-01T06:41:16.583Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-01T06:41:16.583Z"
             },
             {
               "$type": "Document",
@@ -310,8 +296,7 @@
               "RelativeToolTip": "src\\Login.css",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-08-05T14:05:42.047Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-05T14:05:42.047Z"
             },
             {
               "$type": "Document",
@@ -323,8 +308,7 @@
               "RelativeToolTip": "server\\package.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-04T07:57:27.98Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-04T07:57:27.98Z"
             }
           ]
         }
