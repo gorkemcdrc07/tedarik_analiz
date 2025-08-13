@@ -1,20 +1,18 @@
-﻿// src/App.js
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./Login";
 import AnaSayfa from "./AnaSayfa";
 import Dashboard from "./Dashboard";
-import Layout from "./Layout"; // 💡 Layout dosyasını ekle
+import Layout from "./Layout";
+import GelirEkleme from "./GelirGider/GelirEkleme";
 
-function App() {
+export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
         const user = localStorage.getItem("kullanici");
-        if (user) {
-            setIsAuthenticated(true);
-        }
+        if (user) setIsAuthenticated(true);
     }, []);
 
     return (
@@ -24,9 +22,7 @@ function App() {
                     path="/"
                     element={
                         isAuthenticated ? (
-                            <Layout>
-                                <AnaSayfa />
-                            </Layout>
+                            <Layout><AnaSayfa /></Layout>
                         ) : (
                             <Login onLoginSuccess={() => setIsAuthenticated(true)} />
                         )
@@ -36,9 +32,17 @@ function App() {
                     path="/dashboard"
                     element={
                         isAuthenticated ? (
-                            <Layout>
-                                <Dashboard />
-                            </Layout>
+                            <Layout><Dashboard /></Layout>
+                        ) : (
+                            <Navigate to="/" />
+                        )
+                    }
+                />
+                <Route
+                    path="/GelirGider/GelirEkleme"
+                    element={
+                        isAuthenticated ? (
+                            <Layout><GelirEkleme /></Layout>
                         ) : (
                             <Navigate to="/" />
                         )
@@ -48,5 +52,3 @@ function App() {
         </Router>
     );
 }
-
-export default App;

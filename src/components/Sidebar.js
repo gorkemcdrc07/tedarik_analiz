@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
-    const navigate = useNavigate();
     const [openSections, setOpenSections] = useState({});
-    const [activeItem, setActiveItem] = useState("");
 
     const menuGroups = [
         {
@@ -22,19 +20,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         },
     ];
 
-    const toggleSection = (title) => {
-        setOpenSections((prev) => ({
-            ...prev,
-            [title]: !prev[title],
-        }));
+    // Tüm item -> path eşleşmesi tek yerde
+    const routeMap = {
+        "Tedarik Analiz": "/dashboard",
+        "Gelir Ekleme": "/GelirGider/GelirEkleme",
+        // "Gider Ekleme": "/GelirGider/GiderEkleme",
+        // "Eskalasyon Hesabı": "/GelirGider/Eskalasyon",
+        // "Sipariş Oluştur": "/Siparis/Olustur",
+        // "Teslim Noktaları": "/Siparis/TeslimNoktalari",
     };
 
-    const handleItemClick = (item) => {
-        setActiveItem(item);
-        if (item === "Tedarik Analiz") {
-            navigate("/dashboard");
-        }
-        // Diğer item yönlendirmeleri burada yapılabilir
+    const toggleSection = (title) => {
+        setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
     };
 
     return (
@@ -43,33 +40,47 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 {isOpen ? "«" : "»"}
             </button>
 
-            {isOpen && menuGroups.map((group) => (
-                <div key={group.title} className="menu-group">
-                    <div
-                        className="menu-title expandable"
-                        onClick={() => toggleSection(group.title)}
-                    >
-                        {group.title}
-                        <span className="arrow">
-                            {openSections[group.title] ? "▾" : "▸"}
-                        </span>
-                    </div>
+            {isOpen &&
+                menuGroups.map((group) => (
+                    <div key={group.title} className="menu-group">
+                        <div
+                            className="menu-title expandable"
+                            onClick={() => toggleSection(group.title)}
+                        >
+                            {group.title}
+                            <span className="arrow">{openSections[group.title] ? "▾" : "▸"}</span>
+                        </div>
 
-                    {openSections[group.title] && (
-                        <ul>
-                            {group.items.map((item) => (
-                                <li
-                                    key={item}
-                                    className={activeItem === item ? "active" : ""}
-                                    onClick={() => handleItemClick(item)}
-                                >
-                                    {item}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            ))}
+                        {openSections[group.title] && (
+                            <ul>
+                                {group.items.map((item) => {
+                                    const to = routeMap[item];
+                                    // Eğer bu item için path tanımlamadıysan, pasif <span> göster
+                                    if (!to) {
+                                        return (
+                                            <li key={item}>
+                                                <span className="menu-item disabled">{item}</span>
+                                            </li>
+                                        );
+                                    }
+                                    return (
+                                        <li key={item}>
+                                            <NavLink
+                                                to={to}
+                                                className={({ isActive }) =>
+                                                    `menu-item ${isActive ? "active" : ""}`
+                                                }
+                                                end
+                                            >
+                                                {item}
+                                            </NavLink>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        )}
+                    </div>
+                ))}
         </aside>
     );
 };

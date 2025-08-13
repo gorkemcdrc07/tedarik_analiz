@@ -7,7 +7,7 @@
     width: 240px;
     transition: width 0.3s ease;
     position: relative;
-    padding-top: 80px; /* 🔽 Daha aşağıdan başlasın */
+    padding-top: 80px; /* Daha aşağıdan başlasın */
 }
 
     .sidebar.closed {
@@ -16,7 +16,7 @@
 
 .sidebar-toggle {
     position: absolute;
-    top: 20px; /* ⛔ Çok yukarıda duruyordu */
+    top: 20px;
     left: 100%;
     transform: translateX(-50%);
     background: #facc15;
@@ -72,19 +72,28 @@
 }
 
 .sidebar li {
+    padding: 0; /* NavLink içinde padding vereceğiz */
+}
+
+.sidebar .menu-item {
+    display: block;
     padding: 12px 28px;
-    cursor: pointer;
     font-size: 15px;
     color: #e5e7eb;
+    text-decoration: none; /* alt çizgiyi kaldır */
     transition: background 0.2s ease, color 0.2s ease;
 }
 
-    .sidebar li:hover {
+    .sidebar .menu-item:visited {
+        color: #e5e7eb; /* mor visited rengi kapat */
+    }
+
+    .sidebar .menu-item:hover {
         background: #374151;
         color: #fcd34d;
     }
 
-    .sidebar li.active {
+    .sidebar .menu-item.active {
         background: #374151;
         color: #facc15;
         font-weight: 600;
