@@ -81,7 +81,7 @@ export default function GelirEkleme() {
             setDownloading(true);
 
             const S_HEADERS = [
-                "SeferID", "Cari Unvan", "Hizmet/Masraf", "Hesap Adı",
+                "SeferID", "Cari Unvan", "Hesap Adı",
                 "Birim Fiyat", "Miktar", "KDV Oranı", "Tevkifat Oranı", "Açıklama"
             ];
             const sablonWS = XLSX.utils.aoa_to_sheet([S_HEADERS]);
