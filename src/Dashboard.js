@@ -37,8 +37,8 @@ function Dashboard() {
     // ⬇️ BUNU İLK OLARAK BURAYA YAZ
     const userObj = JSON.parse(localStorage.getItem("kullanici") || "{}");
     const user = (userObj.kullanici || "").trim().toUpperCase();
-    const isOnur = user === "ONUR KEREM ÖZTÜRK";
-    const isTahsin = user === "TAHSİN BENLİ";
+
+    const isPriv = ["ONUR KEREM ÖZTÜRK", "TAHSİN BENLİ", "ATAKAN AKALIN"].includes(user);
     const columnOrder = [
         "PROJE ADI",
         "TALEP", "REEL TALEP",
@@ -50,16 +50,15 @@ function Dashboard() {
         "TESİSTE", "REEL TESİSTE",
         "GELECEK", "REEL GELECEK",
         "YÜKLENDİ", "REEL YÜKLENDİ",
-        ...(isOnur || isTahsin ? [
+        ...(isPriv ? [
             "TOP. NAVLUN",
             "HEDEF ÜSTÜ", "SEFER_ÜSTÜ",
             "HEDEF ALTI", "SEFER_ALTI",
             "HEDEF", "SEFER_HEDEF",
             "HEDEFSİZ SEFER",
-            "GELİR"               // 👈 eklendi
+            "GELİR"
         ] : [])
     ];
-
     const [data, setData] = useState([]);
     const [odakData, setOdakData] = useState([]);
     const [uyumsuzProjeler, setUyumsuzProjeler] = useState([]);
@@ -67,13 +66,11 @@ function Dashboard() {
     const HIDDEN_COLUMNS = [
         "TOP. NAVLUN", "HEDEF ÜSTÜ", "SEFER_ÜSTÜ",
         "HEDEF ALTI", "SEFER_ALTI", "SEFER_HEDEF", "HEDEFSİZ SEFER",
-        "GELİR" // 👈 eklendi
+        "GELİR"
     ];
 
-    const visibleColumns = (isOnur || isTahsin)
-        ? columnOrder
-        : columnOrder.filter(col => !HIDDEN_COLUMNS.includes(col));
-    const [odakDataRaw, setOdakDataRaw] = useState([]); // SPOT/FİLO analizinde kullanacağız
+    // SADECE BUNU KULLAN (visibleColumns yerine):
+    const columns = isPriv ? columnOrder : columnOrder.filter(c => !HIDDEN_COLUMNS.includes(c));    const [odakDataRaw, setOdakDataRaw] = useState([]); // SPOT/FİLO analizinde kullanacağız
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState("");
     const [selectedRecords, setSelectedRecords] = useState([]);
@@ -344,13 +341,13 @@ function Dashboard() {
                                     <th colSpan="2">TESİSTE</th>
                                     <th colSpan="2">GELECEK</th>
                                     <th colSpan="2">YÜKLENDİ</th>
-                                    {(isOnur || isTahsin) && <th rowSpan="3">TOP. NAVLUN</th>}
-                                    {(isOnur || isTahsin) && <th colSpan="2">HEDEF ÜSTÜ</th>}
-                                    {(isOnur || isTahsin) && <th colSpan="2">HEDEF ALTI</th>}
-                                    {(isOnur || isTahsin) && <th rowSpan="3">HEDEF</th>}
-                                    {(isOnur || isTahsin) && <th rowSpan="3">SEFER</th>}
-                                    {(isOnur || isTahsin) && <th rowSpan="3">HEDEFSİZ SEFER</th>}
-                                    {(isOnur || isTahsin) && <th rowSpan="3">GELİR</th>}
+                                    {isPriv && <th rowSpan="3">TOP. NAVLUN</th>}
+                                    {isPriv && <th colSpan="2">HEDEF ÜSTÜ</th>}
+                                    {isPriv && <th colSpan="2">HEDEF ALTI</th>}
+                                    {isPriv && <th rowSpan="3">HEDEF</th>}
+                                    {isPriv && <th rowSpan="3">SEFER</th>}
+                                    {isPriv && <th rowSpan="3">HEDEFSİZ SEFER</th>}
+                                    {isPriv && <th rowSpan="3">GELİR</th>}
 
                                 </tr>
                                 <tr>
@@ -361,7 +358,7 @@ function Dashboard() {
                                             <th>REEL</th>
                                         </React.Fragment>
                                     ))}
-                                    {(isOnur || isTahsin) && (
+                                    {isPriv && (
                                         <>
                                             <th>₺</th><th>SEFER</th>
                                             <th>₺</th><th>SEFER</th>
