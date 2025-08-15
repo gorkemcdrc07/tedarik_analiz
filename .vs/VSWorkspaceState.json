@@ -5,8 +5,9 @@
     "\\api\\reel-api",
     "\\api\\reel-api\\tmsdespatchincomeexpenses",
     "\\api\\reel-auth",
-    "\\src"
+    "\\src",
+    "\\src\\GelirGider"
   ],
-  "SelectedNode": "\\src\\Dashboard.js",
+  "SelectedNode": "\\src\\GelirGider\\GelirEkleme.js",
   "PreviewInSolutionExplorer": false
 }

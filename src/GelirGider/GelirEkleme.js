@@ -136,9 +136,8 @@ export default function GelirEkleme() {
             .toLowerCase()
             .trim();
 
-    // "₺ 1.250,50" → "1250.50"
-    const toDecimalString = (val) => {
-        if (typeof val === "number" && !Number.isNaN(val)) return val.toFixed(2);
+    // "₺ 1.250,5678912" → "1250.567891" (virgülden sonra en fazla 6 hane, yuvarlama yok)
+    const toDecimalString = (val, maxDecimals = 6) => {
         if (val === null || val === undefined) return "";
 
         let s = String(val)
@@ -161,9 +160,15 @@ export default function GelirEkleme() {
             s = s.replace(/,/g, "");
         }
 
-        const n = Number(s);
-        if (Number.isNaN(n)) return "";
-        return n.toFixed(2);
+        // en fazla 6 ondalık haneye KES
+        if (s.includes(".")) {
+            const [intPart, fracPartRaw] = s.split(".");
+            const fracPart = (fracPartRaw || "").slice(0, maxDecimals);
+            s = fracPart.length ? `${intPart}.${fracPart}` : intPart;
+        }
+
+        if (s === "." || s === "-") return "";
+        return s;
     };
 
     // lookuplar
@@ -190,6 +195,7 @@ export default function GelirEkleme() {
         });
         return map;
     };
+
 
     // TARAY: sadece "ŞABLON"
     const startScan = async () => {
@@ -353,7 +359,7 @@ export default function GelirEkleme() {
             }
 
             const toNumber = (val) => {
-                const s = toDecimalString(val);
+                const s = toDecimalString(val, 6); // en fazla 6 ondalık
                 if (s === "") return null;
                 const n = Number(s);
                 return Number.isFinite(n) ? n : null;
@@ -410,7 +416,7 @@ export default function GelirEkleme() {
                     currentAccountId,
                     lineMovementType,
                     lineMovementId,
-                    unitPrice: Number(unitPriceNum.toFixed(2)), // number ve 2 ondalık
+                    unitPrice: unitPriceNum, // 6 ondalığa kadar, yuvarlamasız
                     quantity: Number(safeQty.toFixed(2)),
                     vatRate: toRate(row[iKDV]),
                     withholdingRate: toRate(row[iTevkifat]),
