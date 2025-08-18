@@ -69,6 +69,7 @@ export default function GelirEkleme() {
         if (inputRef.current) inputRef.current.value = "";
     };
 
+
     const formatSize = (bytes) => {
         if (bytes < 1024) return `${bytes} B`;
         if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -170,6 +171,72 @@ export default function GelirEkleme() {
         if (s === "." || s === "-") return "";
         return s;
     };
+    // Birim Fiyat ve Miktar dip toplamları (çarpım yok)
+    const simpleTotals = useMemo(() => {
+        if (!previewHeaders.length || !previewRows.length) {
+            return { unitPriceSum: 0, qtySum: 0 };
+        }
+        const idx = (name) => previewHeaders.indexOf(name);
+        const iBirimF = idx("Birim Fiyat");
+        const iMiktar = idx("Miktar");
+        if (iBirimF === -1 || iMiktar === -1) return { unitPriceSum: 0, qtySum: 0 };
+
+        const toNumberLocal = (val) => {
+            const s = toDecimalString(val, 6); // yuvarlamasız, max 6 ondalık
+            if (s === "") return null;
+            const n = Number(s);
+            return Number.isFinite(n) ? n : null;
+        };
+
+        let unitPriceSum = 0;
+        let qtySum = 0;
+
+        for (const row of previewRows) {
+            const u = toNumberLocal(row[iBirimF]);
+            const q = toNumberLocal(row[iMiktar]);
+
+            if (u != null) unitPriceSum += u;
+            if (q != null) qtySum += q;
+        }
+
+        return { unitPriceSum, qtySum };
+    }, [previewHeaders, previewRows]);
+
+    // Dip toplamlar (tablodan bağımsız)
+    const totals = useMemo(() => {
+        if (!previewHeaders.length || !previewRows.length) {
+            return { qty: 0, amount: 0 };
+        }
+        const idx = (name) => previewHeaders.indexOf(name);
+        const iBirimF = idx("Birim Fiyat");
+        const iMiktar = idx("Miktar");
+
+        if (iBirimF === -1 || iMiktar === -1) return { qty: 0, amount: 0 };
+
+        const toNumberLocal = (val) => {
+            const s = toDecimalString(val, 6); // aynı mantık: en fazla 6 ondalık, yuvarlama yok
+            if (s === "") return null;
+            const n = Number(s);
+            return Number.isFinite(n) ? n : null;
+        };
+
+        let qty = 0;
+        let amount = 0;
+
+        for (const row of previewRows) {
+            const u = toNumberLocal(row[iBirimF]);
+            const q = toNumberLocal(row[iMiktar]);
+
+            // sendToReel ile tutarlı: miktar yok/≤0 ise 1 kabul et
+            const qSafe = (q == null || q <= 0) ? 1 : q;
+
+            if (q != null && q > 0) qty += q;          // gerçek miktarlar toplamı
+            if (u != null) amount += u * qSafe;        // satır toplamı
+        }
+
+        return { qty, amount };
+    }, [previewHeaders, previewRows]);
+
 
     // lookuplar
     const fetchDokumanLookup = async () => {
@@ -525,6 +592,30 @@ export default function GelirEkleme() {
                         </div>
                     </div>
                 )}
+
+                {/* Birim Fiyat & Miktar Dip Toplam */}
+                {previewHeaders.length > 0 && (
+                    <div className="ge-summary">
+                        <div className="ge-summary-item">
+                            <span>Birim Fiyat Toplamı:</span>
+                            <strong>
+                                {Number.isFinite(simpleTotals.unitPriceSum)
+                                    ? simpleTotals.unitPriceSum.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 6 })
+                                    : "0,00"}
+                            </strong>
+                        </div>
+                        <div className="ge-summary-item">
+                            <span>Miktar Toplamı:</span>
+                            <strong>
+                                {Number.isFinite(simpleTotals.qtySum)
+                                    ? simpleTotals.qtySum.toLocaleString("tr-TR", { maximumFractionDigits: 6 })
+                                    : "0"}
+                            </strong>
+                        </div>
+                    </div>
+                )}
+
+
 
                 {/* Uyarı/Hata */}
                 {error && <div className="ge-error">{error}</div>}

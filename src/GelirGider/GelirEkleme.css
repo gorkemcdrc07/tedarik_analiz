@@ -425,4 +425,55 @@ html, body, #root {
     height: auto !important; /* Sabit height kullanmıyoruz */
     overflow: auto !important; /* Scroll içeride */
 }
+.ge-summary {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 12px;
+    margin-top: 12px;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+.ge-summary-item {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+    .ge-summary-item span {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .ge-summary-item strong {
+        font-size: 16px;
+    }
+.ge-summary {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 12px;
+    margin-top: 12px;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+.ge-summary-item {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+    .ge-summary-item span {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .ge-summary-item strong {
+        font-size: 16px;
+    }
+
 
