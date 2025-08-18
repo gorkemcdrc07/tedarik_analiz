@@ -1,8 +1,14 @@
 ﻿/* Genel sayfa yapısı */
+html, body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: auto !important; /* dikey scroll tarayıcıda */
+    background-color: #f9f9f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 .app-container {
     padding: 2rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f9f9f9;
     min-height: 100vh;
 }
 
@@ -31,11 +37,13 @@
 
 /* Tablo dışı kutu */
 .table-wrapper {
-    overflow-x: auto;
+    overflow-x: auto; /* sadece yatay scroll */
+    overflow-y: visible !important; /* dikey scroll yok, tarayıcıya bırak */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     background: #fff;
     padding: 1rem;
+    max-height: none !important;
 }
 
 /* Tablo yapısı */
@@ -53,6 +61,14 @@
         background-color: #2c3e50;
         color: #ffffff;
         text-align: center;
+    }
+
+    /* Sticky header */
+    .styled-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #2c3e50;
     }
 
     /* Tüm hücreler */
@@ -98,6 +114,8 @@
     color: #555;
     margin-top: 2rem;
 }
+
+/* Uyarı modal */
 .uyari-modal {
     position: fixed;
     top: 20px;
@@ -128,12 +146,105 @@
     .modal-close:hover {
         color: #e74c3c;
     }
+
+/* Uyumsuz satır */
 .uyumsuz-satir {
     background-color: rgba(231, 76, 60, 0.15) !important;
     transition: background-color 0.3s ease;
 }
+
 .fazla-reel-talep {
     background-color: #f8d7da !important;
+}
+
+/* Filtre alanı */
+.filter-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+}
+
+    .filter-container label {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .filter-container input[type="date"] {
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #fff;
+        transition: border-color 0.2s ease;
+    }
+
+        .filter-container input[type="date"]:focus {
+            border-color: #2c3e50;
+            outline: none;
+        }
+
+    .filter-container button {
+        background-color: #2c3e50;
+        color: #fff;
+        border: none;
+        padding: 7px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+    }
+
+        .filter-container button:hover {
+            background-color: #1a242f;
+        }
+/* === Filtre Alanı Modern Stil === */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+    /* Tarih inputları */
+    .filter-bar input[type="date"] {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+        .filter-bar input[type="date"]:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.2);
+            outline: none;
+        }
+
+    /* Filtre Butonu */
+    .filter-bar button {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.1s ease;
+    }
+
+        .filter-bar button:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        }
+
+        .filter-bar button:active {
+            transform: scale(0.97);
+        }
+/* Sidebar ekranla birlikte uzasın */
+.sidebar {
+    min-height: 100vh; /* ekran yüksekliği kadar */
+    height: auto; /* içerik uzadıkça artsın */
 }
 
 
@@ -150,4 +261,3 @@
         transform: translateY(0);
     }
 }
-
