@@ -22,6 +22,15 @@ export default function GelirEkleme() {
     // eşleştirme istatistiği
     const [mapStats, setMapStats] = useState({ matched: 0, unknown: 0 });
 
+    // 🔽 satır durumları ve gönderim özeti
+    // rowResults[rIdx] = { status:'ok'|'fail', message:string, details?: string[] }
+    const [rowResults, setRowResults] = useState({});
+    const [sendSummary, setSendSummary] = useState(null); // { ok, fail }
+    const clearSendState = () => {
+        setRowResults({});
+        setSendSummary(null);
+    };
+
     const allowed = useMemo(() => [".xlsx", ".xls"], []);
 
     const openPicker = () => inputRef.current?.click();
@@ -54,6 +63,7 @@ export default function GelirEkleme() {
         setPreviewRows([]);
         setMissingHeaders([]);
         setMapStats({ matched: 0, unknown: 0 });
+        clearSendState(); // 🆕 yeni dosyada sonuçları temizle
     };
 
     const onDragOver = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
@@ -67,8 +77,8 @@ export default function GelirEkleme() {
         setMissingHeaders([]);
         setMapStats({ matched: 0, unknown: 0 });
         if (inputRef.current) inputRef.current.value = "";
+        clearSendState(); // 🆕
     };
-
 
     const formatSize = (bytes) => {
         if (bytes < 1024) return `${bytes} B`;
@@ -171,6 +181,7 @@ export default function GelirEkleme() {
         if (s === "." || s === "-") return "";
         return s;
     };
+
     // Birim Fiyat ve Miktar dip toplamları (çarpım yok)
     const simpleTotals = useMemo(() => {
         if (!previewHeaders.length || !previewRows.length) {
@@ -182,7 +193,7 @@ export default function GelirEkleme() {
         if (iBirimF === -1 || iMiktar === -1) return { unitPriceSum: 0, qtySum: 0 };
 
         const toNumberLocal = (val) => {
-            const s = toDecimalString(val, 6); // yuvarlamasız, max 6 ondalık
+            const s = toDecimalString(val, 6);
             if (s === "") return null;
             const n = Number(s);
             return Number.isFinite(n) ? n : null;
@@ -214,7 +225,7 @@ export default function GelirEkleme() {
         if (iBirimF === -1 || iMiktar === -1) return { qty: 0, amount: 0 };
 
         const toNumberLocal = (val) => {
-            const s = toDecimalString(val, 6); // aynı mantık: en fazla 6 ondalık, yuvarlama yok
+            const s = toDecimalString(val, 6);
             if (s === "") return null;
             const n = Number(s);
             return Number.isFinite(n) ? n : null;
@@ -236,7 +247,6 @@ export default function GelirEkleme() {
 
         return { qty, amount };
     }, [previewHeaders, previewRows]);
-
 
     // lookuplar
     const fetchDokumanLookup = async () => {
@@ -263,13 +273,13 @@ export default function GelirEkleme() {
         return map;
     };
 
-
     // TARAY: sadece "ŞABLON"
     const startScan = async () => {
         if (!file) return;
         try {
             setScanning(true);
             setError("");
+            clearSendState(); // 🆕 yeni taramada önceki sonuçları temizle
 
             const buf = await file.arrayBuffer();
             const wb = XLSX.read(buf, { type: "array" });
@@ -391,11 +401,12 @@ export default function GelirEkleme() {
         }
     };
 
-    // ✅ REEL’e Gönder: sadece token login’i tetikle ve console’a yaz
+    // ✅ REEL’e Gönder: satır bazlı sonuç + açıklayıcı mesajlar
     const sendToReel = async () => {
         try {
             setSending(true);
             setError("");
+            clearSendState(); // 🆕 önceki sonuçları temizle
 
             const token = await getToken();
 
@@ -426,7 +437,7 @@ export default function GelirEkleme() {
             }
 
             const toNumber = (val) => {
-                const s = toDecimalString(val, 6); // en fazla 6 ondalık
+                const s = toDecimalString(val, 6);
                 if (s === "") return null;
                 const n = Number(s);
                 return Number.isFinite(n) ? n : null;
@@ -441,39 +452,64 @@ export default function GelirEkleme() {
                 return Number.isFinite(n) && n > 0 ? n : null;
             };
 
-            // Her ortamda kendi backend proxy'ne git
-            // Local (CRA) için: setupProxy.js '/reel-api'yi tms'ye proxylıyor
-            // src/GelirGider/GelirEkleme.js
-
             const endpoint =
                 process.env.NODE_ENV === "production"
-                    ? "/api/reel-api/tmsdespatchincomeexpenses/addincome"      // Vercel route
-                    : "/reel-api/api/tmsdespatchincomeexpenses/addincome";     // setupProxy -> https://tms.../api/...
+                    ? "/api/reel-api/tmsdespatchincomeexpenses/addincome"
+                    : "/reel-api/api/tmsdespatchincomeexpenses/addincome";
+
             let ok = 0, fail = 0;
+            const setRowResult = (rowIdx, result) =>
+                setRowResults(prev => ({ ...prev, [rowIdx]: result }));
 
             for (let r = 0; r < previewRows.length; r++) {
                 const row = previewRows[r] || [];
                 const hasAny = row.some((cell) => cell !== "" && cell !== null && typeof cell !== "undefined");
                 if (!hasAny) continue;
 
-                // Zorunlu ID'leri number'a çevir
-                const tmsDespatchId = toPosInt(row[iSeferID]);
-                const currentAccountId = toPosInt(row[iCari]);      // scan aşamasında firma_id’ye dönüşmüş olmalı
-                const lineMovementType = toPosInt(row[iHM]);        // tip_id
-                const lineMovementId = toPosInt(row[iHesapAdi]);  // detay_id
+                // Zorunlu ID'leri hazırla
+                const rawSefer = row[iSeferID];
+                const rawCari = row[iCari];
+                const rawHM = row[iHM];
+                const rawHesap = row[iHesapAdi];
+
+                const tmsDespatchId = toPosInt(rawSefer);
+                const currentAccountId = toPosInt(rawCari);     // tarama sonrası burada firma_id (sayı) olmalı
+                const lineMovementType = toPosInt(rawHM);       // tip_id
+                const lineMovementId = toPosInt(rawHesap);    // detay_id
 
                 if (!tmsDespatchId || !currentAccountId || !lineMovementType || !lineMovementId) {
-                    console.warn(`[REEL] Satır ${r + 1} atlandı: zorunlu ID alan(lar) sayı/pozitif değil`, {
-                        tmsDespatchId, currentAccountId, lineMovementType, lineMovementId
-                    });
-                    fail++; continue;
+                    const details = [];
+                    if (!tmsDespatchId) {
+                        details.push(`SeferID hücresi: "${rawSefer ?? ""}" → Pozitif tam sayı olmalı (örn: 12345).`);
+                    }
+                    if (!currentAccountId) {
+                        const looksNumeric = /^\d+$/.test(String(rawCari ?? "").trim());
+                        details.push(
+                            looksNumeric
+                                ? `Cari Unvan (firma_id): "${rawCari ?? ""}" → Pozitif tam sayı (>0) olmalı.`
+                                : `Cari Unvan: "${rawCari ?? ""}" → Firma adı 'Firmalar' tablosuyla eşleşmediği için ID'ye çevrilemedi. Çözüm: Firma adını 'Firmalar'dakiyle birebir yazın veya firmayı ekleyin; sonra "Taramayı Başlat" deyin.`
+                        );
+                    }
+                    if (!lineMovementType) {
+                        details.push(`Hizmet/Masraf (tip_id) hücresi: "${rawHM ?? ""}" → Pozitif tam sayı olmalı. (Tarama, "Hesap Adı"nı eşleştirince bunu otomatik doldurur.)`);
+                    }
+                    if (!lineMovementId) {
+                        details.push(`Hesap Adı (detay_id) hücresi: "${rawHesap ?? ""}" → Pozitif tam sayı olmalı. (Eşleşmeyen "Hesap Adı" değerini DÖKÜMAN sayfasındaki listeyle kontrol edin.)`);
+                    }
+                    setRowResult(r, { status: "fail", message: "Zorunlu/pozitif ID alanları geçersiz.", details });
+                    fail++;
+                    continue;
                 }
 
                 // Fiyat / Miktar
                 const unitPriceNum = toNumber(row[iBirimF]);
                 if (unitPriceNum == null || unitPriceNum <= 0) {
-                    console.warn(`[REEL] Satır ${r + 1} atlandı: Geçerli Birim Fiyat zorunlu (> 0). RAW=`, row[iBirimF]);
-                    fail++; continue;
+                    const details = [
+                        `Birim Fiyat hücresi: "${row[iBirimF] ?? ""}" → Sayı olmalı ve 0'dan büyük. Örn: 1250,5 veya 1250.5`,
+                    ];
+                    setRowResult(r, { status: "fail", message: "Geçerli Birim Fiyat zorunlu.", details });
+                    fail++;
+                    continue;
                 }
                 const quantityNum = toNumber(row[iMiktar]);
                 const safeQty = (quantityNum == null || quantityNum <= 0) ? 1 : quantityNum;
@@ -483,7 +519,7 @@ export default function GelirEkleme() {
                     currentAccountId,
                     lineMovementType,
                     lineMovementId,
-                    unitPrice: unitPriceNum, // 6 ondalığa kadar, yuvarlamasız
+                    unitPrice: unitPriceNum,
                     quantity: Number(safeQty.toFixed(2)),
                     vatRate: toRate(row[iKDV]),
                     withholdingRate: toRate(row[iTevkifat]),
@@ -502,18 +538,27 @@ export default function GelirEkleme() {
                     });
 
                     if (!res.ok) {
-                        const txt = await res.text().catch(() => "");
-                        console.error(`[REEL] Satır ${r + 1} hata:`, res.status, txt);
+                        let bodyText = "";
+                        try { bodyText = await res.text(); } catch { }
+                        const trimmed = (bodyText || "").slice(0, 500);
+                        const details = [
+                            `HTTP durum: ${res.status}`,
+                            trimmed ? `Sunucu cevabı: ${trimmed}` : "Sunucu detay vermedi.",
+                        ];
+                        setRowResult(r, { status: "fail", message: "API isteği başarısız.", details });
                         fail++;
                     } else {
+                        setRowResult(r, { status: "ok", message: "Gönderildi." });
                         ok++;
                     }
                 } catch (err) {
-                    console.error(`[REEL] Satır ${r + 1} istek atılamadı:`, err);
+                    const details = [`Hata: ${err?.message || String(err)}`];
+                    setRowResult(r, { status: "fail", message: "Ağ/istemci hatası.", details });
                     fail++;
                 }
             }
 
+            setSendSummary({ ok, fail });
             alert(`Gönderim tamamlandı ✅ Başarılı: ${ok} · Hatalı: ${fail}`);
         } catch (e) {
             console.error(e);
@@ -615,8 +660,6 @@ export default function GelirEkleme() {
                     </div>
                 )}
 
-
-
                 {/* Uyarı/Hata */}
                 {error && <div className="ge-error">{error}</div>}
 
@@ -627,40 +670,83 @@ export default function GelirEkleme() {
                     </div>
                 )}
 
-                {/* Önizleme Tablosu */}
+                {/* Önizleme + gönderim sonuçları */}
                 {previewHeaders.length > 0 && (
-                    <div className="ge-table-wrap">
-                        <div className="ge-table-top">
-                            <span>Önizleme: <strong>{previewRows.length}</strong> satır</span>
-                            <span className="ge-sheet-name">
-                                Kaynak sayfa: <strong>ŞABLON / {previewHeaders.length} kolon</strong>
-                                {" · "}Hizmet/Masraf eşleşti: <strong>{mapStats.matched}</strong>
-                                {" / "}bulunamadı: <strong>{mapStats.unknown}</strong>
-                            </span>
-                        </div>
-                        <div className="ge-table-scroll">
-                            <div className="ge-table-inner">
-                                <table className="ge-table">
-                                    <thead>
-                                        <tr>
-                                            {previewHeaders.map((h, i) => (
-                                                <th key={i} className={missingHeaders.includes(h) ? "miss" : ""}>{h}</th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {previewRows.map((row, rIdx) => (
-                                            <tr key={rIdx}>
-                                                {previewHeaders.map((_, cIdx) => (
-                                                    <td key={cIdx}>{row[cIdx] ?? ""}</td>
+                    <>
+                        {/* Gönderim özeti */}
+                        {sendSummary && (
+                            <div className={`ge-banner ${sendSummary.fail ? "danger" : "success"}`}>
+                                Gönderim tamamlandı — Başarılı: <strong>{sendSummary.ok}</strong> · Hatalı: <strong>{sendSummary.fail}</strong>
+                            </div>
+                        )}
+
+                        {/* Hatalı satır listesi (alt madde olarak açıklamalarla) */}
+                        {Object.entries(rowResults).some(([, v]) => v?.status === "fail") && (
+                            <div className="ge-error" style={{ marginTop: 12 }}>
+                                <strong>Hatalı satırlar:</strong>
+                                <ul className="ge-error-list">
+                                    {Object.entries(rowResults)
+                                        .filter(([, v]) => v?.status === "fail")
+                                        .map(([idx, v]) => {
+                                            const excelRow = Number(idx) + 2; // başlık 1, data 2’den başlar
+                                            return (
+                                                <li key={idx}>
+                                                    Satır {excelRow}: {v?.message || "Bilinmeyen hata"}
+                                                    {Array.isArray(v?.details) && v.details.length > 0 && (
+                                                        <ul className="ge-error-sublist">
+                                                            {v.details.map((d, i) => (
+                                                                <li key={i}>{d}</li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </li>
+                                            );
+                                        })}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Önizleme Tablosu */}
+                        <div className="ge-table-wrap">
+                            <div className="ge-table-top">
+                                <span>Önizleme: <strong>{previewRows.length}</strong> satır</span>
+                                <span className="ge-sheet-name">
+                                    Kaynak sayfa: <strong>ŞABLON / {previewHeaders.length} kolon</strong>
+                                    {" · "}Hizmet/Masraf eşleşti: <strong>{mapStats.matched}</strong>
+                                    {" / "}bulunamadı: <strong>{mapStats.unknown}</strong>
+                                </span>
+                            </div>
+                            <div className="ge-table-scroll">
+                                <div className="ge-table-inner">
+                                    <table className="ge-table">
+                                        <thead>
+                                            <tr>
+                                                {previewHeaders.map((h, i) => (
+                                                    <th key={i} className={missingHeaders.includes(h) ? "miss" : ""}>{h}</th>
                                                 ))}
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {previewRows.map((row, rIdx) => {
+                                                const rr = rowResults[rIdx];
+                                                const rowClass =
+                                                    rr?.status === "fail" ? "row-fail" :
+                                                        rr?.status === "ok" ? "row-ok" : "";
+                                                const title = rr?.message || "";
+                                                return (
+                                                    <tr key={rIdx} className={rowClass} title={title}>
+                                                        {previewHeaders.map((_, cIdx) => (
+                                                            <td key={cIdx}>{row[cIdx] ?? ""}</td>
+                                                        ))}
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
         </div>
