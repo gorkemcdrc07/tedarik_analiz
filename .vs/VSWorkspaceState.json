@@ -1,13 +1,7 @@
 {
   "ExpandedNodes": [
     "",
-    "\\api",
-    "\\api\\reel-api",
-    "\\api\\reel-api\\tmsdespatchincomeexpenses",
-    "\\api\\reel-auth",
-    "\\src",
-    "\\src\\GelirGider"
+    "\\src"
   ],
-  "SelectedNode": "\\src\\GelirGider\\GelirEkleme.css",
   "PreviewInSolutionExplorer": false
 }

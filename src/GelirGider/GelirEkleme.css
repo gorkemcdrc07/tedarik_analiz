@@ -475,5 +475,49 @@ html, body, #root {
     .ge-summary-item strong {
         font-size: 16px;
     }
+/* gönderim özeti banner */
+.ge-banner {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+    .ge-banner.success {
+        background: #eaf7ef;
+        border: 1px solid #98d6b4;
+    }
+
+    .ge-banner.danger {
+        background: #ffefef;
+        border: 1px solid #f2a6a6;
+    }
+
+/* tablo satır boyama */
+.ge-table tr.row-fail td {
+    background: #ffe8e8 !important;
+}
+
+.ge-table tr.row-ok td {
+    background: #e8f9f0 !important;
+}
+
+/* hatalı satır listesi */
+.ge-error-list {
+    margin: 6px 0 0 0;
+    padding-left: 18px;
+}
+
+    .ge-error-list li {
+        margin: 4px 0;
+    }
+
+/* alt madde (detaylar) */
+.ge-error-sublist {
+    margin-top: 4px;
+    padding-left: 20px;
+    list-style: disc;
+}
+
 
 
