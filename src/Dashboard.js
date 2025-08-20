@@ -27,9 +27,8 @@ const projectMergeMap = {
 function Dashboard() {
     // kullanıcı & kolon yetkisi
     const userObj = JSON.parse(localStorage.getItem("kullanici") || "{}");
-    const user = (userObj.kullanici || "").trim().toUpperCase();
-    const isPriv = ["ONUR KEREM ÖZTÜRK", "TAHSİN BENLİ", "ATAKAN AKALIN"].includes(user);
-
+    const user = (userObj.kullanici || "").trim().toLocaleUpperCase("tr-TR");
+    const isPriv = ["ONUR KEREM ÖZTÜRK", "TAHSİN BENLİ", "ATAKAN AKALIN", "ENVER BEŞİRLİ"].includes(user);
     // --- başlık/anahtar normalizasyonu ---
     const mapHeaderKey = (k) => {
         if (!k) return k;
