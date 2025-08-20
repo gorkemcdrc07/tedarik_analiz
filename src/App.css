@@ -1,13 +1,16 @@
 ﻿/* Genel sayfa yapısı */
 html, body {
-    height: auto !important;
-    min-height: 100% !important;
-    overflow-y: auto !important; /* dikey scroll tarayıcıda */
+    height: 100%;
+    margin: 0;
     background-color: #f9f9f9;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .app-container {
+    max-width: 1800px; /* 1920 ekran için tabloyu ortala */
+    margin: 0 auto; /* ortalama */
     padding: 2rem;
     min-height: 100vh;
 }
@@ -30,40 +33,36 @@ html, body {
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Odak için ekstra arka plan */
-.odak-section {
-    background-color: #eef7ff;
-}
-
 /* Tablo dışı kutu */
 .table-wrapper {
-    overflow-x: auto; /* sadece yatay scroll */
-    overflow-y: visible !important; /* dikey scroll yok, tarayıcıya bırak */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: auto; /* 1080p ekranda taşarsa dikey scroll */
+    max-height: 75vh; /* ekran yüksekliğini %80 kullanır */
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     border-radius: 12px;
     background: #fff;
     padding: 1rem;
-    max-height: none !important;
 }
 
 /* Tablo yapısı */
 .styled-table {
     width: 100%;
-    min-width: 900px;
+    min-width: 1200px; /* büyük ekranda tablo geniş */
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 15px;
     font-family: "Segoe UI", sans-serif;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
-    /* Tablo başlıkları */
+    /* Başlık satırı */
     .styled-table thead tr {
         background-color: #2c3e50;
         color: #ffffff;
         text-align: center;
     }
 
-    /* Sticky header */
     .styled-table thead th {
         position: sticky;
         top: 0;
@@ -71,15 +70,15 @@ html, body {
         background: #2c3e50;
     }
 
-    /* Tüm hücreler */
+    /* Hücreler */
     .styled-table th,
     .styled-table td {
-        padding: 10px 12px;
+        padding: 12px 14px;
         border: 1px solid #e3e6f0;
         text-align: center;
     }
 
-    /* Alternatif arka plan */
+    /* Alternatif satır */
     .styled-table tbody tr:nth-child(even) {
         background-color: #fafbfc;
     }
@@ -90,7 +89,7 @@ html, body {
         transition: background 0.2s ease;
     }
 
-    /* Öne çıkan sütunlar */
+    /* Öne çıkan hücreler */
     .styled-table td.etablo {
         background-color: #eef4ff;
     }
@@ -99,165 +98,20 @@ html, body {
         background-color: #fff0f5;
     }
 
-    /* Footer görünümü */
+    /* Footer */
     .styled-table tfoot tr {
         background-color: #f2f2f2;
         font-weight: bold;
         border-top: 2px solid #ccc;
     }
 
-/* Yükleniyor yazısı */
-.loading {
-    text-align: center;
-    font-size: 1.2rem;
-    font-style: italic;
-    color: #555;
-    margin-top: 2rem;
+/* Scrollbar */
+.table-wrapper::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
 }
 
-/* Uyarı modal */
-.uyari-modal {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #fff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    padding: 16px 24px;
-    border-radius: 10px;
-    z-index: 1000;
-    width: 320px;
-    max-width: 90%;
-    font-size: 14px;
-    animation: slideIn 0.4s ease;
-}
-
-.modal-close {
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    font-size: 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #aaa;
-    transition: color 0.2s ease;
-}
-
-    .modal-close:hover {
-        color: #e74c3c;
-    }
-
-/* Uyumsuz satır */
-.uyumsuz-satir {
-    background-color: rgba(231, 76, 60, 0.15) !important;
-    transition: background-color 0.3s ease;
-}
-
-.fazla-reel-talep {
-    background-color: #f8d7da !important;
-}
-
-/* Filtre alanı */
-.filter-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 1.2rem;
-    flex-wrap: wrap;
-}
-
-    .filter-container label {
-        font-weight: 600;
-        color: #2c3e50;
-    }
-
-    .filter-container input[type="date"] {
-        padding: 6px 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 14px;
-        background: #fff;
-        transition: border-color 0.2s ease;
-    }
-
-        .filter-container input[type="date"]:focus {
-            border-color: #2c3e50;
-            outline: none;
-        }
-
-    .filter-container button {
-        background-color: #2c3e50;
-        color: #fff;
-        border: none;
-        padding: 7px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background 0.2s ease;
-    }
-
-        .filter-container button:hover {
-            background-color: #1a242f;
-        }
-/* === Filtre Alanı Modern Stil === */
-.filter-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-    /* Tarih inputları */
-    .filter-bar input[type="date"] {
-        padding: 8px 12px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 14px;
-        transition: all 0.2s ease;
-    }
-
-        .filter-bar input[type="date"]:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37,99,235,.2);
-            outline: none;
-        }
-
-    /* Filtre Butonu */
-    .filter-bar button {
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
-        color: #fff;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s ease, transform 0.1s ease;
-    }
-
-        .filter-bar button:hover {
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
-        }
-
-        .filter-bar button:active {
-            transform: scale(0.97);
-        }
-/* Sidebar ekranla birlikte uzasın */
-.sidebar {
-    min-height: 100vh; /* ekran yüksekliği kadar */
-    height: auto; /* içerik uzadıkça artsın */
-}
-
-
-
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 5px;
 }
