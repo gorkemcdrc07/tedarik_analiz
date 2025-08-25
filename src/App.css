@@ -1,109 +1,205 @@
-﻿/* Genel sayfa yapısı */
+﻿/* =========================
+   GENEL SAYFA YAPISI
+   ========================= */
 html, body {
     height: 100%;
     margin: 0;
-    background-color: #f9f9f9;
+    background-color: #0b1220; /* koyu arka plan (screenshot ile uyumlu) */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #1f2937;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     overflow-y: auto;
 }
 
 .app-container {
-    max-width: 1800px; /* 1920 ekran için tabloyu ortala */
-    margin: 0 auto; /* ortalama */
+    max-width: 1800px;
+    margin: 0 auto;
     padding: 2rem;
     min-height: 100vh;
 }
 
-/* Başlık */
+/* =========================
+   BAŞLIK / SAYFA TITLE
+   ========================= */
 .table-title, h2 {
     text-align: center;
     font-size: 2rem;
-    margin-bottom: 1.5rem;
-    color: #2c3e50;
-    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #e5e7eb; /* koyu arka planda görünür */
+    font-weight: 800;
+    letter-spacing: .2px;
 }
 
-/* Bölüm kutusu */
+/* =========================
+   UYARILAR BLOĞU
+   ========================= */
+.warning-block,
+.alerts,
+.notices {
+    margin: 10px 0 14px 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #fff7ed; /* açık turuncu arka plan */
+    border: 1px solid #fdba74; /* turuncu çerçeve */
+    color: #7c2d12; /* koyu turuncu metin */
+    box-shadow: 0 1px 6px rgba(0,0,0,.06);
+}
+
+    .warning-block .title,
+    .alerts .title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 800;
+        color: #9a3412;
+        margin-bottom: 6px;
+    }
+
+    .warning-block ul,
+    .alerts ul {
+        margin: 0;
+        padding-left: 18px; /* madde işaretleri görünür olsun */
+    }
+
+    .warning-block li,
+    .alerts li {
+        line-height: 1.35;
+        margin: 3px 0;
+        font-weight: 600;
+    }
+
+/* küçük uyarı rozeti */
+.badge-warn {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #f97316;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* =========================
+   BÖLÜM KUTUSU
+   ========================= */
 .section {
-    margin-bottom: 40px;
-    padding: 20px;
+    margin-bottom: 20px;
+    padding: 14px;
     border-radius: 12px;
-    background-color: #fdfdfd;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    box-shadow: 0 1px 10px rgba(2, 6, 23, 0.18);
 }
 
-/* Tablo dışı kutu */
+/* =========================
+   TABLO WRAPPER
+   ========================= */
 .table-wrapper {
     width: 100%;
-    overflow-x: auto;
-    overflow-y: auto; /* 1080p ekranda taşarsa dikey scroll */
-    max-height: 75vh; /* ekran yüksekliğini %80 kullanır */
+    overflow: auto;
+    max-height: 75vh;
     -webkit-overflow-scrolling: touch;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 14px rgba(2, 6, 23, 0.25);
     border-radius: 12px;
-    background: #fff;
-    padding: 1rem;
+    background: #ffffff;
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    position: relative; /* sticky thead için stacking context */
 }
 
-/* Tablo yapısı */
+/* =========================
+   TABLO
+   ========================= */
 .styled-table {
     width: 100%;
-    min-width: 1200px; /* büyük ekranda tablo geniş */
+    min-width: 1200px;
     border-collapse: collapse;
-    font-size: 15px;
-    font-family: "Segoe UI", sans-serif;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    font-size: 15.5px;
+    line-height: 1.35;
+    font-weight: 500;
+    color: #0f172a;
+    background: #fff;
+    box-shadow: 0 0 0 1px #e5e7eb inset;
 }
 
     /* Başlık satırı */
     .styled-table thead tr {
-        background-color: #2c3e50;
+        background-color: #0f172a; /* daha koyu başlık */
         color: #ffffff;
         text-align: center;
     }
 
     .styled-table thead th {
         position: sticky;
-        top: 0;
-        z-index: 2;
-        background: #2c3e50;
+        top: 0; /* wrapper içinde tepeye sabitlenir */
+        z-index: 5; /* içerik üstünde kalsın */
+        background: #0f172a;
+        color: #ffffff;
+        font-weight: 800;
+        letter-spacing: .3px;
+        padding: 12px 14px;
+        border-bottom: 2px solid #1f2937; /* başlık çizgisi belirgin */
+        box-shadow: 0 2px 0 rgba(0,0,0,.08);
+        white-space: nowrap;
     }
 
     /* Hücreler */
     .styled-table th,
     .styled-table td {
         padding: 12px 14px;
-        border: 1px solid #e3e6f0;
+        border: 1px solid #e5e7eb;
         text-align: center;
+        color: #0b1320;
     }
 
     /* Alternatif satır */
     .styled-table tbody tr:nth-child(even) {
-        background-color: #fafbfc;
+        background-color: #f8fafc;
     }
 
     /* Hover efekti */
     .styled-table tbody tr:hover {
-        background-color: #f1f1f1;
-        transition: background 0.2s ease;
+        background-color: #eef2ff;
+        transition: background .15s ease;
     }
 
     /* Öne çıkan hücreler */
     .styled-table td.etablo {
-        background-color: #eef4ff;
+        background-color: #e8f0ff;
+        color: #0b1b34;
+        font-weight: 600;
     }
 
     .styled-table td.reel {
-        background-color: #fff0f5;
+        background-color: #ffe7ef;
+        color: #32121d;
+        font-weight: 600;
     }
 
-    /* Footer */
-    .styled-table tfoot tr {
-        background-color: #f2f2f2;
-        font-weight: bold;
-        border-top: 2px solid #ccc;
-    }
+/* Yüzdelik metinleri renklendir (opsiyonel) */
+.text-success {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+.text-warn {
+    color: #f59e0b;
+    font-weight: 700;
+}
+
+.text-danger {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* Footer */
+.styled-table tfoot tr {
+    background-color: #f3f4f6;
+    font-weight: 700;
+    border-top: 2px solid #cbd5e1;
+    color: #0f172a;
+}
 
 /* Scrollbar */
 .table-wrapper::-webkit-scrollbar {
@@ -112,6 +208,10 @@ html, body {
 }
 
 .table-wrapper::-webkit-scrollbar-thumb {
-    background: #bbb;
-    border-radius: 5px;
+    background: #9aa4b2;
+    border-radius: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #e5e7eb;
 }
