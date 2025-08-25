@@ -386,6 +386,91 @@ body {
     .so-modal .so-btn-primary:hover {
         background: #5458ea;
     }
+/* Görsel, açıklayıcı eşleşme görünümü */
+.match-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 360px;
+    overflow: auto;
+}
+
+.match-item {
+    padding: 10px 0;
+    border-top: 1px dashed #e5e7eb;
+}
+
+    .match-item:first-child {
+        border-top: none;
+    }
+
+.match-line {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.match-cell {
+    flex: 1;
+    min-width: 0;
+}
+
+    .match-cell .label {
+        font-size: 11px;
+        color: #6b7280;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .match-cell .addr {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px 10px;
+        color: #111827;
+        font-size: 13px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .match-cell.real .addr {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+    }
+    /* eşleşen sağ taraf */
+    .match-cell.none .addr {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #991b1b;
+    }
+/* bulunamadı */
+
+.arrow {
+    width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    font-size: 18px;
+}
+
+.meta {
+    margin-top: 6px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+    .meta .tag {
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: 11px;
+        color: #374151;
+    }
+
 
 /* Light tema desteği */
 @media (prefers-color-scheme: light) {

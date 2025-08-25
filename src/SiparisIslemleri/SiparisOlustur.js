@@ -405,6 +405,7 @@ export default function SiparisOlustur() {
     };
 
     /* === EKLENDİ: EŞLEŞME YAP — fuzzy adres eşleştirme + onay modalı === */
+    /* === EKLENDİ: EŞLEŞME YAP — birebir adres_adi + onay modalı === */
     const handleEslesmeYap = async () => {
         try {
             if (!projeAdi) {
@@ -421,7 +422,7 @@ export default function SiparisOlustur() {
                     const merged = applyOverlay(rows, incoming);
                     setRows(merged);
                 }
-            } catch (_) { }
+            } catch (_) { /* overlay alınamazsa devam */ }
 
             // --- Yardımcı: adres_adi için “birebir” anahtar ---
             const key = (s) =>
@@ -482,20 +483,26 @@ export default function SiparisOlustur() {
             });
 
             const matched = results.filter(r => r.ok);
+            const unmatched = results.filter(r => !r.ok);
+
             setMatchResults(results);
             setMatchPreview({
                 total: currentRows.length,
                 matchedCount: matched.length,
-                unmatchedCount: currentRows.length - matched.length,
-                samples: matched.slice(0, 8).map(r => ({
+                unmatchedCount: unmatched.length,
+                matchedSamples: matched.slice(0, 20).map(r => ({
                     rowIndex: r.rowIndex,
                     before: r.before,
                     matchedAdresAdi: r.matchedAdresAdi,
                     matchedAdresId: r.matchedAdresId,
                     matchedCariId: r.matchedCariId,
-                    score: r.score,
+                })),
+                unmatchedSamples: unmatched.slice(0, 20).map(r => ({
+                    rowIndex: r.rowIndex,
+                    before: r.before || "—",
                 })),
             });
+
             setMatchModalOpen(true);
         } catch (e) {
             setError(e.message || "Eşleşme sırasında hata oluştu.");
@@ -504,6 +511,7 @@ export default function SiparisOlustur() {
         }
     };
 
+    // Eşleşmeleri uygula (adres_id → Teslim Firma Adres Adı, cari_id → Alıcı Firma Cari Adı)
     const confirmApplyMatches = () => {
         setRows(prev => {
             const byIndex = new Map();
@@ -514,18 +522,16 @@ export default function SiparisOlustur() {
                 if (!m) return row;
 
                 const next = { ...row };
-                // adres_id → Teslim Firma Adres Adı
                 next["Teslim Firma Adres Adı"] = String(m.matchedAdresId ?? "");
-                // cari_hesap_id → Alıcı Firma Cari Adı
                 next["Alıcı Firma Cari Adı"] = String(m.matchedCariId ?? "");
                 return next;
             });
         });
         setMatchModalOpen(false);
     };
+
     const cancelMatches = () => setMatchModalOpen(false);
     /* === /EKLENDİ === */
-
     const handleEslesmeIdGetir = () => {
         if (!projeAdi) {
             setError("Eşleşme ID’lerini getirmeden önce lütfen bir proje seçin.");
@@ -682,65 +688,93 @@ export default function SiparisOlustur() {
                 <div className="so-modal-backdrop" role="dialog" aria-modal="true">
                     <div className="so-modal">
                         <div className="so-modal__body">
-                            <h3 className="so-modal__title">Adres Eşleşme Özeti</h3>
 
-                            <p className="so-modal__kpi">
-                                Toplam satır: <b>{matchPreview.total}</b>
-                                {" — "}Eşleşen: <b className="good">{matchPreview.matchedCount}</b>
-                                {" — "}Eşleşmeyen: <b className="bad">{matchPreview.unmatchedCount}</b>
-                            </p>
+                            <div className="so-modal__header">
+                                <h3 className="so-modal__title">Adres Eşleşme Özeti</h3>
+                                <div className="so-kpis">
+                                    <span className="so-chip so-chip--neutral">Toplam: <b>{matchPreview.total}</b></span>
+                                    <span className="so-chip so-chip--good">Eşleşen: <b>{matchPreview.matchedCount}</b></span>
+                                    <span className="so-chip so-chip--bad">Eşleşmeyen: <b>{matchPreview.unmatchedCount}</b></span>
+                                </div>
+                            </div>
 
-                            {matchPreview.samples?.length > 0 && (
-                                <>
-                                    <div style={{ fontWeight: 600, marginBottom: 6 }}>Örnek eşleşmeler:</div>
-                                    <ul className="so-modal__list">
-                                        {matchPreview.samples.map((s) => (
-                                            <li key={s.rowIndex}>
-                                                <code>{s.before}</code> → <code>{s.matchedAdresAdi}</code>
-                                                {" "} (adres_id: <b>{s.matchedAdresId}</b>, cari_hesap_id: <b>{s.matchedCariId}</b>)
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </>
-                            )}
-
-                            {matchPreview.unmatchedSamples?.length > 0 && (
-                                <>
-                                    <div style={{ fontWeight: 600, marginTop: 12, marginBottom: 6 }}>
-                                        Eşleşmeyen örnekler (en yakın aday ve skor):
+                            <div className="so-modal__grid">
+                                {/* EŞLEŞENLER */}
+                                <div className="so-card-simple">
+                                    <div className="so-card-simple__header">
+                                        <span className="so-card-simple__title">Eşleşenler</span>
+                                        <span className="so-badge">{matchPreview.matchedCount}</span>
                                     </div>
-                                    <ul className="so-modal__list">
-                                        {matchPreview.unmatchedSamples.map((s) => (
-                                            <li key={`un-${s.rowIndex}`}>
-                                                <code>{s.before || "—"}</code>
-                                                {"  →  "}
-                                                {s.bestTryAdresAdi ? (
-                                                    <>
-                                                        en yakın: <code>{s.bestTryAdresAdi}</code>
-                                                        {" "} (adres_id: <b>{s.bestTryAdresId || "—"}</b>,
-                                                        {" "} cari_hesap_id: <b>{s.bestTryCariId || "—"}</b>,
-                                                        {" "} skor: {s.score.toFixed(2)})
-                                                    </>
-                                                ) : "uygun aday bulunamadı"}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <div className="so-modal__hint">
-                                        İpucu: Benzerlik eşiği şu anda <b>0.40</b>.
+
+                                    {matchPreview.matchedSamples?.length ? (
+                                        <ul className="match-list">
+                                            {matchPreview.matchedSamples.map((s) => (
+                                                <li key={`m-${s.rowIndex}`} className="match-item">
+                                                    <div className="match-line">
+                                                        <div className="match-cell our">
+                                                            <span className="label">Bizim Adres</span>
+                                                            <div className="addr">{s.before}</div>
+                                                        </div>
+                                                        <div className="arrow">→</div>
+                                                        <div className="match-cell real">
+                                                            <span className="label">Sistemdeki Adres</span>
+                                                            <div className="addr">{s.matchedAdresAdi}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="meta">
+                                                        <span className="tag">adres_id: {s.matchedAdresId}</span>
+                                                        <span className="tag">cari_hesap_id: {s.matchedCariId}</span>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <div className="so-empty">Eşleşen kayıt yok.</div>
+                                    )}
+                                </div>
+
+
+                                {/* EŞLEŞMEYENLER */}
+                                <div className="so-card-simple">
+                                    <div className="so-card-simple__header">
+                                        <span className="so-card-simple__title">Eşleşmeyenler</span>
+                                        <span className="so-badge so-badge--bad">{matchPreview.unmatchedCount}</span>
                                     </div>
-                                </>
-                            )}
+
+                                    {matchPreview.unmatchedSamples?.length ? (
+                                        <ul className="match-list">
+                                            {matchPreview.unmatchedSamples.map((s) => (
+                                                <li key={`u-${s.rowIndex}`} className="match-item">
+                                                    <div className="match-line">
+                                                        <div className="match-cell our">
+                                                            <span className="label">Bizim Adres</span>
+                                                            <div className="addr">{s.before}</div>
+                                                        </div>
+                                                        <div className="arrow">→</div>
+                                                        <div className="match-cell none">
+                                                            <span className="label">Sistemde</span>
+                                                            <div className="addr notfound">Bulunamadı</div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <div className="so-empty">Hepsi eşleşti 🎉</div>
+                                    )}
+                                </div>
+
+                            </div>
                         </div>
 
                         <div className="so-modal__actions">
                             <button className="so-btn" onClick={() => setMatchModalOpen(false)}>Vazgeç</button>
-                            <button className="so-btn so-btn-primary" onClick={confirmApplyMatches}>
-                                Onayla ve Uygula
-                            </button>
+                            <button className="so-btn so-btn-primary" onClick={confirmApplyMatches}>Onayla ve Uygula</button>
                         </div>
                     </div>
                 </div>
             )}
+
 
             {/* === /MODAL === */}
         </div>
