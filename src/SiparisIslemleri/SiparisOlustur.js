@@ -285,15 +285,52 @@ export default function SiparisOlustur() {
     const onFileChange = (e) => { const f = e.target.files?.[0]; if (f) parseExcel(f); e.target.value = ""; };
 
     /** Şablon indir / dışa aktar */
-    const handleTemplateDownload = () => {
-        const cols = REQUIRED_EXPORT_HEADERS;
-        const wsData = [cols, ...[emptyRow()].map((r) => cols.map((c) => r[c] ?? ""))];
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Sablon");
-        XLSX.writeFile(wb, `Siparis_Sablon_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    };
+    const handleTemplateDownload = async () => {
+        try {
+            // 1) İlk sayfa: mevcut şablon
+            const cols = REQUIRED_EXPORT_HEADERS;
+            const wsData = [cols, ...[emptyRow()].map((r) => cols.map((c) => r[c] ?? ""))];
+            const wsSablon = XLSX.utils.aoa_to_sheet(wsData);
 
+            // 2) İkinci sayfa: DOKÜMAN (Teslim_Noktalari - tüm kayıtlar)
+            let allData = [];
+            const pageSize = 1000;
+
+            // Önce toplam kayıt sayısını öğrenelim
+            const { count, error: countError } = await supabase
+                .from("Teslim_Noktalari")
+                .select("*", { count: "exact", head: true });
+            if (countError) throw countError;
+
+            const total = count || 0;
+            const totalPages = Math.ceil(total / pageSize);
+
+            for (let page = 0; page < totalPages; page++) {
+                const from = page * pageSize;
+                const to = from + pageSize - 1;
+                const { data, error } = await supabase
+                    .from("Teslim_Noktalari")
+                    .select("*")
+                    .range(from, to);
+
+                if (error) throw error;
+                allData = allData.concat(data || []);
+            }
+
+            const docHeaders = allData.length ? Object.keys(allData[0]) : [];
+            const wsDokuman = XLSX.utils.json_to_sheet(allData, { header: docHeaders });
+
+            // 3) Çalışma kitabını oluştur ve iki sayfayı ekle
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, wsSablon, "Sablon");
+            XLSX.utils.book_append_sheet(wb, wsDokuman, "DOKÜMAN");
+
+            const iso = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `Siparis_Sablon_${iso}.xlsx`);
+        } catch (e) {
+            setError(e.message || "Şablon indirilirken bir hata oluştu.");
+        }
+    };
     const handleExportExcel = () => {
         if (!projeAdi) {
             setError("Dışa aktarmadan önce lütfen bir proje seçin.");
