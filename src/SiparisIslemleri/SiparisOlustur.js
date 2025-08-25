@@ -414,54 +414,71 @@ export default function SiparisOlustur() {
             setError("");
             setOverlayLoading(true);
 
-            // 1) Varsa önce projeye göre overlay’i uygula (mevcut davranışı koruyoruz)
+            // 1) Proje overlay (varsa)
             try {
                 const incoming = await fetchProjectRows(projeAdi);
                 if (incoming && incoming.length) {
                     const merged = applyOverlay(rows, incoming);
                     setRows(merged);
                 }
-            } catch (_) {
-                // Proje overlay alınamazsa devam: adres eşleştirme yine çalışsın
+            } catch (_) { }
+
+            // --- Yardımcı: adres_adi için “birebir” anahtar ---
+            const key = (s) =>
+                String(s ?? "")
+                    .replace(/\u00A0/g, " ")    // NBSP -> normal boşluk
+                    .replace(/\s+/g, " ")       // çoklu boşluk -> tek
+                    .trim()
+                    .toLocaleUpperCase("tr");   // TR locale eşitle
+
+            // 2) Teslim_Noktalari: TÜM kayıtları çek (sayfalı)
+            const pageSize = 1000;
+            const { count, error: countError } = await supabase
+                .from("Teslim_Noktalari")
+                .select("*", { count: "exact", head: true });
+            if (countError) throw countError;
+
+            const total = count || 0;
+            const totalPages = Math.ceil(total / pageSize);
+            let allAdresler = [];
+            for (let page = 0; page < totalPages; page++) {
+                const from = page * pageSize;
+                const to = from + pageSize - 1;
+                const { data, error } = await supabase
+                    .from("Teslim_Noktalari")
+                    .select("adres_id, adres_adi, cari_hesap_id")
+                    .range(from, to);
+                if (error) throw error;
+                allAdresler = allAdresler.concat(data || []);
             }
 
-            // 2) Teslim_Noktalari listesini çek
-            const { data, error } = await supabase
-                .from("Teslim_Noktalari")
-                .select("adres_id, adres_adi, cari_hesap_id");
-            if (error) throw error;
+            // 3) Hızlı lookup için Map
+            const byAdresAdi = new Map();
+            for (const a of allAdresler) {
+                byAdresAdi.set(key(a.adres_adi), {
+                    adres_id: a?.adres_id ?? "",
+                    adres_adi: a?.adres_adi ?? "",
+                    cari_hesap_id: a?.cari_hesap_id ?? "",
+                });
+            }
 
-            const adresler = (Array.isArray(data) ? data : []).map((x) => ({
-                adres_id: x?.adres_id ?? "",
-                adres_adi: x?.adres_adi ?? "",
-                cari_hesap_id: x?.cari_hesap_id ?? "",
-                _norm: cleanAddr(x?.adres_adi ?? ""),
-            }));
-
-            // 3) Tablodaki her satır için en iyi eşleşmeyi bul
-            const THRESHOLD = 0.6;
-            const currentRows = rows; // setRows async olduğu için state üzerinden al
+            // 4) Satır satır birebir eşleşme
+            const currentRows = rows;
             const results = currentRows.map((row, idx) => {
                 const qRaw = row["Teslim Firma Adres Adı"];
-                const qNorm = cleanAddr(qRaw);
-                if (!qNorm) return { rowIndex: idx, ok: false, before: qRaw, score: 0 };
-                let best = null, bestScore = 0;
-                for (const a of adresler) {
-                    const s = scoreSimilarity(qNorm, a._norm);
-                    if (s > bestScore) { bestScore = s; best = a; }
-                }
-                if (best && bestScore >= THRESHOLD) {
+                const found = byAdresAdi.get(key(qRaw));
+                if (found) {
                     return {
                         rowIndex: idx,
                         ok: true,
-                        score: bestScore,
                         before: qRaw,
-                        matchedAdresAdi: best.adres_adi,
-                        matchedAdresId: best.adres_id,
-                        matchedCariId: best.cari_hesap_id,
+                        matchedAdresAdi: found.adres_adi,
+                        matchedAdresId: found.adres_id,
+                        matchedCariId: found.cari_hesap_id,
+                        score: 1,
                     };
                 }
-                return { rowIndex: idx, ok: false, before: qRaw, score: bestScore };
+                return { rowIndex: idx, ok: false, before: qRaw, score: 0 };
             });
 
             const matched = results.filter(r => r.ok);
@@ -491,19 +508,21 @@ export default function SiparisOlustur() {
         setRows(prev => {
             const byIndex = new Map();
             for (const r of matchResults) if (r.ok) byIndex.set(r.rowIndex, r);
+
             return prev.map((row, i) => {
                 const m = byIndex.get(i);
                 if (!m) return row;
+
                 const next = { ...row };
-                // İSTEDİĞİN GİBİ: adres_id yaz, cari_hesap_id’yi Alıcı Firma Cari Adı’na yaz
+                // adres_id → Teslim Firma Adres Adı
                 next["Teslim Firma Adres Adı"] = String(m.matchedAdresId ?? "");
+                // cari_hesap_id → Alıcı Firma Cari Adı
                 next["Alıcı Firma Cari Adı"] = String(m.matchedCariId ?? "");
                 return next;
             });
         });
         setMatchModalOpen(false);
     };
-
     const cancelMatches = () => setMatchModalOpen(false);
     /* === /EKLENDİ === */
 
