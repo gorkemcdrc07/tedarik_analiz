@@ -26,7 +26,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         "Tedarik Analiz": "/dashboard",
         "Gelir Ekleme": "/GelirGider/GelirEkleme",
         "Gider Ekleme": "/GelirGider/GiderEkleme", // ✅ eklendi
-        // "Eskalasyon Hesabı": "/GelirGider/Eskalasyon",
+        "Sipariş Oluştur": "/SiparisIslemleri/SiparisOlustur",
         // "Sipariş Oluştur": "/Siparis/Olustur",
         // "Teslim Noktaları": "/Siparis/TeslimNoktalari",
     };

@@ -25,11 +25,10 @@ const projectMergeMap = {
 };
 
 function Dashboard() {
-    // kullanıcı & kolon yetkisi
     const userObj = JSON.parse(localStorage.getItem("kullanici") || "{}");
     const user = (userObj.kullanici || "").trim().toLocaleUpperCase("tr-TR");
     const isPriv = ["ONUR KEREM ÖZTÜRK", "TAHSİN BENLİ", "ATAKAN AKALIN", "ENVER BEŞİRLİ"].includes(user);
-    // --- başlık/anahtar normalizasyonu ---
+
     const mapHeaderKey = (k) => {
         if (!k) return k;
         const s = String(k).trim();
@@ -65,7 +64,7 @@ function Dashboard() {
         return dict[s] || s;
     };
 
-    // --- kolon sırası / yetki ---
+
     const columnOrder = [
         "PROJE_ADI",
 
@@ -86,7 +85,6 @@ function Dashboard() {
         "YUKLENDI", "REEL YUKLENDI",
 
         ...(isPriv ? [
-            // <thead>’deki sıraya birebir uyuyor:
             "TOP_NAVLUN",
             "HEDEF_USTU", "SEFER_USTU",
             "HEDEF_ALTI", "SEFER_ALTI",
@@ -99,7 +97,7 @@ function Dashboard() {
         ] : [])
     ];
 
-    // gizli kolonlar (normalize edilmiş anahtarlar ile!)
+
     const HIDDEN_COLUMNS = [
         "TOP_NAVLUN", "HEDEF_USTU", "SEFER_USTU",
         "HEDEF_ALTI", "SEFER_ALTI", "SEFER_HEDEF",
@@ -108,23 +106,19 @@ function Dashboard() {
     const columns = isPriv ? columnOrder : columnOrder.filter(c => !HIDDEN_COLUMNS.includes(c));
 
     // --- STATE ---
-    const [data, setData] = useState([]);               // e-tablo + reel eklenmiş tablo
-    const [rawEtablo, setRawEtablo] = useState([]);     // ham e-tablo snapshot (normalize edilmiş header + satırlar)
-    const [odakData, setOdakData] = useState([]);       // projeye göre reel özet
-    const [odakDataRaw, setOdakDataRaw] = useState([]); // modal ham kayıtlar (seçili aralık)
+    const [data, setData] = useState([]);               
+    const [rawEtablo, setRawEtablo] = useState([]);   
+    const [odakData, setOdakData] = useState([]);     
+    const [odakDataRaw, setOdakDataRaw] = useState([]); 
     const [uyumsuzProjeler, setUyumsuzProjeler] = useState([]);
     const [uyumsuzKapandi, setUyumsuzKapandi] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState("");
     const [selectedRecords, setSelectedRecords] = useState([]);
     const [loading, setLoading] = useState(false);
-
-    // Tarih aralığı (varsayılan: bugün)
     const todayStr = new Date().toISOString().split("T")[0];
     const [startDate, setStartDate] = useState(todayStr);
     const [endDate, setEndDate] = useState(todayStr);
-
-    // ---- yardımcılar ----
     const normalizeProjectName = (name) => {
         const map = {
             "BUNGE DİLOVASI-REYSAŞ": "BUNGE GEBZE FTL",
@@ -138,12 +132,8 @@ function Dashboard() {
         d.setDate(d.getDate() + delta);
         return d.toISOString().split("T")[0];
     };
-
-    // ---------- SUPABASE: "başlangıç 00:00’dan önceki son snapshot" ----------
-    // HER GÜNÜN 23:59:59'a kadarki SON snapshot'ını al, sonra E-tablo değerlerini TOPLA
     async function fetchSupabaseDailySum(startStr, endStr) {
         try {
-            // --- 0) UTC/Istanbul farkı için sorgu penceresini ±1 gün genişlet ---
             const pad = (d, n) => String(d).padStart(n, "0");
             const shiftDay = (ymd, delta) => {
                 const d = new Date(`${ymd}T00:00:00Z`);
@@ -166,7 +156,6 @@ function Dashboard() {
             }
             if (!rows || rows.length === 0) { setRawEtablo([]); setData([]); return; }
 
-            // --- 1) Gün sonu snapshot seçimi (Europe/Istanbul) ---
             const fmt = new Intl.DateTimeFormat("tr-TR", {
                 timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit",
             });
@@ -185,7 +174,6 @@ function Dashboard() {
 
             if (dailyLatest.length === 0) { setRawEtablo([]); setData([]); return; }
 
-            // --- 2) Gün snapshot'larını toplayacağız; önce kolon adlarını ve satırları çıkaran yardımcılar ---
             const numericCols = new Set([
                 "TALEP", "TEDARIK", "VERILEMEYEN", "SPOT", "FILO", "TESISTE", "GELECEK", "YUKLENDI",
                 "DEVREDEN_TALEP", "TOPLAM_TALEP", "TOPLAM_TEDARIK",
@@ -193,7 +181,7 @@ function Dashboard() {
                 "HEDEFSIZ_SEFER", "GELIR", "TOP_HEDEF_NAVLUN", "TOP_HEDEF_NAVL_HDF_UST"
             ]);
 
-            // Eski formatı (e-tablo) SEFER başlıklarını çözüp normalize eder
+
             const normalizeHeaderRow = (rawHeader) => {
                 let header = [...rawHeader];
                 let seferCounter = 1;
@@ -206,16 +194,13 @@ function Dashboard() {
                         else header[i] = `SEFER_${seferCounter++}`;
                     }
                 }
-                return header.map(mapHeaderKey); // "PROJE ADI" -> "PROJE_ADI" vb.
+                return header.map(mapHeaderKey); 
             };
 
-            // Bir snapshot içindeki veriyi (eski ya da yeni format) -> {header[], rows[]} döndürür
+
             const parseSnapshot = (snap) => {
                 const jd = snap.json_data;
 
-                // 2.a) Yeni format (objeler) – iki olası şekil:
-                //      - { body: [ { PROJE_ADI:..., TALEP:... }, ... ] }
-                //      - [ { PROJE_ADI:..., TALEP:... }, ... ]
                 if (jd && Array.isArray(jd.body) && jd.body.length && typeof jd.body[0] === "object") {
                     const body = jd.body;
                     const rawHeader = Object.keys(body[0]);
@@ -228,7 +213,6 @@ function Dashboard() {
                     return { header, rows };
                 }
                 if (Array.isArray(jd) && jd.length && typeof jd[0] === "object" && !jd[0].json_data) {
-                    // doğrudan obje listesi
                     const rawHeader = Object.keys(jd[0]);
                     const header = rawHeader.map(mapHeaderKey);
                     const rows = jd.map(obj => {
@@ -238,8 +222,6 @@ function Dashboard() {
                     });
                     return { header, rows };
                 }
-
-                // 2.b) Eski format: [{json_data:[H1,H2,...]}, {json_data:[v1,v2,...]}, ...]
                 const headerOld = jd?.[0]?.json_data || [];
                 const header = normalizeHeaderRow(headerOld);
                 const rows = (jd || []).slice(1).map(r => {
@@ -251,9 +233,8 @@ function Dashboard() {
                 return { header, rows };
             };
 
-            // --- 3) Tüm günlerin son snapshot'larını proje bazında topla ---
             let unifiedHeader = null;
-            const sumMap = new Map(); // proje -> toplam objesi
+            const sumMap = new Map();
 
             for (const daySnap of dailyLatest) {
                 const { header, rows: snapRows } = parseSnapshot(daySnap);
@@ -281,15 +262,12 @@ function Dashboard() {
             }
 
             const summedRows = Array.from(sumMap.values());
-            if (!unifiedHeader) unifiedHeader = []; // emniyet
+            if (!unifiedHeader) unifiedHeader = []; 
             setRawEtablo([unifiedHeader, ...summedRows]);
         } catch (e) {
             console.error("E-tablo (daily sum) hata:", e);
             setRawEtablo([]); setData([]);
         }
-    
-
-        // İsteğe bağlı: tek snapshot normalizasyonu (kullanılmıyor ama dursun)
         function normalizeAndSet(jsonDataArray) {
             const rawHeader = jsonDataArray[0]?.json_data || [];
             let headerRow = [...rawHeader];
@@ -316,7 +294,6 @@ function Dashboard() {
         }
     }
 
-    // ---------- ODAK: ±2 gün pencereden çek, sayımı seçili aralığa göre yap ----------
     async function fetchOdakDataForRange(startStr, endStr) {
         const wideStart = addDays(startStr, -2);
         const wideEnd = addDays(endStr, 2);
@@ -339,8 +316,6 @@ function Dashboard() {
 
             const result = await response.json();
             const items = Array.isArray(result.Data) ? result.Data : [];
-
-            // sadece seçili aralık
             const filteredItems = items.filter((item) => {
                 const pickupDate = item.PickupDate?.split("T")[0];
                 const req = item.TMSVehicleRequestDocumentNo;
@@ -393,12 +368,10 @@ function Dashboard() {
             setOdakDataRaw([]);
         }
     }
-
-    // ---------- Birleştirme: e-tablo snapshot + ODAK reel ----------
     useEffect(() => {
         if (!rawEtablo.length) return;
 
-        const header = rawEtablo[0]; // normalize edilmiş header anahtarları
+        const header = rawEtablo[0]; 
         const rows = rawEtablo.slice(1).map((row) => ({
             ...row,
             "REEL TALEP": 0,
@@ -438,7 +411,6 @@ function Dashboard() {
         setData([header, ...rows]);
     }, [rawEtablo, odakData]);
 
-    // ---------- Filtre butonu ----------
     const handleFilter = async () => {
         setLoading(true);
         setModalOpen(false);
@@ -454,16 +426,12 @@ function Dashboard() {
             setLoading(false);
         }
     };
-
-    // ---------- ilk yüklemede (bugün-bugün) getir ----------
     useEffect(() => {
         handleFilter();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
         <div className="app-container">
-            {/* Tarih filtre UI (tek) */}
             <div className="filter-bar" style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
                 <div>
                     <label style={{ fontWeight: 600, marginRight: 8 }}>Başlangıç</label>
@@ -528,19 +496,15 @@ function Dashboard() {
                                     <th colSpan="2">TALEP</th>
                                     <th colSpan="2">TEDARİK</th>
                                     <th colSpan="2">VERİLEMEYEN</th>
-
-                                    {/* ▼ TEK SÜTUNLAR */}
                                     <th rowSpan="3">DEVREDEN TALEP</th>
                                     <th rowSpan="3">TOPLAM TALEP</th>
                                     <th rowSpan="3">TOPLAM TEDARİK</th>
-
                                     <th colSpan="2">TED %</th>
                                     <th colSpan="2">SPOT</th>
                                     <th colSpan="2">FİLO</th>
                                     <th colSpan="2">TESİSTE</th>
                                     <th colSpan="2">GELECEK</th>
                                     <th colSpan="2">YÜKLENDİ</th>
-
                                     {isPriv && <th rowSpan="3">TOP. NAVLUN</th>}
                                     {isPriv && <th colSpan="2">HEDEF ÜSTÜ</th>}
                                     {isPriv && <th colSpan="2">HEDEF ALTI</th>}
@@ -551,9 +515,7 @@ function Dashboard() {
                                     {isPriv && <th rowSpan="3">HDF ÜST ORAN</th>}
                                     {isPriv && <th rowSpan="3">GELİR</th>}
                                 </tr>
-
                                 <tr>
-                                    {/* TALEP, TEDARİK, VERİLEMEYEN, TED %, SPOT, FİLO, TESİSTE, GELECEK, YÜKLENDİ */}
                                     {Array(9).fill().map((_, i) => (
                                         <React.Fragment key={i}>
                                             <th>E-TABLO</th>
@@ -628,9 +590,6 @@ function Dashboard() {
                                                         displayValue = !isNaN(parsed) ? `${parsed.toLocaleString("tr-TR")} ₺` : "0 ₺";
                                                         style = { color: "#000" };
                                                     }
-
-
-                                                    // ₺ biçimlendirme
                                                     if (["HEDEF", "HEDEF_USTU", "HEDEF_ALTI"].includes(col)) {
                                                         const parsed = parseFloat(value);
                                                         displayValue = !isNaN(parsed) ? `${parsed.toLocaleString("tr-TR")} ₺` : "0 ₺";
@@ -775,7 +734,6 @@ function Dashboard() {
                 ) : (
                     <p className="loading">{loading ? "Yükleniyor..." : "Kayıt bulunamadı"}</p>
                 )}
-
                 {modalOpen && (
                     <OdakDetailModal
                         projectName={selectedProject}
