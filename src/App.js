@@ -7,7 +7,8 @@ import AnaSayfa from "./AnaSayfa";
 import Dashboard from "./Dashboard";
 import Layout from "./Layout";
 import GelirEkleme from "./GelirGider/GelirEkleme";
-import GiderEkleme from "./GelirGider/GiderEkleme"; // ✅ yeni import
+import GiderEkleme from "./GelirGider/GiderEkleme";
+import SiparisOlustur from "./SiparisIslemleri/SiparisOlustur"; // ✅ yeni import
 
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,10 +55,22 @@ export default function App() {
                 />
 
                 <Route
-                    path="/GelirGider/GiderEkleme"   // ✅ yeni rota
+                    path="/GelirGider/GiderEkleme"
                     element={
                         isAuthenticated ? (
                             <Layout><GiderEkleme /></Layout>
+                        ) : (
+                            <Navigate to="/" />
+                        )
+                    }
+                />
+
+                {/* ✅ Yeni rota */}
+                <Route
+                    path="/SiparisIslemleri/SiparisOlustur"
+                    element={
+                        isAuthenticated ? (
+                            <Layout><SiparisOlustur /></Layout>
                         ) : (
                             <Navigate to="/" />
                         )

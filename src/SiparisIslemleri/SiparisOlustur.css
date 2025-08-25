@@ -1,0 +1,409 @@
+﻿:root {
+    --bg: #0b1220;
+    --card: #0f172a;
+    --muted: #94a3b8;
+    --text: #e5e7eb;
+    --accent: #7c3aed; /* mor */
+    --accent-2: #22c55e; /* yeşil */
+    --danger: #ef4444;
+    --border: #1f2937;
+    --radius: 16px;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --ring-purple: 0 0 0 3px rgba(124,58,237,.25);
+    --ring-green: 0 0 0 3px rgba(34,197,94,.18);
+}
+
+* {
+    box-sizing: border-box
+}
+
+html, body, #root {
+    height: 100%
+}
+
+body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 20% -10%, rgba(124,58,237,.15), transparent 60%), radial-gradient(1000px 600px at 100% 0, rgba(34,197,94,.12), transparent 60%), var(--bg);
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+}
+
+.so-page {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 28px 28px 64px;
+}
+
+.so-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px
+}
+
+.so-title {
+    margin: 0;
+    font-size: 28px;
+    letter-spacing: .2px;
+}
+
+.so-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px
+}
+
+/* Üstte AYRIK iki panel: 6+6 ve eşit yükseklik */
+.so-grid.so-grid--two {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0,1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+    grid-auto-rows: 1fr;
+    align-items: stretch;
+}
+
+.so-equal {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.so-card {
+    background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(6px);
+    grid-column: span 6;
+}
+
+@media (max-width: 1200px) {
+    .so-card {
+        grid-column: span 12;
+    }
+}
+
+.so-label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px
+}
+
+.so-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    background: #0b1328;
+    outline: none;
+    transition: box-shadow .2s, border-color .2s;
+}
+
+    .so-input:focus {
+        border-color: rgba(124,58,237,.5);
+        box-shadow: var(--ring-purple);
+    }
+
+.so-help {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 12px
+}
+
+.so-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px
+}
+
+.so-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    background: #0b1328;
+    cursor: pointer;
+    transition: transform .05s ease, background .2s, border-color .2s;
+}
+
+    .so-btn:hover {
+        background: #101a35;
+        border-color: #2b3a55
+    }
+
+    .so-btn:active {
+        transform: translateY(1px)
+    }
+
+    .so-btn svg {
+        flex: 0 0 auto
+    }
+
+    .so-btn[disabled] {
+        opacity: .5;
+        cursor: not-allowed
+    }
+
+.so-btn-primary {
+    background: linear-gradient(180deg, rgba(124,58,237,.35), rgba(124,58,237,.25));
+    border-color: rgba(124,58,237,.55)
+}
+
+    .so-btn-primary:hover {
+        background: linear-gradient(180deg, rgba(124,58,237,.45), rgba(124,58,237,.3));
+    }
+
+/* TABLO PANELİ */
+.so-table-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+    box-shadow: var(--shadow);
+}
+
+.so-table-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    letter-spacing: .2px
+}
+
+.so-table-sub {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 12px
+}
+
+.so-table-wrap {
+    width: 100%;
+    overflow: auto
+}
+
+.so-table {
+    width: max(1200px, 100%);
+    border-collapse: separate;
+    border-spacing: 0
+}
+
+    .so-table thead th {
+        position: sticky;
+        top: 0;
+        background: #0c142b;
+        z-index: 2;
+        text-align: left;
+        font-weight: 600;
+        font-size: 12px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+        letter-spacing: .2px
+    }
+
+    .so-table tbody td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #111a31
+    }
+
+    .so-table tbody tr:nth-child(odd) {
+        background: rgba(255,255,255,.01)
+    }
+
+    .so-table tbody tr:hover {
+        background: rgba(124,58,237,.07)
+    }
+
+.so-index {
+    position: sticky;
+    left: 0;
+    background: #0c142b;
+    z-index: 3;
+    width: 48px;
+    min-width: 48px
+}
+
+.so-cell-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Tablo içi dropzone */
+.so-drop-row td {
+    padding: 0 !important;
+}
+
+.so-drop-in-table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    border: 2px dashed rgba(124,58,237,.45);
+    background: radial-gradient(600px 200px at 50% 0, rgba(124,58,237,.08), transparent 60%);
+    border-radius: 12px;
+    margin: 10px;
+    user-select: none;
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .1s;
+}
+
+    .so-drop-in-table:hover {
+        border-color: rgba(124,58,237,.75);
+    }
+
+    .so-drop-in-table.active {
+        border-color: rgba(34,197,94,.85);
+        background: radial-gradient(600px 200px at 50% 0, rgba(34,197,94,.12), transparent 60%);
+        box-shadow: var(--ring-green);
+        transform: scale(0.998);
+    }
+
+    .so-drop-in-table svg {
+        opacity: .9;
+        margin-bottom: 10px
+    }
+
+.so-drop-title {
+    font-weight: 600;
+    letter-spacing: .2px;
+    margin-bottom: 4px
+}
+
+.so-drop-sub {
+    color: var(--muted);
+    font-size: 12px
+}
+
+.so-footnote {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--border)
+}
+
+.so-error {
+    color: #ff6b6b;
+    padding: 10px 14px;
+    font-size: 13px
+}
+/* === Modal (kontrast yüksek, modern, dark+light destekli) === */
+.so-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2,6,23,.55); /* koyu overlay */
+    backdrop-filter: blur(2px); /* hafif blur */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.so-modal {
+    width: min(760px, 92vw);
+    background: #0f172a; /* slate-900 */
+    color: #e5e7eb; /* zinc-200 */
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+    border: 1px solid rgba(148,163,184,.25); /* slate-400/25 */
+    overflow: hidden; /* header/foot ayrımı */
+}
+
+.so-modal__body {
+    padding: 20px 24px;
+}
+
+.so-modal__title {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.so-modal__kpi {
+    margin: 0 0 10px;
+    font-weight: 600;
+}
+
+    .so-modal__kpi .good {
+        color: #22c55e;
+    }
+    /* green-500 */
+    .so-modal__kpi .bad {
+        color: #ef4444;
+    }
+/* red-500 */
+
+.so-modal__list {
+    margin: 8px 0 0 0;
+    padding-left: 18px;
+}
+
+    .so-modal__list li {
+        margin: 4px 0;
+        line-height: 1.4;
+        color: #e5e7eb;
+    }
+
+.so-modal__hint {
+    font-size: 12px;
+    opacity: .9;
+    margin-top: 8px;
+}
+
+.so-modal__actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 14px 24px;
+    border-top: 1px solid rgba(148,163,184,.2);
+    background: rgba(15,23,42,.75);
+}
+
+/* Butonlar modal içinde asla soluk görünmesin */
+.so-modal .so-btn {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+.so-modal .so-btn-primary {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #fff;
+}
+
+    .so-modal .so-btn-primary:hover {
+        background: #5458ea;
+    }
+
+/* Light tema desteği */
+@media (prefers-color-scheme: light) {
+    .so-modal {
+        background: #fff;
+        color: #0f172a;
+        border-color: rgba(15,23,42,.08);
+    }
+
+    .so-modal__title {
+        color: #0f172a;
+    }
+
+    .so-modal__list li {
+        color: #0f172a;
+    }
+
+    .so-modal__actions {
+        background: rgba(248,250,252,.8);
+    }
+}

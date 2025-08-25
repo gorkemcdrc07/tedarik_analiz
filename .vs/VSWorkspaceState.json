@@ -2,8 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\src",
-    "\\src\\components"
+    "\\src\\components",
+    "\\src\\SiparisIslemleri"
   ],
-  "SelectedNode": "\\src\\components\\Sidebar.js",
   "PreviewInSolutionExplorer": false
 }
