@@ -4,7 +4,6 @@ import {
     Download,
     Link as LinkIcon,
     ListChecks,
-    IdCard,
     FileSpreadsheet,
     UploadCloud,
 } from "lucide-react";
@@ -179,6 +178,8 @@ export default function SiparisOlustur() {
         matchedCount: 0,
         unmatchedCount: 0,
         samples: [], // {rowIndex, before, matchedAdresAdi, matchedAdresId, matchedCariId, score}
+        matchedSamples: [],
+        unmatchedSamples: [],
     });
     const [matchResults, setMatchResults] = useState([]); // her satır için eşleşme sonucu
 
@@ -342,14 +343,12 @@ export default function SiparisOlustur() {
         }
 
         // Tabloyu ekrandaki sırayla, # kolonu dahil AOA olarak yaz
-        const cols = ["#", ...columns]; // columns zaten HEADERS ile geliyor
+        const cols = [...columns];
         const aoa = [
             cols,
-            ...rows.map((r, i) => [
-                i + 1,
-                ...columns.map((c) => r[c] ?? "")
-            ]),
+            ...rows.map((r) => columns.map((c) => r[c] ?? "")),
         ];
+
 
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         const wb = XLSX.utils.book_new();
@@ -363,7 +362,7 @@ export default function SiparisOlustur() {
         // Artık id ile değil, doğrudan proje_adi ile filtreliyoruz
         const { data, error } = await supabase
             .from(DATA_TABLE)
-            .select(`${SELECT_COLS}, Proje_Adi`) // Proje_Adi da gelsin
+            .select(`${SELECT_COLS}, Proje_Adi`)
             .eq("Proje_Adi", projectName);       // <-- KRİTİK: isim ile eşle
 
         if (error) throw error;
@@ -404,7 +403,6 @@ export default function SiparisOlustur() {
         setRows((prev) => applyOverlay(prev, incoming));
     };
 
-    /* === EKLENDİ: EŞLEŞME YAP — fuzzy adres eşleştirme + onay modalı === */
     /* === EKLENDİ: EŞLEŞME YAP — birebir adres_adi + onay modalı === */
     const handleEslesmeYap = async () => {
         try {
@@ -453,33 +451,66 @@ export default function SiparisOlustur() {
                 allAdresler = allAdresler.concat(data || []);
             }
 
-            // 3) Hızlı lookup için Map
+            // 3) Hızlı lookup (birebir) + yakın eşleşme aday listesi
             const byAdresAdi = new Map();
-            for (const a of allAdresler) {
-                byAdresAdi.set(key(a.adres_adi), {
+            const candidateList = allAdresler.map(a => {
+                const item = {
                     adres_id: a?.adres_id ?? "",
                     adres_adi: a?.adres_adi ?? "",
                     cari_hesap_id: a?.cari_hesap_id ?? "",
-                });
-            }
+                };
+                byAdresAdi.set(key(item.adres_adi), item);          // birebir için
+                return { ...item, _clean: cleanAddr(item.adres_adi) }; // yakın eşleşme için
+            });
 
-            // 4) Satır satır birebir eşleşme
+            // 4) Satır satır: önce BİREBİR, yoksa YAKIN eşleşme öner
             const currentRows = rows;
+            const SIM_THRESHOLD = 0.78; // yakın eşleşme eşiği
+            const TOP_N = 3;
+
             const results = currentRows.map((row, idx) => {
                 const qRaw = row["Teslim Firma Adres Adı"];
-                const found = byAdresAdi.get(key(qRaw));
-                if (found) {
+                const exact = byAdresAdi.get(key(qRaw));
+
+                if (exact) {
+                    // BİREBİR BULUNDU
                     return {
                         rowIndex: idx,
                         ok: true,
                         before: qRaw,
-                        matchedAdresAdi: found.adres_adi,
-                        matchedAdresId: found.adres_id,
-                        matchedCariId: found.cari_hesap_id,
+                        matchedAdresAdi: exact.adres_adi,
+                        matchedAdresId: exact.adres_id,
+                        matchedCariId: exact.cari_hesap_id,
                         score: 1,
+                        suggestions: [], // birebir bulundu; öneri gereksiz
                     };
                 }
-                return { rowIndex: idx, ok: false, before: qRaw, score: 0 };
+
+                // BİREBİR YOK: YAKIN EŞLEŞME ARA
+                const qClean = cleanAddr(qRaw);
+                const scored = candidateList.map(c => ({
+                    ...c,
+                    _score: scoreSimilarity(qClean, c._clean),
+                }));
+
+                const suggestions = scored
+                    .filter(x => x._score >= SIM_THRESHOLD)
+                    .sort((a, b) => b._score - a._score)
+                    .slice(0, TOP_N)
+                    .map(s => ({
+                        adres_adi: s.adres_adi,
+                        adres_id: s.adres_id,
+                        cari_hesap_id: s.cari_hesap_id,
+                        score: Number(s._score.toFixed(2)),
+                    }));
+
+                return {
+                    rowIndex: idx,
+                    ok: false,
+                    before: qRaw,
+                    score: 0,
+                    suggestions, // yakın adaylar
+                };
             });
 
             const matched = results.filter(r => r.ok);
@@ -500,6 +531,7 @@ export default function SiparisOlustur() {
                 unmatchedSamples: unmatched.slice(0, 20).map(r => ({
                     rowIndex: r.rowIndex,
                     before: r.before || "—",
+                    suggestions: r.suggestions || [],
                 })),
             });
 
@@ -531,14 +563,17 @@ export default function SiparisOlustur() {
     };
 
     const cancelMatches = () => setMatchModalOpen(false);
-    /* === /EKLENDİ === */
-    const handleEslesmeIdGetir = () => {
-        if (!projeAdi) {
-            setError("Eşleşme ID’lerini getirmeden önce lütfen bir proje seçin.");
-            return;
-        }
-        const fakeId = Math.random().toString(36).slice(2, 10).toUpperCase();
-        alert(`Eşleşme ID'si: ${fakeId}`);
+
+
+    /*** YENİ: Temizle butonu işlevi ***/
+    const handleTemizle = () => {
+        setRows([]);
+        setLastFile(null);
+        setError("");
+        setMatchResults([]);
+        setMatchPreview({ total: 0, matchedCount: 0, unmatchedCount: 0, samples: [], matchedSamples: [], unmatchedSamples: [] });
+        setMatchModalOpen(false);
+        // Proje seçimini koruyoruz; istersen değiştirilebilir.
     };
 
     return (
@@ -591,9 +626,7 @@ export default function SiparisOlustur() {
                         <button className="so-btn" onClick={handleEslesmeYap} disabled={!projeAdi || overlayLoading}>
                             <LinkIcon size={18} /> {overlayLoading ? "Eşleştiriliyor..." : "Eşleşme Yap"}
                         </button>
-                        <button className="so-btn" onClick={handleEslesmeIdGetir} disabled={!projeAdi}>
-                            <IdCard size={18} /> Eşleşme ID’lerini Getir
-                        </button>
+                        {/* ESKİ: Eşleşme ID'lerini Getir butonu KALDIRILDI */}
                         <button className="so-btn" onClick={handleExportExcel} disabled={!rows.length || !projeAdi}>
                             <FileSpreadsheet size={18} /> Dışarı Excel Aktarma
                         </button>
@@ -681,7 +714,20 @@ export default function SiparisOlustur() {
                         Yüklü: <b>{lastFile.name}</b>
                     </p>
                 )}
+
+                <div className="so-actions" style={{ justifyContent: 'flex-end', marginTop: 12 }}>
+                    <button
+                        className="so-btn so-btn-danger"
+                        style={{ backgroundColor: '#e11d48', color: 'white' }}
+                        onClick={handleTemizle}
+                        disabled={!rows.length && !lastFile && !error}
+                        title="Tabloyu ve uyarıları temizle"
+                    >
+                        Temizle
+                    </button>
+                </div>
             </div>
+
 
             {/* === EKLENDİ: Eşleşme onay modali === */}
             {matchModalOpen && (

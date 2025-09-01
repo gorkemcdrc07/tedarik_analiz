@@ -1,91 +1,279 @@
-﻿.modal-overlay {
+﻿:root {
+    --bg-overlay: rgba(8,12,20,.55);
+    --panel: rgba(16,22,36,.72);
+    --panel-strong: rgba(16,22,36,.88);
+    --border: rgba(255,255,255,.10);
+    --fg: #e9eef8;
+    --muted: #96a4bf;
+    --accent: #8b5cf6;
+    --accent2: #22d3ee;
+    --ring: rgba(139,92,246,.45);
+    --shadow: 0 20px 60px rgba(0,0,0,.45);
+    --success: #2ecc71;
+    --warn: #f39c12;
+    --danger: #e74c3c;
+}
+
+/* Overlay */
+.odak-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    background: radial-gradient(70% 80% at 20% -10%, rgba(139,92,246,.15), transparent 60%), radial-gradient(50% 60% at 110% 10%, rgba(34,211,238,.14), transparent 50%), var(--bg-overlay);
+    backdrop-filter: blur(8px) saturate(120%);
+    -webkit-backdrop-filter: blur(8px) saturate(120%);
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     z-index: 1000;
-    padding: 1rem;
+    padding: 20px;
+    animation: overlay-in .18s ease-out;
 }
 
-.modal-content {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 1400px;
-    max-height: 90vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-    position: relative;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-}
-
-.close-button {
-    position: absolute;
-    top: 20px;
-    right: 24px;
-    font-size: 1.5rem;
-    color: #999;
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: color 0.2s ease-in-out;
-}
-
-    .close-button:hover {
-        color: #e74c3c;
+@keyframes overlay-in {
+    from {
+        opacity: .0
     }
 
-.modal-content h2 {
-    font-size: 1.4rem;
-    margin-bottom: 1.5rem;
-    color: #2c3e50;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 0.75rem;
+    to {
+        opacity: 1
+    }
 }
 
-/* Scrollable content wrapper */
-.table-wrapper {
-    overflow-y: auto;
-    flex: 1;
-}
-
-/* Table styles */
-.detail-table {
+/* Modal */
+.odak-modal {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 20px 18px 16px;
     width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
+    max-width: 1400px; /* genişlik aynı */
+    max-height: 88vh;
+    overflow: hidden;
+    color: var(--fg);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    animation: modal-in .22s cubic-bezier(.2,.8,.2,1);
+    /* DİKEY SCROLL İÇİN GEREKLİ */
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes modal-in {
+    from {
+        transform: translateY(8px) scale(.98);
+        opacity: .0
+    }
+
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1
+    }
+}
+
+/* neon edge */
+.odak-modal::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 20px;
+    pointer-events: none;
+    background: linear-gradient(120deg, rgba(139,92,246,.28), rgba(34,211,238,.22));
+    filter: blur(18px) opacity(.55);
+    z-index: -1;
+}
+
+/* Header */
+.odak-modal h2 {
+    margin: 0 34px 12px 6px;
+    font-size: 1.1rem;
+    letter-spacing: .02em;
+    font-weight: 700;
+    color: #dfe7fb;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.odak-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 8px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 30%, #fff, var(--accent));
+    box-shadow: 0 0 12px rgba(139,92,246,.8), 0 0 22px rgba(34,211,238,.4);
+    vertical-align: middle;
+}
+
+/* Close */
+.odak-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    color: #cbd5f6;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    transition: transform .12s ease, box-shadow .12s ease, color .12s ease;
+}
+
+    .odak-close:hover {
+        color: #fff;
+        box-shadow: 0 0 0 4px rgba(139,92,246,.15);
+        transform: translateY(-1px);
+    }
+
+/* Table wrapper – burada dikey scroll var */
+.odak-table-wrapper {
+    flex: 1 1 auto; /* kritik */
+    min-height: 0; /* kritik */
+    overflow-y: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    border: 1px solid rgba(255,255,255,.06);
+}
+
+/* Table */
+.odak-detail-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: .92rem;
     min-width: 1000px;
 }
 
-    .detail-table thead th {
+    .odak-detail-table thead th {
         position: sticky;
         top: 0;
-        background-color: #f8f9fa;
-        color: #333;
-        font-weight: 600;
-        padding: 12px 10px;
-        border-bottom: 2px solid #dee2e6;
-        text-align: left;
         z-index: 2;
-    }
-
-    .detail-table td {
-        padding: 10px 12px;
-        border-bottom: 1px solid #e6e6e6;
+        background: linear-gradient(180deg, rgba(16,22,36,.96), rgba(16,22,36,.90));
+        color: #d7def0;
+        font-weight: 700;
+        font-size: .82rem;
+        letter-spacing: .02em;
+        padding: 12px 10px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+        text-align: left;
         white-space: nowrap;
-        color: #444;
     }
 
-    .detail-table tbody tr:nth-child(even) {
-        background-color: #f9f9f9;
+    /* sticky first column (opsiyonel, istersen kaldır) */
+    .odak-detail-table th:first-child,
+    .odak-detail-table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        background: linear-gradient(180deg, rgba(16,22,36,.96), rgba(16,22,36,.92));
+        border-right: 1px solid rgba(255,255,255,.04);
     }
 
-    .detail-table tbody tr:hover {
-        background-color: #f1f3f5;
-        transition: background-color 0.2s;
+    .odak-detail-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+        color: #e9edf7;
+        white-space: nowrap;
     }
+
+    .odak-detail-table tbody tr:nth-child(even) {
+        background: rgba(255,255,255,.02);
+    }
+
+    .odak-detail-table tbody tr:hover {
+        background: rgba(255,255,255,.04);
+        transition: background-color .15s ease;
+    }
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pill {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: .78rem;
+    border: 1px solid rgba(255,255,255,.12);
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+}
+
+.pill-success {
+    color: #b7ffdf;
+    border-color: rgba(46, 204, 113, .45);
+    box-shadow: inset 0 0 0 1px rgba(46,204,113,.25);
+}
+
+.pill-warn {
+    color: #ffe2b4;
+    border-color: rgba(243,156,18,.45);
+    box-shadow: inset 0 0 0 1px rgba(243,156,18,.25);
+}
+
+.pill-danger {
+    color: #ffb9b9;
+    border-color: rgba(231,76,60,.45);
+    box-shadow: inset 0 0 0 1px rgba(231,76,60,.25);
+}
+
+.pill-neutral {
+    color: #d9e2ff;
+}
+
+/* scrollbar */
+.odak-table-wrapper::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.odak-table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(148,163,184,.25);
+    border-radius: 10px;
+    border: 2px solid rgba(14,20,34,.45);
+}
+
+/* small screens */
+@media (max-width: 720px) {
+    .odak-modal {
+        padding: 16px 12px;
+        border-radius: 14px;
+    }
+
+        .odak-modal h2 {
+            margin-right: 40px;
+            font-size: 1rem;
+        }
+
+    .odak-detail-table {
+        font-size: .88rem;
+        min-width: 880px;
+    }
+
+        .odak-detail-table thead th {
+            padding: 10px 8px;
+            font-size: .78rem;
+        }
+
+        .odak-detail-table td {
+            padding: 8px 8px;
+        }
+}
+
+/* motion reduce */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

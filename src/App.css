@@ -1,217 +1,321 @@
-﻿/* =========================
-   GENEL SAYFA YAPISI
-   ========================= */
+﻿/* ==== Global görünüm (koyu cam/blur + neon aksan) ========================= */
+:root {
+    --bg1: #0b1220;
+    --bg2: #0d1426;
+    --panel: rgba(16, 22, 36, .70);
+    --panel-strong: rgba(16, 22, 36, .85);
+    --border: rgba(255,255,255,.08);
+    --fg: #e6eaf2;
+    --muted: #8ea0bc;
+    --accent: #8b5cf6; /* violet-500 */
+    --accent2: #22d3ee; /* cyan-400 */
+    --ring: rgba(139,92,246,.45);
+    --shadow: 0 12px 40px rgba(0,0,0,.35);
+    --success: #27ae60;
+    --warn: #f39c12;
+    --danger: #e74c3c;
+    /* YENİ: yalnızca dikey kısaltma için */
+    --table-max-h: 60vh; /* İstersen 55vh/50vh yap */
+}
+
+/* Arka plan */
 html, body {
     height: 100%;
+}
+
+body {
     margin: 0;
-    background-color: #0b1220; /* koyu arka plan (screenshot ile uyumlu) */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #1f2937;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
-    overflow-y: auto;
+    color: var(--fg);
+    background: radial-gradient(1200px 600px at 20% -10%, rgba(139,92,246,.20), transparent 60%), radial-gradient(900px 600px at 110% 10%, rgba(34,211,238,.15), transparent 50%), linear-gradient(180deg, var(--bg1), var(--bg2));
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-.app-container {
-    max-width: 1800px;
-    margin: 0 auto;
-    padding: 2rem;
-    min-height: 100vh;
+/* İnce scrollbar */
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
 }
 
-/* =========================
-   BAŞLIK / SAYFA TITLE
-   ========================= */
-.table-title, h2 {
-    text-align: center;
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: #e5e7eb; /* koyu arka planda görünür */
-    font-weight: 800;
-    letter-spacing: .2px;
-}
-
-/* =========================
-   UYARILAR BLOĞU
-   ========================= */
-.warning-block,
-.alerts,
-.notices {
-    margin: 10px 0 14px 0;
-    padding: 10px 14px;
+*::-webkit-scrollbar-thumb {
+    background: rgba(148,163,184,.25);
     border-radius: 10px;
-    background: #fff7ed; /* açık turuncu arka plan */
-    border: 1px solid #fdba74; /* turuncu çerçeve */
-    color: #7c2d12; /* koyu turuncu metin */
-    box-shadow: 0 1px 6px rgba(0,0,0,.06);
+    border: 2px solid rgba(14,20,34,.5);
 }
 
-    .warning-block .title,
-    .alerts .title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 800;
-        color: #9a3412;
-        margin-bottom: 6px;
-    }
-
-    .warning-block ul,
-    .alerts ul {
-        margin: 0;
-        padding-left: 18px; /* madde işaretleri görünür olsun */
-    }
-
-    .warning-block li,
-    .alerts li {
-        line-height: 1.35;
-        margin: 3px 0;
-        font-weight: 600;
-    }
-
-/* küçük uyarı rozeti */
-.badge-warn {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: #f97316;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
+/* ==== Sayfa iskeleti ====================================================== */
+.app-container {
+    padding: 16px;
+    display: grid;
+    gap: 14px;
 }
 
-/* =========================
-   BÖLÜM KUTUSU
-   ========================= */
+/* Bölüm genel panel */
 .section {
-    margin-bottom: 20px;
+    background: var(--panel);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
     padding: 14px;
-    border-radius: 12px;
-    background-color: #ffffff;
-    box-shadow: 0 1px 10px rgba(2, 6, 23, 0.18);
 }
 
-/* =========================
-   TABLO WRAPPER
-   ========================= */
+/* ==== Filtre çubuğu (Dashboard üstündeki) ================================= */
+.filter-bar {
+    background: var(--panel-strong);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 10px 12px;
+}
+
+    .filter-bar label {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    /* Inputs (date) */
+    .filter-bar input[type="date"],
+    .filter-bar input[type="text"],
+    .filter-bar input[type="search"],
+    .filter-bar select {
+        appearance: none;
+        background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+        color: var(--fg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 8px 10px;
+        outline: none;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .filter-bar input::placeholder {
+        color: var(--muted);
+    }
+
+    .filter-bar input:focus {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+
+/* Birincil buton */
+.btn-primary {
+    background: linear-gradient(120deg, rgba(139,92,246,.25), rgba(34,211,238,.20));
+    color: var(--fg);
+    border: 1px solid rgba(139,92,246,.40);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(139,92,246,.15);
+    transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
+}
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 34px rgba(139,92,246,.22);
+    }
+
+    .btn-primary:disabled {
+        opacity: .6;
+        cursor: default;
+        transform: none;
+    }
+
+/* ==== Uyarı kutusu (uyari-modal) ========================================= */
+.uyari-modal {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px 12px 14px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+}
+
+    .uyari-modal h4 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        letter-spacing: .02em;
+    }
+
+    .uyari-modal ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .uyari-modal li {
+        margin: 2px 0;
+    }
+
+.modal-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.35);
+    color: #fff;
+    border: 1px solid var(--border);
+    cursor: pointer;
+}
+
+/* ==== Tablo görünümü ====================================================== */
 .table-wrapper {
-    width: 100%;
-    overflow: auto;
-    max-height: 75vh;
-    -webkit-overflow-scrolling: touch;
-    box-shadow: 0 2px 14px rgba(2, 6, 23, 0.25);
-    border-radius: 12px;
-    background: #ffffff;
-    padding: 0.6rem;
-    border: 1px solid #cbd5e1;
-    position: relative; /* sticky thead için stacking context */
+    /* GENİŞLİĞE DOKUNMADAN sadece dikey kısaltma */
+    max-height: var(--table-max-h); /* YENİ */
+    overflow: auto; /* hem yatay hem dikey scroll */
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
 }
 
-/* =========================
-   TABLO
-   ========================= */
+/* modern tablo */
 .styled-table {
     width: 100%;
-    min-width: 1200px;
-    border-collapse: collapse;
-    font-size: 15.5px;
-    line-height: 1.35;
-    font-weight: 500;
-    color: #0f172a;
-    background: #fff;
-    box-shadow: 0 0 0 1px #e5e7eb inset;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 960px; /* orijinal: ekrana sığmazsa yatay scroll */
 }
 
-    /* Başlık satırı */
-    .styled-table thead tr {
-        background-color: #0f172a; /* daha koyu başlık */
-        color: #ffffff;
-        text-align: center;
-    }
-
+    /* Başlık */
     .styled-table thead th {
         position: sticky;
-        top: 0; /* wrapper içinde tepeye sabitlenir */
-        z-index: 5; /* içerik üstünde kalsın */
-        background: #0f172a;
-        color: #ffffff;
-        font-weight: 800;
-        letter-spacing: .3px;
-        padding: 12px 14px;
-        border-bottom: 2px solid #1f2937; /* başlık çizgisi belirgin */
-        box-shadow: 0 2px 0 rgba(0,0,0,.08);
+        top: 0;
+        z-index: 2;
+        background: linear-gradient(180deg, rgba(16,22,36,.96), rgba(16,22,36,.90));
+        color: #d7def0;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: .02em;
+        border-bottom: 1px solid var(--border);
+        padding: 10px 10px;
+        text-align: center;
         white-space: nowrap;
     }
 
+    .styled-table thead tr:first-child th {
+        background: linear-gradient(180deg, rgba(19, 27, 44, .98), rgba(19, 27, 44, .92));
+    }
+
+    .styled-table thead tr:nth-child(2) th {
+        font-weight: 600;
+        color: #c7d2ee;
+    }
+
     /* Hücreler */
-    .styled-table th,
     .styled-table td {
-        padding: 12px 14px;
-        border: 1px solid #e5e7eb;
+        padding: 9px 10px;
+        border-bottom: 1px solid rgba(255,255,255,.05);
         text-align: center;
-        color: #0b1320;
+        font-size: 13px;
+        color: #e9edf7;
     }
 
-    /* Alternatif satır */
-    .styled-table tbody tr:nth-child(even) {
-        background-color: #f8fafc;
-    }
+        /* İlk sütun (Proje) sola hizalı ve “link” hissi */
+        .styled-table td:first-child, .styled-table th:first-child {
+            text-align: left;
+        }
 
-    /* Hover efekti */
-    .styled-table tbody tr:hover {
-        background-color: #eef2ff;
-        transition: background .15s ease;
-    }
-
-    /* Öne çıkan hücreler */
-    .styled-table td.etablo {
-        background-color: #e8f0ff;
-        color: #0b1b34;
-        font-weight: 600;
-    }
-
-    .styled-table td.reel {
-        background-color: #ffe7ef;
-        color: #32121d;
-        font-weight: 600;
-    }
-
-/* Yüzdelik metinleri renklendir (opsiyonel) */
-.text-success {
-    color: #16a34a;
+.clickable-project {
+    color: #60a5fa;
     font-weight: 700;
+    text-decoration: none;
+    position: relative;
 }
 
-.text-warn {
-    color: #f59e0b;
+    .clickable-project:hover {
+        text-decoration: underline;
+    }
+
+/* E-tablo / Reel işaretli hücre rozet hissi */
+td.etablo, td.reel {
     font-weight: 700;
+    border-radius: 10px;
 }
 
-.text-danger {
-    color: #dc2626;
-    font-weight: 700;
+td.etablo {
+    background: linear-gradient(180deg, rgba(139,92,246,.12), rgba(139,92,246,.06));
+    color: #c9b6ff;
+    border: 1px solid rgba(139,92,246,.25);
 }
 
-/* Footer */
-.styled-table tfoot tr {
-    background-color: #f3f4f6;
-    font-weight: 700;
-    border-top: 2px solid #cbd5e1;
-    color: #0f172a;
+td.reel {
+    background: linear-gradient(180deg, rgba(34,211,238,.12), rgba(34,211,238,.06));
+    color: #a7f3ff;
+    border: 1px solid rgba(34,211,238,.25);
 }
 
-/* Scrollbar */
-.table-wrapper::-webkit-scrollbar {
-    height: 10px;
-    width: 10px;
+/* Satır vurguları */
+.styled-table tbody tr:hover {
+    background: rgba(255,255,255,.03);
 }
 
-.table-wrapper::-webkit-scrollbar-thumb {
-    background: #9aa4b2;
-    border-radius: 6px;
+.styled-table tbody tr.fazla-reel-talep {
+    box-shadow: inset 0 0 0 9999px rgba(34,197,94,.08);
 }
 
-.table-wrapper::-webkit-scrollbar-track {
-    background: #e5e7eb;
+.styled-table tbody tr.uyumsuz-satir {
+    box-shadow: inset 0 0 0 9999px rgba(239,68,68,.07);
+}
+
+/* Alt toplam (tfoot) */
+.styled-table tfoot td {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(16,22,36,.96), rgba(16,22,36,.92));
+    border-top: 1px solid var(--border);
+    font-weight: 800;
+}
+
+/* Yükleniyor metni */
+.loading {
+    margin: 12px 0 0 6px;
+    opacity: .75;
+}
+
+/* Küçük ekran iyileştirme */
+@media (max-width: 720px) {
+    .section {
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    .filter-bar {
+        border-radius: 12px;
+    }
+
+    .table-wrapper {
+        border-radius: 12px;
+    }
+
+    .styled-table thead th {
+        font-size: 11px;
+        padding: 8px;
+    }
+
+    .styled-table td {
+        font-size: 12px;
+        padding: 7px 8px;
+    }
+}
+
+/* ================== OPSİYONEL: Daha kısa ve kompakt mod ================== */
+/* Yalnızca tablo yüksekliğini daha da azaltmak istersen: */
+.table-wrapper.kisa {
+    --table-max-h: 52vh;
+}
+
+/* Satır/padding sıkıştırma için: */
+.styled-table.compact thead th {
+    padding: 8px 8px;
+    font-size: 11px;
+}
+
+.styled-table.compact td {
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.2;
 }
