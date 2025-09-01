@@ -1,69 +1,246 @@
-﻿/* components/Navbar.css */
+﻿/* Navbar.css — modern, şık, kütüphanesiz stil */
+/* System font stack, glass arkaplan, yumuşak geçişler */
 
-.navbar {
-    height: 64px;
-    background: linear-gradient(90deg, #1f2937 0%, #111827 100%);
-    color: #f9fafb;
+:root {
+    --bg: #ffffff;
+    --fg: #0f172a; /* slate-900 */
+    --muted: #64748b; /* slate-500 */
+    --border: rgba(15, 23, 42, 0.08);
+    --primary: #6d28d9; /* purple-700 */
+    --ring: rgba(109, 40, 217, 0.25);
+    --card: rgba(255, 255, 255, 0.65);
+    --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="dark"], .dark {
+    --bg: #0b1220;
+    --fg: #e5e7eb; /* slate-200 */
+    --muted: #94a3b8; /* slate-400 */
+    --border: rgba(226, 232, 240, 0.12);
+    --primary: #a78bfa; /* violet-300 */
+    --ring: rgba(167, 139, 250, 0.25);
+    --card: rgba(12, 18, 32, 0.6);
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+html, body {
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    color: var(--fg);
+    background: var(--bg);
+}
+
+.nv-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .nv-wrapper, .dark .nv-wrapper {
+    background-color: rgba(8, 10, 18, 0.6);
+}
+
+.nv {
+    margin: 0 auto;
+    max-width: 1120px;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    padding: 0 16px;
 }
 
-.right-section {
+/* Sol */
+.nv-left {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 10px;
 }
 
-.user-box {
+.nv-brand {
     display: flex;
     align-items: center;
-    background: #374151;
-    padding: 6px 14px;
-    border-radius: 20px;
-    transition: background 0.3s ease;
+    gap: 10px;
+}
+
+.nv-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    box-shadow: var(--shadow);
+}
+
+.nv-brand-text {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* Sağ */
+.nv-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nv-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease;
     cursor: pointer;
 }
 
-    .user-box:hover {
-        background: #4b5563;
+    .nv-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow);
     }
 
-.user-icon {
-    margin-right: 8px;
-    font-size: 18px;
+    .nv-btn:active {
+        transform: translateY(0);
+    }
+
+    .nv-btn:focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+
+.nv-btn-label {
+    margin-left: 4px;
+    font-size: 12px;
+    opacity: .85;
 }
 
-.user-name {
-    font-size: 25px;
-    font-weight: 600;
-    color: #e5e7eb;
-}
-
-.logout-btn {
+.nv-secondary {
     background: transparent;
-    border: 1px solid #6b7280;
-    color: #d1d5db;
-    border-radius: 18px;
-    padding: 5px 12px;
+}
+
+.nv-iconbtn {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+}
+
+/* Kullanıcı kutusu */
+.nv-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--card);
+}
+
+.nv-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: radial-gradient(120% 120% at 20% 20%, var(--primary), transparent 60%), linear-gradient(135deg, rgba(99, 102, 241, .25), rgba(168, 85, 247, .25));
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.nv-username {
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    opacity: .9;
 }
 
-    .logout-btn:hover {
-        background: #6b7280;
-        color: white;
-    }
-
-.theme-toggle {
-    font-size: 18px;
-    cursor: pointer;
-    transition: color 0.2s ease;
+/* Mobil görünüm */
+.md-hidden {
+    display: inline-grid;
 }
 
-    .theme-toggle:hover {
-        color: #fcd34d;
+@media (min-width: 768px) {
+    .md-hidden {
+        display: none;
     }
+}
+
+/* Sheet / Drawer */
+.nv-sheet {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+}
+
+    .nv-sheet[data-open="true"] {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+.nv-drawer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 320px;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+}
+
+.nv-sheet[data-open="true"] .nv-drawer {
+    transform: translateX(0);
+}
+
+.nv-drawer-header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.nv-drawer-body {
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+}
+
+.nv-link {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--fg);
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+    .nv-link:hover {
+        background: var(--card);
+        border-color: var(--border);
+    }
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+    .nv-btn, .nv-sheet, .nv-drawer {
+        transition: none !important;
+    }
+}

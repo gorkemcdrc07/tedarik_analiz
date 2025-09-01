@@ -188,7 +188,8 @@ body {
 
 .so-table-wrap {
     width: 100%;
-    overflow: auto
+    overflow: auto;
+    max-height: 350px; /* tabloda en fazla 500px göster, sonra scroll */
 }
 
 .so-table {
