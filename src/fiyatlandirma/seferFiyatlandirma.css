@@ -1,0 +1,587 @@
+﻿/* ===== Ultra-Modern Glass + Soft-Neon UI (drop-in) =========================
+   - Dark / Light otomatik (prefers-color-scheme) + manuel override için [data-theme]
+   - Yüksek kontrast, yumuşak neon vurgular, mat cam yüzeyler
+   - Akışkan tipografi, kompakt tablo (daha fazla satır görünür), pürüzsüz scrollbars
+   - Odak/klavye erişilebilirliği, reduced-motion desteği
+   - Hızlı: minimal katman, mevcut .fx-* sınıflarıyla %100 uyumlu
+============================================================================ */
+
+/* ----------------------- Temalar & Değerler ----------------------- */
+:root {
+    color-scheme: dark;
+    /* Renkler */
+    --bg: #0b0f14;
+    --layer-1: rgba(18, 22, 28, 0.65);
+    --layer-2: rgba(18, 22, 28, 0.78);
+    --layer-3: rgba(18, 22, 28, 0.88);
+    --text: #eafbf6;
+    --muted: #9cd9cc;
+    --muted-2: #7fbfb3;
+    /* Neon vurgular */
+    --primary: #77ffe7;
+    --primary-2: #59dbff;
+    --ring: rgba(119, 255, 231, 0.5);
+    --ring-soft: rgba(119, 255, 231, 0.25);
+    /* Çizgiler & gölgeler */
+    --stroke: rgba(119, 255, 231, 0.18);
+    --stroke-strong: rgba(119, 255, 231, 0.35);
+    --divider: rgba(255,255,255,.06);
+    /* Işık & gölge */
+    --glow: 0 10px 50px rgba(119,255,231,.16);
+    --shadow-sm: 0 6px 18px rgba(0,0,0,.28);
+    --shadow-md: 0 14px 36px rgba(0,0,0,.34);
+    /* Radius & blur */
+    --r-md: 14px;
+    --r-lg: 18px;
+    --r-xl: 22px;
+    --r-full: 999px;
+    --blur: 14px;
+    /* Tipografi & hız */
+    --fs-0: clamp(12px, .75vw, 13px);
+    --fs-1: clamp(13px, .8vw, 14px);
+    --fs-2: clamp(14px, .9vw, 15px);
+    --fs-3: clamp(16px, 1.2vw, 18px);
+    --fs-4: clamp(18px, 1.6vw, 22px);
+    --t-fast: 140ms cubic-bezier(.22,.61,.36,1);
+    --t: 200ms cubic-bezier(.22,.61,.36,1);
+    --t-slow: 320ms cubic-bezier(.22,.61,.36,1);
+}
+
+/* Light override (manuel): <html data-theme="light"> */
+[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f7fbfb;
+    --layer-1: rgba(255,255,255,.75);
+    --layer-2: rgba(255,255,255,.88);
+    --layer-3: rgba(255,255,255,.95);
+    --text: #0e1519;
+    --muted: #4a6f69;
+    --muted-2: #2e5550;
+    --primary: #4de7cf;
+    --primary-2: #2bb8ef;
+    --ring: rgba(77, 231, 207, 0.45);
+    --ring-soft: rgba(77, 231, 207, 0.18);
+    --stroke: rgba(26, 49, 46, 0.15);
+    --stroke-strong: rgba(26, 49, 46, 0.28);
+    --glow: 0 10px 50px rgba(43,184,239,.12);
+}
+
+/* Sistem temasıyla otomatik senkron (istersen kullanma) */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        /* aynı değerler light ile senkron olur */
+    }
+}
+
+/* ----------------------- Reset & Base ----------------------- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    background: radial-gradient(1000px 520px at 10% -10%, rgba(119,255,231,.08), transparent 60%), radial-gradient(800px 520px at 110% 0%, rgba(89,219,255,.06), transparent 65%), var(--bg);
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden; /* app look */
+}
+
+:focus {
+    outline: none;
+}
+
+:focus-visible {
+    box-shadow: 0 0 0 3px var(--ring), 0 0 0 7px rgba(0,0,0,.35);
+    border-radius: 10px;
+    transition: box-shadow var(--t-fast);
+}
+
+/* Utils */
+.m-0 {
+    margin: 0;
+}
+
+.clip {
+    white-space: nowrap;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+}
+
+/* ----------------------- Layout ----------------------- */
+.fx-content {
+    --pad: 18px;
+    padding: var(--pad);
+    width: 100%;
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 14px;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+    .fx-content::before,
+    .fx-content::after {
+        content: "";
+        position: absolute;
+        inset: -20% -15% auto auto;
+        width: min(48vw, 760px);
+        height: min(48vw, 520px);
+        filter: blur(60px);
+        opacity: .28;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .fx-content::before {
+        background: radial-gradient(50% 60% at 30% 20%, rgba(119,255,231,.22), transparent 65%);
+    }
+
+    .fx-content::after {
+        left: -12%;
+        right: auto;
+        background: radial-gradient(50% 60% at 70% 20%, rgba(89,219,255,.20), transparent 65%);
+    }
+
+/* ----------------------- Cards ----------------------- */
+.fx-card {
+    background: linear-gradient(180deg, var(--layer-1), var(--layer-2));
+    border: 1px solid var(--stroke);
+    border-radius: var(--r-xl);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.03), var(--glow), var(--shadow-sm);
+    transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t);
+    position: relative;
+}
+
+    .fx-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(120deg, transparent 0%, rgba(119,255,231,.12) 12%, transparent 28%) no-repeat;
+        background-size: 280% 280%;
+        opacity: .18;
+        mix-blend-mode: screen;
+        pointer-events: none;
+    }
+
+@media (hover:hover) {
+    .fx-card:hover {
+        transform: translateY(-1px);
+        border-color: var(--stroke-strong);
+        box-shadow: 0 12px 48px rgba(119,255,231,.16), var(--shadow-md);
+    }
+
+        .fx-card:hover::after {
+            animation: sheen 2.4s linear infinite;
+        }
+}
+
+/* ----------------------- Toolbar ----------------------- */
+.fx-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--r-xl);
+    background: linear-gradient(180deg, var(--layer-2), var(--layer-1));
+    border: 1px solid var(--stroke);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.02), var(--glow), var(--shadow-sm);
+}
+
+.fx-toolbar__left, .fx-toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.fx-title {
+    font-size: var(--fs-3);
+    font-weight: 800;
+    letter-spacing: .2px;
+    color: #eafff7;
+}
+
+/* Chips / Inputs in toolbar */
+.pill, .chip-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--r-full);
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--stroke);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+    .pill input {
+        height: 30px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,.12);
+        background: rgba(0,0,0,.18);
+        color: var(--text);
+        padding: 0 8px;
+        outline: none;
+    }
+
+        .pill input:focus {
+            border-color: var(--stroke-strong);
+            box-shadow: 0 0 0 3px var(--ring-soft);
+        }
+
+.pill__sep {
+    opacity: .65;
+}
+
+.switch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--r-full);
+    border: 1px dashed var(--stroke-strong);
+}
+
+/* ----------------------- Buttons ----------------------- */
+.fx-btn {
+    --h: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: var(--h);
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid var(--stroke-strong);
+    color: var(--text);
+    background: linear-gradient(180deg, rgba(119,255,231,.18), rgba(0,160,160,.12));
+    box-shadow: 0 8px 26px rgba(119,255,231,.12), inset 0 1px 0 rgba(255,255,255,.08);
+    cursor: pointer;
+    transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t), opacity var(--t);
+}
+
+    .fx-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 32px rgba(119,255,231,.18);
+    }
+
+    .fx-btn:active {
+        transform: translateY(0);
+    }
+
+    .fx-btn:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+    }
+
+.fx-btn-outline {
+    background: linear-gradient(180deg, rgba(89,219,255,.12), rgba(89,219,255,.06));
+    border-color: rgba(89,219,255,.6);
+}
+
+.fx-btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    outline: 1px dashed var(--stroke-strong);
+}
+
+.fx-badge {
+    font-size: var(--fs-0);
+    padding: 6px 10px;
+    border-radius: var(--r-full);
+    background: linear-gradient(180deg, rgba(119,255,231,.18), rgba(119,255,231,.08));
+    border: 1px solid var(--stroke-strong);
+    color: #dffff7;
+}
+
+/* ----------------------- Arama kutusu kartı ----------------------- */
+.fx-input {
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.04);
+    padding: 10px 12px;
+    color: inherit;
+    outline: none;
+    width: 100%;
+    transition: border-color var(--t), box-shadow var(--t), background var(--t);
+    font-size: var(--fs-1);
+}
+
+    .fx-input::placeholder {
+        color: var(--muted);
+    }
+
+    .fx-input:focus {
+        border-color: var(--stroke-strong);
+        box-shadow: 0 0 0 3px var(--ring-soft);
+        background: rgba(255,255,255,.06);
+    }
+
+/* ----------------------- Tablo Kaplaması ----------------------- */
+.fx-table-wrap {
+    padding: 10px;
+    border-radius: var(--r-xl);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: linear-gradient(180deg, var(--layer-1), var(--layer-2));
+    border: 1px solid var(--stroke);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+}
+
+/* Scroll alanı — yükseklik sınırlı + pürüzsüz */
+.fx-table-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    max-height: clamp(420px, 60vh, 780px);
+    animation: fadeUp .25s ease both;
+}
+
+    /* Scrollbar */
+    .fx-table-scroll::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    .fx-table-scroll::-webkit-scrollbar-track {
+        background: rgba(255,255,255,.05);
+        border-radius: 10px;
+    }
+
+    .fx-table-scroll::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, rgba(119,255,231,.45), rgba(89,219,255,.45));
+        border-radius: 10px;
+        border: 2px solid rgba(0,0,0,.18);
+    }
+
+.fx-table-scroll {
+    scrollbar-color: rgba(119,255,231,.55) transparent;
+    scrollbar-width: thin;
+}
+
+/* ----------------------- Tablo ----------------------- */
+.fx-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    color: var(--text);
+    table-layout: fixed;
+    font-size: var(--fs-1);
+}
+
+    .fx-table th, .fx-table td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .fx-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: linear-gradient(180deg, var(--layer-3), rgba(0,0,0,.35));
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(119,255,231,.28);
+        padding: 8px 10px; /* kompakt başlık */
+        text-align: left;
+        font-weight: 800;
+        letter-spacing: .2px;
+        font-size: var(--fs-1);
+        color: #d7fff6;
+    }
+
+/* Sütun başlığı / sıralama alanı */
+.th-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Başlık altı filtre şeridi */
+.th-filter {
+    background: transparent;
+    border-bottom: 1px solid rgba(119,255,231,.16);
+}
+
+.th-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.th-filter input[type="text"], .th-filter input[type="number"] {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(255,255,255,.04);
+    color: inherit;
+    outline: none;
+    transition: border-color var(--t), box-shadow var(--t), background var(--t);
+    font-size: var(--fs-0);
+}
+
+.th-filter input:focus {
+    border-color: var(--stroke-strong);
+    box-shadow: 0 0 0 3px var(--ring-soft);
+}
+
+/* Satırlar — daha kısa, daha fazla görünür */
+.fx-table tbody td {
+    padding: 7px 9px; /* 8px -> 7px */
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    font-size: var(--fs-1);
+    line-height: 1.25;
+}
+
+.fx-table tbody tr:nth-child(2n) {
+    background: rgba(255,255,255,.018);
+}
+
+.fx-table tbody tr:hover {
+    background: rgba(119,255,231,.06);
+}
+
+/* İlk sütun sabit */
+.fx-table td:first-child, .fx-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: linear-gradient(180deg, var(--layer-3), rgba(0,0,0,.32));
+}
+
+/* Sütun sürükleme tutacağı (daha modern görünüm) */
+.col-resizer {
+    position: absolute;
+    right: -4px;
+    top: 0;
+    width: 8px;
+    height: 100%;
+    cursor: col-resize;
+}
+
+    .col-resizer::after {
+        content: "";
+        position: absolute;
+        right: 3px;
+        top: 25%;
+        height: 50%;
+        width: 2px;
+        background: rgba(255,255,255,.14);
+        border-radius: 2px;
+        transition: background var(--t);
+    }
+
+th._resizable:hover .col-resizer::after {
+    background: rgba(119,255,231,.45);
+}
+
+/* Boş / Yükleniyor durumları */
+.fx-empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 26px;
+    font-size: var(--fs-1);
+}
+
+.skeleton-row td {
+    height: 34px;
+}
+
+.skeleton {
+    width: 100%;
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.14), rgba(255,255,255,.06));
+    background-size: 200px 100%;
+    animation: shimmer 1.3s infinite;
+}
+
+/* ----------------------- Animasyonlar & Prefs ----------------------- */
+@keyframes shimmer {
+    0% {
+        background-position: -200px 0
+    }
+
+    100% {
+        background-position: 200px 0
+    }
+}
+
+@keyframes sheen {
+    0% {
+        background-position: 200% 0
+    }
+
+    100% {
+        background-position: -80% 0
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ----------------------- Responsive ----------------------- */
+@media (max-width: 1366px) {
+    .fx-content {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .fx-title {
+        font-size: var(--fs-3);
+    }
+}
+
+@media (max-width: 900px) {
+    .th-filter .th-filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

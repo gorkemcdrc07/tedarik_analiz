@@ -8,7 +8,11 @@ import Dashboard from "./Dashboard";
 import Layout from "./Layout";
 import GelirEkleme from "./GelirGider/GelirEkleme";
 import GiderEkleme from "./GelirGider/GiderEkleme";
-import SiparisOlustur from "./SiparisIslemleri/SiparisOlustur"; // ✅ yeni import
+import SiparisOlustur from "./SiparisIslemleri/SiparisOlustur";
+
+// ✅ Yeni: Sefer Fiyatlandırma ekranı
+import SeferFiyatlandirma from "./fiyatlandirma/seferFiyatlandirma";
+// import FiyatListesi from "./fiyatlandirma/FiyatListesi"; // hazır olduğunda açın
 
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -65,7 +69,6 @@ export default function App() {
                     }
                 />
 
-                {/* ✅ Yeni rota */}
                 <Route
                     path="/SiparisIslemleri/SiparisOlustur"
                     element={
@@ -76,6 +79,34 @@ export default function App() {
                         )
                     }
                 />
+
+                {/* ✅ Yeni rota: Sefer Fiyatlandırma */}
+                <Route
+                    path="/fiyatlandirma/seferFiyatlandirma"
+                    element={
+                        isAuthenticated ? (
+                            <Layout><SeferFiyatlandirma /></Layout>
+                        ) : (
+                            <Navigate to="/" />
+                        )
+                    }
+                />
+
+                {/* İsterseniz hazır olduğunda açın
+        <Route
+          path="/fiyatlandirma/fiyatListesi"
+          element={
+            isAuthenticated ? (
+              <Layout><FiyatListesi /></Layout>
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        */}
+
+                {/* Opsiyonel: bilinmeyen rotaları ana sayfaya yönlendir */}
+                <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/"} />} />
             </Routes>
         </Router>
     );
