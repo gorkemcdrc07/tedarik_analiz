@@ -1,5 +1,6 @@
 ﻿node_modules/
 .cache/
+.vs/
 *.pack
 dist/
 build/
