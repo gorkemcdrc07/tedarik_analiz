@@ -196,7 +196,7 @@ async function multiRequest(params) {
 
 /* ===== Supabase ===== */
 const SB_TABLE = "bungeFiyatlar";
-const SB_COLS = "teslim_il,teslim_ilce,tir,kamyon";
+const SB_COLS = "teslim_il,teslim_ilce,mesafe,tir,kamyon";
 
 async function fetchPriceMap(uniqueCities) {
     if (!HAS_SB) throw new Error("Supabase ortam değişkenleri tanımlı değil.");
@@ -224,7 +224,12 @@ async function fetchPriceMap(uniqueCities) {
     const map = new Map();
     const setVal = (key, r) => {
         const existing = map.get(key) || {};
-        map.set(key, { tir: r.tir ?? existing.tir, kamyon: r.kamyon ?? existing.kamyon });
+        const mesafeNum = parseTRNumber(r.mesafe); // "762,09" → 762.09
+        map.set(key, {
+            tir: r.tir ?? existing.tir,
+            kamyon: r.kamyon ?? existing.kamyon,
+            mesafe: Number.isFinite(mesafeNum) ? mesafeNum : existing.mesafe ?? null,
+        });
     };
     for (const r of rows) {
         const il = ncity(r.teslim_il);
@@ -242,13 +247,32 @@ const splitMulti = (s = "") =>
         .map((t) => cleanWS(t))
         .filter(Boolean);
 
+// TR formatlı sayıyı güvenli parse et (YENİ)
+const parseTRNumber = (t) => {
+    let s = String(t ?? "").toLowerCase().trim();
+    // "1.234,56 km" vb. karakterleri temizle
+    s = s.replace(/[^0-9.,-]/g, "");
+    if (!s) return NaN;
+
+    const hasDot = s.includes(".");
+    const hasComma = s.includes(",");
+
+    if (hasDot && hasComma) {
+        // TR format: . = binlik, , = ondalık
+        s = s.replace(/\./g, "").replace(",", ".");
+    } else if (hasComma) {
+        // Tek virgül ondalık
+        s = s.replace(",", ".");
+    }
+    const n = Number(s);
+    return Number.isFinite(n) ? n : NaN;
+};
+
+// splitMesafeToNums (YENİ)
 const splitMesafeToNums = (s = "") =>
     String(s)
         .split(";")
-        .map((t) => {
-            const n = Number(String(t).replace(",", "."));
-            return Number.isFinite(n) ? n : NaN;
-        });
+        .map((t) => parseTRNumber(t));
 
 /* ===== Component ===== */
 export default function SeferFiyatlandirma() {
@@ -452,6 +476,13 @@ export default function SeferFiyatlandirma() {
                     Object.entries(accArr).map(([k, arr]) => [k, arr.join("; ")])
                 );
 
+                // Her item için (il, ilçe, mesafe) üçlüsünü topla
+                const __segments = items.map((it) => ({
+                    il: cleanWS(it?.DeliveryCityName ?? ""),
+                    ilce: cleanWS(it?.DeliveryCountyName ?? ""),
+                    mesafe: parseTRNumber(getMesafeVal(it) ?? "")
+                }));
+
                 mapped.push({
                     TMSOrderId: base?.TMSOrderId ?? pozisyonNo,
                     ProjectName: base?.ProjectName ?? "",
@@ -464,6 +495,7 @@ export default function SeferFiyatlandirma() {
                     PickupDate: fmtDate(base?.PickupDate),
                     SeferFiyati: 0,
                     UgramaFiyati: 0,
+                    __segments,                     // ← yeni
                 });
             }
 
@@ -490,48 +522,20 @@ export default function SeferFiyatlandirma() {
             const citiesRaw = rows
                 .flatMap((r) => splitMulti(r.DeliveryCityName))
                 .filter(Boolean);
-            const cities = Array.from(
-                new Map(citiesRaw.map((c) => [cleanWS(c), c])).keys()
-            );
+            const cities = Array.from(new Map(citiesRaw.map((c) => [cleanWS(c), c])).keys());
             if (!cities.length) {
                 setCalcLoading(false);
                 return;
             }
 
+            // priceMap.get(`${ncity(il)}||${ncounty(ilce)}`) -> { tir, kamyon, mesafe }
             const priceMap = await fetchPriceMap(cities);
 
             setRows((prev) =>
                 prev.map((r) => {
                     let sefer = Number(r.SeferFiyati || 0);
 
-                    const cityList = splitMulti(r.DeliveryCityName);
-                    const countyList = splitMulti(r.DeliveryCountyName);
-                    const mesafeNums = splitMesafeToNums(r.Mesafe || "");
-
-                    let indices = [
-                        ...Array(Math.max(cityList.length, countyList.length)).keys(),
-                    ];
-                    if (mesafeNums.some((x) => Number.isFinite(x))) {
-                        indices.sort((a, b) => {
-                            const va = Number.isFinite(mesafeNums[a]) ? mesafeNums[a] : -Infinity;
-                            const vb = Number.isFinite(mesafeNums[b]) ? mesafeNums[b] : -Infinity;
-                            return vb - va;
-                        });
-                    }
-
-                    const pairs = indices.map((i) => [
-                        cityList[i] ?? cityList[0] ?? "",
-                        countyList[i] ?? countyList[0] ?? "",
-                    ]);
-
-                    const seenPair = new Set();
-                    const uniqPairs = pairs.filter(([il, ilce]) => {
-                        const key = `${foldTR(il)}|${foldTR(ilce)}`;
-                        if (seenPair.has(key)) return false;
-                        seenPair.add(key);
-                        return true;
-                    });
-
+                    // Araç tipine göre doğru fiyat alanını seç
                     const getValByVehicle = (priceObj) => {
                         if (!priceObj) return null;
                         if (isOnTeker(r.VehicleTypeName)) return priceObj.kamyon ?? priceObj.tir ?? null;
@@ -540,50 +544,98 @@ export default function SeferFiyatlandirma() {
                         return priceObj.tir ?? priceObj.kamyon ?? null;
                     };
 
+                    // --- SEGMENTLERİ OLUŞTUR (Supabase mesafesi öncelikli) ---
+                    let segments;
+                    if (Array.isArray(r.__segments) && r.__segments.length) {
+                        // Gruplama sırasında toplanmış hizalı segmentler
+                        segments = r.__segments.map((s) => {
+                            const ilRaw = s.il ?? "";
+                            const ilceRaw = s.ilce ?? "";
+                            const key = `${ncity(ilRaw)}||${ncounty(ilceRaw)}`;
+                            const sb = priceMap.get(key);
+                            const sbMesafe = Number.isFinite(sb?.mesafe) ? sb.mesafe : -Infinity;
+                            const fallback = Number.isFinite(s.mesafe) ? s.mesafe : -Infinity;
+                            return { il: ilRaw, ilce: ilceRaw, sbMesafe, fallback };
+                        });
+                    } else {
+                        // Fallback: birleştirilmiş stringlerden üret
+                        const cityList = splitMulti(r.DeliveryCityName);
+                        const countyList = splitMulti(r.DeliveryCountyName);
+                        const rowMesafeNums = splitMesafeToNums(r.Mesafe || "");
+                        const len = Math.max(cityList.length, countyList.length, rowMesafeNums.length);
+                        segments = Array.from({ length: len }, (_, i) => {
+                            const ilRaw = cityList[i] ?? cityList[0] ?? "";
+                            const ilceRaw = countyList[i] ?? countyList[0] ?? "";
+                            const key = `${ncity(ilRaw)}||${ncounty(ilceRaw)}`;
+                            const sb = priceMap.get(key);
+                            const sbMesafe = Number.isFinite(sb?.mesafe) ? sb.mesafe : -Infinity;
+                            const fallback = Number.isFinite(rowMesafeNums[i]) ? rowMesafeNums[i] : -Infinity;
+                            return { il: ilRaw, ilce: ilceRaw, sbMesafe, fallback };
+                        });
+                    }
+
+                    // Eğer hiçbir segmentte Supabase mesafesi yoksa, fallback mesafeleri kullan
+                    const allNegInf = segments.every((s) => s.sbMesafe === -Infinity);
+                    if (allNegInf) {
+                        segments = segments.map((s) => ({ ...s, sbMesafe: s.fallback }));
+                    }
+
+                    // En yüksek mesafe önce
+                    segments.sort((a, b) => b.sbMesafe - a.sbMesafe);
+
+                    // Aynı (il, ilçe) tekilleştir (sıra korunur)
+                    const seen = new Set();
+                    const uniqSegments = [];
+                    for (const seg of segments) {
+                        const key = `${foldTR(seg.il)}|${foldTR(seg.ilce)}`;
+                        if (seen.has(key)) continue;
+                        seen.add(key);
+                        uniqSegments.push(seg);
+                    }
+
+                    // --- Fiyat seçimi: önce il+ilçe, sonra il-genel ---
                     let chosen = null;
-                    for (const [rawIl, rawIlce] of uniqPairs) {
+                    for (const { il: rawIl, ilce: rawIlce } of uniqSegments) {
                         const il = ncity(rawIl);
                         const ilce = ncounty(rawIlce);
                         const obj = priceMap.get(`${il}||${ilce}`);
                         const v = getValByVehicle(obj);
-                        if (v != null) {
-                            chosen = v;
-                            break;
-                        }
+                        if (v != null) { chosen = v; break; }
                     }
                     if (chosen == null) {
-                        for (const [rawIl] of uniqPairs) {
+                        for (const { il: rawIl } of uniqSegments) {
                             const il = ncity(rawIl);
                             const obj = priceMap.get(`${il}||*`);
                             const v = getValByVehicle(obj);
-                            if (v != null) {
-                                chosen = v;
-                                break;
-                            }
+                            if (v != null) { chosen = v; break; }
                         }
                     }
-
                     if (chosen != null) {
                         const parsed = Number(String(chosen).replace(",", "."));
                         if (!Number.isNaN(parsed)) sefer = Math.round(parsed * 100) / 100;
                     }
 
+                    // --- UĞRAMA ---
+                    // ";" yoksa uğrama hesaplanmaz (mevcut değer/0 korunur)
+                    // --- UĞRAMA ---
+                    // ";" yoksa uğrama = 0
                     const deliveryCity = String(r.DeliveryCityName || "");
-                    const semiCount = (deliveryCity.match(/;/g) || []).length;
-                    const factor = semiCount + 1;
+                    const semiCount = (deliveryCity.match(/;/g) || []).length; // ";" adedi
 
-                    let ugramaComputed = null;
-                    const vtRaw = r.VehicleTypeName || "";
+                    let ugrama = 0; // varsayılan: 0
+                    if (semiCount > 0) {
+                        let base = null;
+                        const vtRaw = r.VehicleTypeName || "";
+                        if (isOpenCekiciRow(r)) base = 1553;
+                        else if (isOnTeker(vtRaw)) base = 1035;
+                        else if (isKirkayak(vtRaw)) base = 1294;
 
-                    if (isOpenCekiciRow(r)) ugramaComputed = 1553 * factor;
-                    else if (isOnTeker(vtRaw)) ugramaComputed = 1035 * factor;
-                    else if (isKirkayak(vtRaw)) ugramaComputed = 1294 * factor;
+                        if (base != null) {
+                            ugrama = Math.round(base * semiCount * 100) / 100; // sadece ";" sayısı kadar
+                        }
+                    }
 
-                    const ugrama =
-                        ugramaComputed != null
-                            ? Math.round(ugramaComputed * 100) / 100
-                            : Math.round(Number(r.UgramaFiyati || 0) * 100) / 100;
-
+                    // önceki değeri KORUMUYORUZ; ";" yoksa 0 kalır
                     return { ...r, SeferFiyati: sefer, UgramaFiyati: ugrama };
                 })
             );
@@ -594,7 +646,6 @@ export default function SeferFiyatlandirma() {
             setCalcLoading(false);
         }
     };
-
     /* ===== Filtreleme + Arama + Sıralama ===== */
     const filteredAndSorted = useMemo(() => {
         let data = rows;
