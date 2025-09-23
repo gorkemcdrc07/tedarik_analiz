@@ -65,7 +65,14 @@ const COL_W = {
 };
 
 /* === Otomatik sabitler === */
-const AUTO = { VKN: "3850012676", PROJE: "747", URUN: "176", KAP_ADET: "1", AMBALAJ_TIPI: "1",};
+const AUTO = {
+    VKN: "3850012676",
+    PROJE: "747",
+    URUN: "176",
+    KAP_ADET: "1",
+    AMBALAJ_TIPI: "1",
+    BRUT_KG: "25000",
+};
 
 /* === Metin normalize (içerik karşılaştırmaları için) === */
 const normVal = (v) =>
@@ -149,7 +156,7 @@ export default function Fasdat() {
                     "Ürün": AUTO.URUN,
                     "Kap Adet": AUTO.KAP_ADET,
                     "Ambalaj Tipi": AUTO.AMBALAJ_TIPI,
-                    "Brüt KG": "",
+                    "Brüt KG": AUTO.BRUT_KG,
                     "M3": "",
                     "Desi": "",
                 };
