@@ -65,7 +65,7 @@ const COL_W = {
 };
 
 /* === Otomatik sabitler === */
-const AUTO = { VKN: "3850012676", PROJE: "747", URUN: "176", KAP_ADET: "1", AMBALAJ_TIPI: "1", BRUT };
+const AUTO = { VKN: "3850012676", PROJE: "747", URUN: "176", KAP_ADET: "1", AMBALAJ_TIPI: "1",};
 
 /* === Metin normalize (içerik karşılaştırmaları için) === */
 const normVal = (v) =>
