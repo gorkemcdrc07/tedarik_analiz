@@ -3,8 +3,8 @@
     --card: #0f172a;
     --muted: #94a3b8;
     --text: #e5e7eb;
-    --accent: #7c3aed; /* mor */
-    --accent-2: #22c55e; /* yeşil */
+    --accent: #7c3aed; 
+    --accent-2: #22c55e; 
     --danger: #ef4444;
     --border: #1f2937;
     --radius: 16px;
@@ -53,7 +53,7 @@ body {
     margin-top: 4px
 }
 
-/* Üstte AYRIK iki panel: 6+6 ve eşit yükseklik */
+
 .so-grid.so-grid--two {
     display: grid;
     grid-template-columns: repeat(12, minmax(0,1fr));
@@ -162,7 +162,7 @@ body {
         background: linear-gradient(180deg, rgba(124,58,237,.45), rgba(124,58,237,.3));
     }
 
-/* TABLO PANELİ */
+
 .so-table-card {
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -189,7 +189,7 @@ body {
 .so-table-wrap {
     width: 100%;
     overflow: auto;
-    max-height: 350px; /* tabloda en fazla 500px göster, sonra scroll */
+    max-height: 350px; 
 }
 
 .so-table {
@@ -240,7 +240,7 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Tablo içi dropzone */
+
 .so-drop-row td {
     padding: 0 !important;
 }
@@ -299,12 +299,12 @@ body {
     padding: 10px 14px;
     font-size: 13px
 }
-/* === Modal (kontrast yüksek, modern, dark+light destekli) === */
+
 .so-modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(2,6,23,.55); /* koyu overlay */
-    backdrop-filter: blur(2px); /* hafif blur */
+    background: rgba(2,6,23,.55); 
+    backdrop-filter: blur(2px); 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -313,12 +313,12 @@ body {
 
 .so-modal {
     width: min(760px, 92vw);
-    background: #0f172a; /* slate-900 */
-    color: #e5e7eb; /* zinc-200 */
+    background: #0f172a; 
+    color: #e5e7eb; 
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0,0,0,.6);
-    border: 1px solid rgba(148,163,184,.25); /* slate-400/25 */
-    overflow: hidden; /* header/foot ayrımı */
+    border: 1px solid rgba(148,163,184,.25); 
+    overflow: hidden; 
 }
 
 .so-modal__body {
@@ -340,11 +340,11 @@ body {
     .so-modal__kpi .good {
         color: #22c55e;
     }
-    /* green-500 */
+
     .so-modal__kpi .bad {
         color: #ef4444;
     }
-/* red-500 */
+
 
 .so-modal__list {
     margin: 8px 0 0 0;
@@ -372,7 +372,7 @@ body {
     background: rgba(15,23,42,.75);
 }
 
-/* Butonlar modal içinde asla soluk görünmesin */
+
 .so-modal .so-btn {
     opacity: 1 !important;
     filter: none !important;
@@ -387,7 +387,7 @@ body {
     .so-modal .so-btn-primary:hover {
         background: #5458ea;
     }
-/* Görsel, açıklayıcı eşleşme görünümü */
+
 .match-list {
     list-style: none;
     margin: 0;
@@ -439,13 +439,13 @@ body {
         background: #ecfdf5;
         border-color: #a7f3d0;
     }
-    /* eşleşen sağ taraf */
+
     .match-cell.none .addr {
         background: #fef2f2;
         border-color: #fecaca;
         color: #991b1b;
     }
-/* bulunamadı */
+
 
 .arrow {
     width: 24px;
@@ -473,7 +473,7 @@ body {
     }
 
 
-/* Light tema desteği */
+
 @media (prefers-color-scheme: light) {
     .so-modal {
         background: #fff;

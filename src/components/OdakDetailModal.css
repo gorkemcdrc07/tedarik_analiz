@@ -48,14 +48,13 @@
     box-shadow: var(--shadow);
     padding: 20px 18px 16px;
     width: 100%;
-    max-width: 1400px; /* genişlik aynı */
+    max-width: 1400px; 
     max-height: 88vh;
     overflow: hidden;
     color: var(--fg);
     backdrop-filter: blur(14px) saturate(120%);
     -webkit-backdrop-filter: blur(14px) saturate(120%);
     animation: modal-in .22s cubic-bezier(.2,.8,.2,1);
-    /* DİKEY SCROLL İÇİN GEREKLİ */
     display: flex;
     flex-direction: column;
 }
@@ -131,10 +130,9 @@
         transform: translateY(-1px);
     }
 
-/* Table wrapper – burada dikey scroll var */
 .odak-table-wrapper {
-    flex: 1 1 auto; /* kritik */
-    min-height: 0; /* kritik */
+    flex: 1 1 auto; 
+    min-height: 0; 
     overflow-y: auto;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -167,7 +165,6 @@
         white-space: nowrap;
     }
 
-    /* sticky first column (opsiyonel, istersen kaldır) */
     .odak-detail-table th:first-child,
     .odak-detail-table td:first-child {
         position: sticky;

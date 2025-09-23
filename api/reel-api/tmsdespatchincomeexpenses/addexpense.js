@@ -1,7 +1,5 @@
-// api/reel-api/tmsdespatchincomeexpenses/addexpense.js
-
 export default async function handler(req, res) {
-    // CORS preflight
+
     if (req.method === "OPTIONS") {
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -10,7 +8,6 @@ export default async function handler(req, res) {
     }
 
     if (req.method !== "POST") {
-        // tarayýcýdan GET ile denerseniz 405 normal — UI POST atýnca çalýþacak
         return res.status(405).json({ error: "Method not allowed" });
     }
 
@@ -21,7 +18,6 @@ export default async function handler(req, res) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    // frontend’den gelen Bearer’ý aynen ilet
                     Authorization: req.headers.authorization || "",
                 },
                 body: JSON.stringify(req.body),
@@ -29,7 +25,6 @@ export default async function handler(req, res) {
         );
 
         const text = await upstream.text();
-        // CORS
         res.setHeader("Access-Control-Allow-Origin", "*");
         return res.status(upstream.status).send(text);
     } catch (e) {

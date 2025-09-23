@@ -1,15 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-/**
- * Modernized Dashboard.jsx (full file)
- * - Dark / compact, sticky header & first column
- * - Column banding (groups), value pills (₺ / %), zero muting
- * - Horizontal scroll when needed; fits at 100% zoom
- * - Same data semantics as your original
- */
 
-// --- ENV & Supabase ---
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -128,7 +120,7 @@ function Toolbar({ region, setRegion, startDate, setStartDate, endDate, setEndDa
             label: "Bu Hafta",
             range: () => {
                 const d = new Date();
-                const day = d.getDay(); // 0 Pazar
+                const day = d.getDay(); 
                 const start = addDays(todayStr, -(day === 0 ? 6 : day - 1));
                 return [start, todayStr];
             },
@@ -323,9 +315,9 @@ export default function Dashboard() {
     const [startDate, setStartDate] = useState(todayStr);
     const [endDate, setEndDate] = useState(todayStr);
 
-    // ENV teşhis (console)
+
     useEffect(() => {
-        // eslint-disable-next-line no-console
+
         console.log("ENV KONTROL", {
             SUPA_URL: !!process.env.REACT_APP_SUPABASE_URL,
             SUPA_KEY: !!process.env.REACT_APP_SUPABASE_KEY,
@@ -334,7 +326,7 @@ export default function Dashboard() {
         });
     }, []);
 
-    // --- Data builders ---
+
     const buildTableFromOdak = useCallback((list, allowed) => {
         const header = [
             "PROJE_ADI",
@@ -685,7 +677,7 @@ export default function Dashboard() {
         }
     }, []);
 
-    // E-tablo & ODAK birleştirme + Bölge filtresi
+
     useEffect(() => {
         if ((!rawEtablo || rawEtablo.length === 0) && odakData && odakData.length > 0) {
             const fallback = buildTableFromOdak(odakData.filter((p) => allowedSet.has(p.ProjectName)), allowedSet);
@@ -739,7 +731,6 @@ export default function Dashboard() {
 
     useEffect(() => {
         handleFilter();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const columnsRendered = useMemo(() => columns, [columns]);
@@ -858,9 +849,8 @@ export default function Dashboard() {
         else if (reelTalep === 0 && reel0.has(col)) finalDisp = "-";
         else finalDisp = displayValue ?? 0;
 
-        // Zero-like?
+
         const isZeroLike = finalDisp === "-" || finalDisp === 0 || finalDisp === "0" || finalDisp === "0 ₺";
-        // Money/pct as pills
         const isMoney = ["TOP_NAVLUN", "TOP_HEDEF_NAVLUN", "HEDEF", "HEDEF_USTU", "HEDEF_ALTI", "GELIR"].includes(col);
         const isPct = ["TED_YUZDE", "UYUM", "TOP_HEDEF_NAVL_HDF_UST"].includes(col);
 
@@ -1083,8 +1073,7 @@ export default function Dashboard() {
     );
 }
 
-// --- Style injector ---
-// --- Style injector (super-modern glass theme) ---
+
 function StyleInjector() {
     return (
         <style>{`

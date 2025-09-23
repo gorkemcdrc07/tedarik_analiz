@@ -1,12 +1,10 @@
-﻿/* --- EXPENSE THEME OVERRIDES (kırmızı vurgu) --- */
-.ge-page.gider {
-    /* açık tema */
-    --accent: #ef4444; /* ana kırmızı */
-    --accent-2: #dc2626; /* hover kırmızı */
-    --danger: #b91c1c; /* uyarı/outline kırmızı */
+﻿.ge-page.gider {
+    --accent: #ef4444; 
+    --accent-2: #dc2626; 
+    --danger: #b91c1c;
 }
 
-/* koyu tema */
+
 @media (prefers-color-scheme: dark) {
     .ge-page.gider {
         --accent: #f87171;
@@ -15,12 +13,12 @@
     }
 }
 
-/* küçük görsel ipucu: seçili dosya kartında sol kırmızı şerit */
+
 .ge-page.gider .ge-file {
     border-left: 4px solid color-mix(in oklab, var(--accent), #000 15%);
 }
 
-/* dropzone hover gölgesi kırmızıya yakınlaşsın */
+
 .ge-page.gider .ge-drop:hover,
 .ge-page.gider .ge-drop:focus-within,
 .ge-page.gider .ge-drop.dragging {

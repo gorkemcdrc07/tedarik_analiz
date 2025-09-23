@@ -2,9 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\src",
-    "\\src\\fiyatlandirma",
+    "\\src\\components",
+    "\\src\\GelirGider",
     "\\src\\SiparisIslemleri"
   ],
-  "SelectedNode": "\\src\\App.css",
+  "SelectedNode": "\\src\\components\\Sidebar.js",
   "PreviewInSolutionExplorer": false
 }

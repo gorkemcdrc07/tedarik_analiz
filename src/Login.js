@@ -4,14 +4,7 @@ import styled, { keyframes } from "styled-components";
 import { motion } from "framer-motion";
 import { Truck, Package, MapPin, ShieldCheck, Eye, EyeOff, Headset } from "lucide-react";
 
-/**
- * Packages to install (no Tailwind):
- *   npm i styled-components framer-motion @supabase/supabase-js lucide-react
- *
- * Environment:
- *   REACT_APP_SUPABASE_URL=
- *   REACT_APP_SUPABASE_KEY=
- */
+
 
 const supabase = createClient(
     process.env.REACT_APP_SUPABASE_URL,
@@ -44,7 +37,7 @@ export default function Login({ onLoginSuccess }) {
                 return;
             }
 
-            // ⚠️ Not: Düz şifre saklamak güvenli değildir. Supabase Auth önerilir.
+ 
             if (remember) localStorage.setItem("kullanici", JSON.stringify(data));
 
             const reelUser =
@@ -72,7 +65,7 @@ export default function Login({ onLoginSuccess }) {
 
             onLoginSuccess?.();
         } catch (err) {
-            // eslint-disable-next-line no-console
+
             console.error(err);
             setError("Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.");
         } finally {
@@ -209,7 +202,7 @@ export default function Login({ onLoginSuccess }) {
     );
 }
 
-/* ======================== Styled ======================== */
+
 const fly = keyframes`
   0% { transform: translateX(-10%); }
   100% { transform: translateX(110%); }

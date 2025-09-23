@@ -1,4 +1,3 @@
-// Sidebar.js — koyu cam/blur, neon aksanlı, kütüphanesiz modern sidebar
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
@@ -39,7 +38,6 @@ const Icon = {
             <path fill="currentColor" d="M5 3h10l4 4v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm9 1v4h4M7 12h2v6H7v-6Zm4-3h2v9h-2V9Zm4 5h2v4h-2v-4Z" />
         </svg>
     ),
-    // Yeni: Fiyat/Etiket simgesi
     Price: (props) => (
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden {...props}>
             <path fill="currentColor" d="M10 3H6a2 2 0 0 0-2 2v4l8 8 6-6-8-8Zm-2.5 5A1.5 1.5 0 1 1 9 6.5 1.5 1.5 0 0 1 7.5 8Z" />
@@ -60,7 +58,6 @@ const itemIconFor = (label) => {
         case "Gider Ekleme": return <Icon.MoneyOut />;
         case "Eskalasyon Hesabı": return <Icon.Calc />;
         case "Tedarik Analiz": return <Icon.Report />;
-        // Yeni alt başlıklar
         case "SEFER FİYATLANDIRMA": return <Icon.Price />;
         case "FİYAT LİSTESİ": return <Icon.Price />;
         default: return <Icon.Dot />;
@@ -72,7 +69,6 @@ const groupIconFor = (title) => {
         case "SİPARİŞ İŞLEMLERİ": return <Icon.Order />;
         case "GELİR & GİDER": return <Icon.MoneyIn />;
         case "RAPORLAR": return <Icon.Report />;
-        // Yeni ana başlık
         case "FİYATLANDIRMA": return <Icon.Price />;
         default: return <Icon.Dot />;
     }
@@ -82,25 +78,24 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     const [openSections, setOpenSections] = useState({ "GELİR & GİDER": true });
 
     const menuGroups = [
-        { title: "SİPARİŞ İŞLEMLERİ", items: ["Sipariş Oluştur", "Teslim Noktaları"] },
+        { title: "SİPARİŞ İŞLEMLERİ", items: ["Sipariş Oluştur", "Teslim Noktaları", "Arkas", "Fasdat"] },
         { title: "GELİR & GİDER", items: ["Gelir Ekleme", "Gider Ekleme", "Eskalasyon Hesabı"] },
-        // Yeni grup ve alt başlıklar
         { title: "FİYATLANDIRMA", items: ["SEFER FİYATLANDIRMA", "FİYAT LİSTESİ"] },
         { title: "RAPORLAR", items: ["Tedarik Analiz"] },
     ];
 
-    // routeMap içinde
+
     const routeMap = {
         "Tedarik Analiz": "/dashboard",
         "Gelir Ekleme": "/GelirGider/GelirEkleme",
         "Gider Ekleme": "/GelirGider/GiderEkleme",
         "Sipariş Oluştur": "/SiparisIslemleri/SiparisOlustur",
+        "Arkas": "/SiparisIslemleri/Arkas",
+        "Fasdat": "/SiparisIslemleri/Fasdat",   // <-- BURADA EKLEDİK
 
-        // ↓ klasör yapınıza uygun URL yolu
         "SEFER FİYATLANDIRMA": "/fiyatlandirma/seferFiyatlandirma",
-        "FİYAT LİSTESİ": "/Fiyatlandirma/FiyatListesi", // (isterseniz bunu da küçültebilirim)
+        "FİYAT LİSTESİ": "/Fiyatlandirma/FiyatListesi",
     };
-
     const toggleSection = (title) =>
         setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
 
@@ -163,7 +158,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                                                     {to ? (
                                                         <NavLink
                                                             to={to}
-                                                            className="sb-item"
+                                                            className={({ isActive }) => `sb-item${isActive ? " is-active" : ""}`}
                                                             title={item}
                                                             end
                                                         >

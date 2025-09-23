@@ -1,5 +1,4 @@
-﻿// src/GelirGider/GiderEkleme.js
-import React, { useRef, useState, useMemo } from "react";
+﻿import React, { useRef, useState, useMemo } from "react";
 import * as XLSX from "xlsx";
 import supabase from "../supabaseClient";
 import { getToken } from "../auth/tokenManager";
@@ -11,21 +10,14 @@ export default function GiderEkleme() {
     const [file, setFile] = useState(null);
     const [error, setError] = useState("");
     const [downloading, setDownloading] = useState(false);
-
-    // tarama/önizleme
     const [scanning, setScanning] = useState(false);
-    const [sending, setSending] = useState(false); // ✅ REEL'e gönder
+    const [sending, setSending] = useState(false); 
     const [previewHeaders, setPreviewHeaders] = useState([]);
     const [previewRows, setPreviewRows] = useState([]);
     const [missingHeaders, setMissingHeaders] = useState([]);
-
-    // eşleştirme istatistiği
     const [mapStats, setMapStats] = useState({ matched: 0, unknown: 0 });
-
     const allowed = useMemo(() => [".xlsx", ".xls"], []);
-
     const openPicker = () => inputRef.current?.click();
-
     const onFilePicked = (e) => {
         const f = e.target.files?.[0];
         if (!f) return;
@@ -83,7 +75,7 @@ export default function GiderEkleme() {
         return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
 
-    // Supabase → DÖKÜMAN sayfası için
+
     const downloadTemplate = async () => {
         try {
             setDownloading(true);
@@ -92,7 +84,7 @@ export default function GiderEkleme() {
                 "SeferID",
                 "Cari Unvan",
                 "Hesap Adı",
-                "Hizmet/Masraf", // tarama sırasında yoksa otomatik ekleniyor ama şablonda dursun
+                "Hizmet/Masraf",
                 "Birim Fiyat",
                 "Miktar",
                 "KDV Oranı",
@@ -158,7 +150,7 @@ export default function GiderEkleme() {
             .toLowerCase()
             .trim();
 
-    // "₺ 1.250,50" → "1250.50"
+
     const toDecimalString = (val) => {
         if (typeof val === "number" && !Number.isNaN(val)) return val.toFixed(2);
         if (val === null || val === undefined) return "";
@@ -213,7 +205,7 @@ export default function GiderEkleme() {
         return map;
     };
 
-    // TARAY: sadece "ŞABLON"
+
     const startScan = async () => {
         if (!file) return;
         try {
@@ -300,8 +292,6 @@ export default function GiderEkleme() {
 
             rows = rows.map((r) => {
                 const copy = [...r];
-
-                // Hesap Adı (metin) -> tip_id / detay_id
                 const hizmetAdiCell = copy[hesapIdx];
                 const rec = dokumanLookup.get(norm(hizmetAdiCell));
                 if (rec) {
@@ -313,7 +303,7 @@ export default function GiderEkleme() {
                     copy[hmIdx] = copy[hmIdx] ?? "";
                 }
 
-                // Cari Unvan (metin) -> firma_id
+
                 const cariCell = copy[cariIdx];
                 const firm = firmaLookup.get(norm(cariCell));
                 if (firm) {
@@ -329,15 +319,13 @@ export default function GiderEkleme() {
                 if (kdvIdx !== -1) {
                     const v = copy[kdvIdx];
                     if (v === "" || v === null || typeof v === "undefined")
-                        copy[kdvIdx] = "0,2"; // default
+                        copy[kdvIdx] = "0,2"; 
                 }
                 if (tevIdx !== -1) {
                     const v = copy[tevIdx];
                     if (v === "" || v === null || typeof v === "undefined")
                         copy[tevIdx] = "0,0";
                 }
-
-                // Birim Fiyat normalize
                 if (birimFiyatIdx !== -1) {
                     const normVal = toDecimalString(copy[birimFiyatIdx]);
                     copy[birimFiyatIdx] = normVal === "" ? "" : normVal;
@@ -358,7 +346,7 @@ export default function GiderEkleme() {
         }
     };
 
-    // ✅ REEL’e Gönder (GİDER)
+
     const sendToReel = async () => {
         try {
             setSending(true);
@@ -414,14 +402,14 @@ export default function GiderEkleme() {
                 if (val === "" || val === null || typeof val === "undefined") return 0;
                 const n = toNumber(val);
                 if (n === null) return 0;
-                return n > 1 ? n / 100 : n; // 18 -> 0.18
+                return n > 1 ? n / 100 : n; 
             };
             const toPosInt = (val) => {
                 const n = Number(String(val).trim());
                 return Number.isFinite(n) && n > 0 ? n : null;
             };
 
-            // Prod = Vercel function, Local = setupProxy
+
             const endpoint =
                 process.env.NODE_ENV === "production"
                     ? "/api/reel-api/tmsdespatchincomeexpenses/addexpense"

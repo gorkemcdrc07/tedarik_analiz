@@ -1,14 +1,9 @@
-// src/AnaSayfa.js
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-/** ENV
- * REACT_APP_API_BASE_URL=https://...
- * REACT_APP_ODAK_API_KEY=...
- */
 const API_BASE = process.env.REACT_APP_API_BASE_URL || "";
 const ODAK_KEY = process.env.REACT_APP_ODAK_API_KEY || "";
 
-/* ============== Küçük UI yardımcıları (paketsiz) ============== */
+
 const GlowCard = ({ children, className = "" }) => (
     <div className={`p-[1px] rounded-2xl bg-gradient-to-br from-white/15 via-white/5 to-transparent ${className}`}>
         <div className="rounded-2xl border border-white/10 bg-gray-900/60 backdrop-blur">
@@ -88,7 +83,7 @@ const Modal = ({ open, onClose, title, children }) => {
     );
 };
 
-/* ============== Domain sabitleri ============== */
+/*Domain sabitleri*/
 const ALLOWED_PROJECTS = new Set([
     "BUNGE LÜLEBURGAZ FTL", "BUNGE GEBZE FTL", "BUNGE PALET", "REKA FTL", "EKSUN GIDA FTL", "SARUHAN FTL",
     "PEPSİ FTL", "MUTLU MAKARNA SPOT FTL", "TEKİRDAĞ UN FTL", "AYDINLI MODA FTL", "ADKOTURK FTL",
@@ -110,7 +105,7 @@ const addDays = (dateStr, delta) => {
     return d.toISOString().slice(0, 10);
 };
 
-/* ============== ODAK API ============== */
+
 async function fetchOdakDataForRange(startStr, endStr) {
     if (!API_BASE || !ODAK_KEY) throw new Error("ODAK API env eksik (REACT_APP_API_BASE_URL / REACT_APP_ODAK_API_KEY).");
 
@@ -156,7 +151,7 @@ async function fetchOdakDataForRange(startStr, endStr) {
                 tedarikSet: new Set(),
                 spotSet: new Set(),
                 filoSet: new Set(),
-                records: [], // detay listesi için
+                records: [],
             });
         }
         const proj = projectMap.get(project);
@@ -164,7 +159,7 @@ async function fetchOdakDataForRange(startStr, endStr) {
         if (hasDespatch) proj.tedarikSet.add(reqNo);
         if (vehicleWorking.includes("SPOT")) proj.spotSet.add(reqNo);
         else if (vehicleWorking.includes("FİLO") || vehicleWorking.includes("FILO")) proj.filoSet.add(reqNo);
-        // Detayda göstereceğimiz hafif kayıt
+
         proj.records.push({
             ProjectName: item.ProjectName,
             PickupDate: item.PickupDate,
@@ -192,7 +187,7 @@ async function fetchOdakDataForRange(startStr, endStr) {
     return rows;
 }
 
-/* ============== Sayfa ============== */
+
 const AnaSayfa = () => {
     const todayStr = new Date().toISOString().slice(0, 10);
     const [startDate, setStartDate] = useState(todayStr);
@@ -203,7 +198,7 @@ const AnaSayfa = () => {
     const [autoRefresh, setAutoRefresh] = useState(true);
     const [refreshMs, setRefreshMs] = useState(DEFAULT_REFRESH_MS);
 
-    const [loading, setLoading] = useState(true);       // sadece ilk yükte skeleton
+    const [loading, setLoading] = useState(true);    
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
     const [rows, setRows] = useState([]);
@@ -216,14 +211,14 @@ const AnaSayfa = () => {
     const [onlyPending, setOnlyPending] = useState(false); // verilemeyen > 0
 
     // sıralama
-    const [sortKey, setSortKey] = useState("ProjectName"); // "Talep", "Tedarik", ...
-    const [sortDir, setSortDir] = useState("desc");        // "asc" | "desc"
+    const [sortKey, setSortKey] = useState("ProjectName"); 
+    const [sortDir, setSortDir] = useState("desc");     
 
     // detay modal
     const [modalOpen, setModalOpen] = useState(false);
     const [modalProject, setModalProject] = useState(null);
 
-    const busyRef = useRef(false); // eşzamanlı istekleri engelle
+    const busyRef = useRef(false); 
 
     const handleLoad = async ({ initial = false } = {}) => {
         if (busyRef.current) return;
@@ -249,10 +244,10 @@ const AnaSayfa = () => {
         }
     };
 
-    // ilk yük
+
     useEffect(() => {
         handleLoad({ initial: true });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, [startDate, endDate]);
 
     // otomatik yenileme (görünürken)
@@ -263,7 +258,7 @@ const AnaSayfa = () => {
         return () => clearInterval(id);
     }, [autoRefresh, refreshMs, startDate, endDate]);
 
-    // odağa dönünce tazele
+
     useEffect(() => {
         const onFocus = () => { if (!document.hidden && autoRefresh) handleLoad(); };
         window.addEventListener("visibilitychange", onFocus);
@@ -323,7 +318,7 @@ const AnaSayfa = () => {
             const uyum = r.Talep > 0 ? Math.round((r.Tedarik / r.Talep) * 100) : 0;
             lines.push([r.ProjectName, r.Talep, r.Tedarik, r.Verilemeyen, r.Spot, r.Filo, uyum].join(";"));
         });
-        const csv = "\uFEFF" + lines.join("\n"); // Excel için BOM
+        const csv = "\uFEFF" + lines.join("\n"); 
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -534,7 +529,7 @@ const AnaSayfa = () => {
                                                     ].map((c) => (
                                                         <th key={c.k} className={`${rowPad} px-3 ${c.k === "ProjectName" ? "pl-5" : ""}`}>
                                                             <button
-                                                                onClick={() => changeSort(c.k === "Uyum" ? "Tedarik" : c.k)} // Uyum için Tedarik/Talep'e göre sort
+                                                                onClick={() => changeSort(c.k === "Uyum" ? "Tedarik" : c.k)} 
                                                                 className="inline-flex items-center gap-1 hover:text-gray-200"
                                                                 title="Sırala"
                                                             >

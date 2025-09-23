@@ -1,23 +1,16 @@
-﻿// src/auth/tokenManager.js
-const STORAGE_KEY = "reel_api_token_v1";
-const SKEW_MS = 60 * 1000; // token bitmeden 60 sn önce yenile
-let current = null;        // { token, exp }
+﻿const STORAGE_KEY = "reel_api_token_v1";
+const SKEW_MS = 60 * 1000; 
+let current = null; 
 let refreshInFlight = null;
 let timerId = null;
 
-/**
- * ✅ Local (CRA + setupProxy) vs Prod (Vercel API Route)
- * Local:  http://localhost:3000/reel-auth/api/auth/login  (setupProxy)
- * Prod:   https://domainin.com/api/reel-auth/login       (Vercel API route)
- */
+ 
 const TOKEN_URL =
     process.env.NODE_ENV === "production"
         ? "/api/reel-auth/login"
         : "/reel-auth/api/auth/login";
 
-// ------------------------
 // Yardımcılar
-// ------------------------
 const safeParse = (s, fallback = null) => {
     try { return JSON.parse(s); } catch { return fallback; }
 };
@@ -62,7 +55,7 @@ function scheduleRefresh() {
     timerId = setTimeout(() => { refreshToken().catch(() => { }); }, delay);
 }
 
-// Sunucu yanıtından token + ttl çek
+
 function extractTokenAndTtl(responseJson) {
     const d = responseJson || {};
     const nested = d.data || {};
@@ -78,9 +71,8 @@ function extractTokenAndTtl(responseJson) {
     return { token, ttlSec: Number(ttlSec) };
 }
 
-// ------------------------
+
 // Token alma / yenileme
-// ------------------------
 async function requestNewToken() {
     const { userName, password } = getReelCreds();
     if (!userName || !password) throw new Error("REEL kullanıcı bilgileri bulunamadı (localStorage).");
@@ -135,9 +127,8 @@ export function invalidateToken() {
     timerId = null;
 }
 
-// ------------------------
+
 // Yetkili istek yardımcıları
-// ------------------------
 export async function authorizedFetch(input, init = {}) {
     const t = await getToken();
     const headers = new Headers(init.headers || {});

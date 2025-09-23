@@ -1,5 +1,4 @@
-﻿/* ==== Global görünüm (koyu cam/blur + neon aksan) ========================= */
-:root {
+﻿:root {
     --bg1: #0b1220;
     --bg2: #0d1426;
     --panel: rgba(16, 22, 36, .70);
@@ -7,18 +6,17 @@
     --border: rgba(255,255,255,.08);
     --fg: #e6eaf2;
     --muted: #8ea0bc;
-    --accent: #8b5cf6; /* violet-500 */
-    --accent2: #22d3ee; /* cyan-400 */
+    --accent: #8b5cf6; 
+    --accent2: #22d3ee;
     --ring: rgba(139,92,246,.45);
     --shadow: 0 12px 40px rgba(0,0,0,.35);
     --success: #27ae60;
     --warn: #f39c12;
     --danger: #e74c3c;
-    /* YENİ: yalnızca dikey kısaltma için */
-    --table-max-h: 60vh; /* İstersen 55vh/50vh yap */
+    --table-max-h: 60vh; 
 }
 
-/* Arka plan */
+
 html, body {
     height: 100%;
 }
@@ -30,7 +28,7 @@ body {
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-/* İnce scrollbar */
+
 *::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -42,14 +40,14 @@ body {
     border: 2px solid rgba(14,20,34,.5);
 }
 
-/* ==== Sayfa iskeleti ====================================================== */
+
 .app-container {
     padding: 16px;
     display: grid;
     gap: 14px;
 }
 
-/* Bölüm genel panel */
+
 .section {
     background: var(--panel);
     backdrop-filter: blur(12px) saturate(120%);
@@ -60,7 +58,7 @@ body {
     padding: 14px;
 }
 
-/* ==== Filtre çubuğu (Dashboard üstündeki) ================================= */
+
 .filter-bar {
     background: var(--panel-strong);
     backdrop-filter: blur(12px) saturate(120%);
@@ -76,7 +74,7 @@ body {
         font-size: 13px;
     }
 
-    /* Inputs (date) */
+
     .filter-bar input[type="date"],
     .filter-bar input[type="text"],
     .filter-bar input[type="search"],
@@ -100,7 +98,7 @@ body {
         outline-offset: 2px;
     }
 
-/* Birincil buton */
+
 .btn-primary {
     background: linear-gradient(120deg, rgba(139,92,246,.25), rgba(34,211,238,.20));
     color: var(--fg);
@@ -121,7 +119,7 @@ body {
         transform: none;
     }
 
-/* ==== Uyarı kutusu (uyari-modal) ========================================= */
+
 .uyari-modal {
     position: relative;
     background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
@@ -160,26 +158,25 @@ body {
     cursor: pointer;
 }
 
-/* ==== Tablo görünümü ====================================================== */
+
 .table-wrapper {
-    /* GENİŞLİĞE DOKUNMADAN sadece dikey kısaltma */
-    max-height: var(--table-max-h); /* YENİ */
-    overflow: auto; /* hem yatay hem dikey scroll */
+    max-height: var(--table-max-h); 
+    overflow: auto; 
     background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
     border: 1px solid var(--border);
     border-radius: 16px;
     box-shadow: var(--shadow);
 }
 
-/* modern tablo */
+
 .styled-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    min-width: 960px; /* orijinal: ekrana sığmazsa yatay scroll */
+    min-width: 960px; 
 }
 
-    /* Başlık */
+
     .styled-table thead th {
         position: sticky;
         top: 0;
@@ -204,7 +201,7 @@ body {
         color: #c7d2ee;
     }
 
-    /* Hücreler */
+
     .styled-table td {
         padding: 9px 10px;
         border-bottom: 1px solid rgba(255,255,255,.05);
@@ -213,7 +210,7 @@ body {
         color: #e9edf7;
     }
 
-        /* İlk sütun (Proje) sola hizalı ve “link” hissi */
+
         .styled-table td:first-child, .styled-table th:first-child {
             text-align: left;
         }
@@ -229,7 +226,7 @@ body {
         text-decoration: underline;
     }
 
-/* E-tablo / Reel işaretli hücre rozet hissi */
+
 td.etablo, td.reel {
     font-weight: 700;
     border-radius: 10px;
@@ -247,7 +244,7 @@ td.reel {
     border: 1px solid rgba(34,211,238,.25);
 }
 
-/* Satır vurguları */
+
 .styled-table tbody tr:hover {
     background: rgba(255,255,255,.03);
 }
@@ -260,7 +257,7 @@ td.reel {
     box-shadow: inset 0 0 0 9999px rgba(239,68,68,.07);
 }
 
-/* Alt toplam (tfoot) */
+
 .styled-table tfoot td {
     position: sticky;
     bottom: 0;
@@ -270,13 +267,13 @@ td.reel {
     font-weight: 800;
 }
 
-/* Yükleniyor metni */
+
 .loading {
     margin: 12px 0 0 6px;
     opacity: .75;
 }
 
-/* Küçük ekran iyileştirme */
+
 @media (max-width: 720px) {
     .section {
         padding: 10px;
@@ -302,13 +299,12 @@ td.reel {
     }
 }
 
-/* ================== OPSİYONEL: Daha kısa ve kompakt mod ================== */
-/* Yalnızca tablo yüksekliğini daha da azaltmak istersen: */
+
 .table-wrapper.kisa {
     --table-max-h: 52vh;
 }
 
-/* Satır/padding sıkıştırma için: */
+
 .styled-table.compact thead th {
     padding: 8px 8px;
     font-size: 11px;

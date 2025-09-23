@@ -1,7 +1,4 @@
-﻿/* ================= GelirEkleme (Light/Dark Auto) ================= */
-
-/* Varsayılan tema değişkenleri (açık) */
-.ge-page {
+﻿.ge-page {
     --panel: #ffffff;
     --panel-2: #ffffff;
     --border: #e5e7eb;
@@ -14,11 +11,11 @@
     color: var(--text);
     width: 100%;
     margin: 0;
-    background: transparent !important; /* 🔒 arka siyah alan yok */
+    background: transparent !important; 
     overflow-x: hidden;
 }
 
-/* Sistem koyu modu */
+
 @media (prefers-color-scheme: dark) {
     .ge-page {
         --panel: #121826;
@@ -33,7 +30,7 @@
     }
 }
 
-/* Manuel tema sınıfları */
+
 body.dark .ge-page,
 [data-theme="dark"] .ge-page,
 .theme-dark .ge-page {
@@ -62,7 +59,7 @@ body.light .ge-page,
     --shadow: 0 10px 24px rgba(2, 6, 23, .06);
 }
 
-/* Sabit genişlikte içerik */
+
 .ge-container {
     max-width: 1280px;
     margin: 0 auto;
@@ -71,7 +68,7 @@ body.light .ge-page,
     width: 100%;
 }
 
-/* ---------- Üst bar ---------- */
+
 .ge-topbar {
     display: flex;
     align-items: center;
@@ -93,7 +90,7 @@ body.light .ge-page,
     font-size: 14px;
 }
 
-/* ---------- Butonlar ---------- */
+
 .btn {
     background: var(--accent);
     color: #fff;
@@ -143,7 +140,7 @@ body.light .ge-page,
                 border-color: var(--danger);
             }
 
-/* ---------- Dropzone ---------- */
+
 .ge-drop {
     position: relative;
     border: 2px dashed var(--border);
@@ -196,7 +193,7 @@ body.light .ge-page,
         color: var(--accent);
     }
 
-/* ---------- Seçilen dosya kartı ---------- */
+
 .ge-file {
     margin-top: 18px;
     background: var(--panel-2);
@@ -235,7 +232,7 @@ body.light .ge-page,
     gap: 10px;
 }
 
-/* ---------- Hata ---------- */
+
 .ge-error {
     margin-top: 12px;
     color: color-mix(in oklab, var(--danger), #000 20%);
@@ -249,19 +246,19 @@ body.light .ge-page,
     white-space: normal;
 }
 
-/* ---------- Önizleme Tablosu (arka plan yok) ---------- */
+
 .ge-table-wrap {
     margin-top: 16px;
-    background: transparent !important; /* 🧼 kart zemin yok */
+    background: transparent !important; 
     border: 1px solid var(--border);
     border-radius: 14px;
-    box-shadow: none; /* gölge yok */
+    box-shadow: none; 
     overflow: hidden;
     max-width: 100%;
 }
 
 .ge-table-top {
-    background: transparent !important; /* üst şerit zemin yok */
+    background: transparent !important; 
     border-bottom: 1px solid var(--border);
     color: var(--muted);
     padding: 10px 14px;
@@ -271,25 +268,25 @@ body.light .ge-page,
     font-size: 14px;
 }
 
-/* Scroll sadece içeride */
+
 .ge-table-scroll {
     background: transparent !important;
     width: 100%;
-    height: 35vh;   /* 🔹 Yüksekliği azalttık */
+    height: 35vh;   
     overflow: auto;
     border-radius: 0 0 14px 14px;
     max-width: 100%;
     overscroll-behavior: contain;
 }
 
-/* İç sarmalayıcı: içerik kadar genişle ama dışı büyütme */
+
 .ge-table-inner {
     width: max-content;
     min-width: 100%;
     background: transparent !important;
 }
 
-/* Tablo: arka plan yok, sadece çizgiler */
+
 .ge-table {
     width: auto;
     border-collapse: separate;
@@ -298,12 +295,12 @@ body.light .ge-page,
     background: transparent !important;
 }
 
-    /* Başlık ve hücreler */
+
     .ge-table thead th {
         position: sticky;
         top: 0;
         z-index: 1;
-        background: transparent !important; /* sticky header da şeffaf */
+        background: transparent !important; 
         border-bottom: 1px solid var(--border);
         text-align: left;
         padding: 10px 12px;
@@ -321,13 +318,13 @@ body.light .ge-page,
         white-space: nowrap;
     }
 
-    /* Zebra zeminleri kaldır */
+
     .ge-table tbody tr:nth-child(odd),
     .ge-table tbody tr:nth-child(even) {
         background: transparent !important;
     }
 
-/* Hafif scroll bar */
+
 .ge-table-scroll::-webkit-scrollbar {
     height: 10px;
     width: 10px;
@@ -351,12 +348,12 @@ body.light .ge-page,
     scrollbar-width: thin;
 }
 
-/* (Varsa) alt aksiyon barı */
+
 .ge-bottombar {
     position: sticky;
     bottom: 0;
     margin-top: 24px;
-    background: transparent !important; /* zemin yok */
+    background: transparent !important; 
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 12px 14px;
@@ -376,13 +373,13 @@ body.light .ge-page,
     display: flex;
     gap: 10px;
 }
-/* 1) Tüm sayfada dikey scroll yok */
+
 html, body, #root {
     height: 100%;
     overflow: hidden;
 }
 
-/* 2) İçerik tam ekranı kullansın */
+
 .ge-page {
     height: 100%;
     overflow: hidden;
@@ -391,39 +388,39 @@ html, body, #root {
 .ge-container {
     height: 100%;
     display: flex;
-    flex-direction: column; /* üst kısımlar auto, tablo kalan alan */
+    flex-direction: column; 
     overflow: hidden;
 }
 
-/* 3) Tablo kartı kalan alanı doldursun (ve sadece içinde scroll çıksın) */
+
 .ge-table-wrap {
-    flex: 1; /* kalan yüksekliği al */
-    min-height: 0; /* taşmadan esnesin */
+    flex: 1;
+    min-height: 0; 
     display: flex;
     flex-direction: column;
 }
 
 .ge-table-scroll {
-    flex: 1; /* tüm yüksekliği kapla */
-    min-height: 0; /* önemli: iç scroll için */
-    overflow: auto; /* sadece burada scroll */
+    flex: 1; 
+    min-height: 0; 
+    overflow: auto; 
 }
 
-/* (isteğe bağlı) Dropzone çok yer kaplıyorsa biraz kıs: */
+
 .ge-drop {
     min-height: 200px;
 }
 
-/* --- OVERRIDE: tablo alanını kısalt, scroll içeride kalsın --- */
+
 .ge-table-wrap {
-    flex: 0 0 35vh !important; /* Ekranın %35'i kadar sabit yükseklik */
+    flex: 0 0 35vh !important; 
     min-height: 0 !important;
 }
 
 .ge-table-scroll {
-    flex: 1 1 auto !important; /* İçteki alanı doldursun */
-    height: auto !important; /* Sabit height kullanmıyoruz */
-    overflow: auto !important; /* Scroll içeride */
+    flex: 1 1 auto !important; 
+    height: auto !important; 
+    overflow: auto !important; 
 }
 .ge-summary {
     display: flex;
@@ -475,7 +472,7 @@ html, body, #root {
     .ge-summary-item strong {
         font-size: 16px;
     }
-/* gönderim özeti banner */
+
 .ge-banner {
     margin-top: 12px;
     padding: 10px 12px;
@@ -493,7 +490,7 @@ html, body, #root {
         border: 1px solid #f2a6a6;
     }
 
-/* tablo satır boyama */
+
 .ge-table tr.row-fail td {
     background: #ffe8e8 !important;
 }
@@ -502,7 +499,7 @@ html, body, #root {
     background: #e8f9f0 !important;
 }
 
-/* hatalı satır listesi */
+
 .ge-error-list {
     margin: 6px 0 0 0;
     padding-left: 18px;
@@ -512,7 +509,7 @@ html, body, #root {
         margin: 4px 0;
     }
 
-/* alt madde (detaylar) */
+
 .ge-error-sublist {
     margin-top: 4px;
     padding-left: 20px;

@@ -1,8 +1,6 @@
-﻿/* Layout.css */
-
-.layout-container {
+﻿.layout-container {
     display: flex;
-    height: calc(100vh - 60px); /* Navbar yüksekliği kadar eksilt */
+    height: calc(100vh - 60px); 
 }
 
 .main-content {

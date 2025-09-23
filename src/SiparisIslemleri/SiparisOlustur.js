@@ -1,4 +1,3 @@
-// src/SiparisIslemleri/SiparisOlustur.js
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
     Download,
@@ -11,10 +10,9 @@ import * as XLSX from "xlsx";
 import "./SiparisOlustur.css";
 import supabase from "../supabaseClient";
 
-/** --- Ayarlar --- **/
-const DATA_TABLE = "Projeler"; // <-- VERİ BURADAN GELECEK
 
-/** TABLODA KULLANILACAK GÜNCEL BAŞLIKLAR */
+const DATA_TABLE = "Projeler"; 
+
 const HEADERS = [
     "Vkn",
     "Proje",
@@ -38,7 +36,7 @@ const HEADERS = [
     "Desi",
 ];
 
-/** Export/Import için zorunlu başlıklar */
+
 const REQUIRED_EXPORT_HEADERS = [
     "Sipariş Tarihi",
     "Müşteri Sipariş No",
@@ -47,17 +45,17 @@ const REQUIRED_EXPORT_HEADERS = [
     "Yükleme Firma Adı",
     "Alıcı Firma Cari Adı",
     "Teslim Firma Adres Adı",
-].map((h) => h.replace("Yükleme Firma Adı", "Yükleme Firması Adı")); // senin başlıkla tam aynı kalsın
+].map((h) => h.replace("Yükleme Firma Adı", "Yükleme Firması Adı")); 
 
-/** Supabase -> Tablo başlığı eşlemesi (overlay yapılacak alanlar) */
+
 const FIELD_OVERLAY_MAP = {
     vkn: "Vkn",
-    proje_id: "Proje", // Proje sütununa proje_id yazılacak
+    proje_id: "Proje", 
     Musteri_Siparis_No: "Müşteri Sipariş No",
     Alici_Firma_Cari_Unvani: "Alıcı Firma Cari Adı",
     Urun: "Ürün",
     Kap_Adet: "Kap Adet",
-    Ambalaj_Tipi: "Ambalaj  Tipi", // (HEADERS'ta çift boşluk var)
+    Ambalaj_Tipi: "Ambalaj  Tipi", 
     Brut_KG: "Brüt KG",
     Yukleme_Firma_Adres_Adi: "Yükleme Firması Adı",
 };
@@ -67,13 +65,12 @@ const emptyRow = () => HEADERS.reduce((acc, key) => ({ ...acc, [key]: "" }), {})
 const sortTr = (a, b) => String(a).localeCompare(String(b), "tr", { sensitivity: "base" });
 const normalize = (s) => String(s ?? "").replace(/\s+/g, " ").trim();
 
-/* ===== Tarih + Araç Tipi yardımcıları ===== */
-/** Excel seri tarih -> Date (Excel 1900 epoch uyumlu) */
+
 const excelSerialToDate = (val) => {
     const n = Number(val);
     if (!isFinite(n)) return null;
     const ms = n * 86400000;
-    const d = new Date(Date.UTC(1899, 11, 30) + ms); // 1899-12-30 baz
+    const d = new Date(Date.UTC(1899, 11, 30) + ms); 
     return isNaN(d.getTime()) ? null : d;
 };
 const tryParseDate = (val) => {
@@ -99,7 +96,7 @@ const enrichDatesOnRow = (row) => {
     };
 };
 
-/** İstenilen Araç Tipi → kod (case-insensitive, TR locale) */
+
 const mapVehicleTypeToCode = (val) => {
     const raw = normalize(val);
     if (!raw) return raw;
@@ -115,11 +112,10 @@ const enrichVehicleOnRow = (row) => ({
     ["İstenilen Araç Tipi"]: mapVehicleTypeToCode(row["İstenilen Araç Tipi"]),
 });
 
-/** Hepsini tek yerden uygulayalım */
-const enrichRow = (row) => enrichVehicleOnRow(enrichDatesOnRow(row));
-/* ========================================= */
 
-/* ====== EKLENDİ: Teslim_Noktalari için fuzzy eşleşme yardımcıları ====== */
+const enrichRow = (row) => enrichVehicleOnRow(enrichDatesOnRow(row));
+
+/*Teslim_Noktalari için fuzzy eşleşme yardımcıları*/
 const cleanAddr = (s) =>
     String(s ?? "")
         .toLocaleLowerCase("tr")
@@ -153,17 +149,17 @@ const scoreSimilarity = (q, cand) => {
     if (q.includes(cand) || cand.includes(q)) return 0.95;
     return diceCoefficient(q, cand);
 };
-/* ======================================================================= */
+
 
 export default function SiparisOlustur() {
     const [projeAdi, setProjeAdi] = useState("");
-    const [rows, setRows] = useState([]); // Excel ile dolar; overlay ile güncellenir
+    const [rows, setRows] = useState([]); 
     const [dragActive, setDragActive] = useState(false);
     const [error, setError] = useState("");
     const [lastFile, setLastFile] = useState(null);
     const fileInputRef = useRef(null);
 
-    const [projects, setProjects] = useState([]); // {id, name}
+    const [projects, setProjects] = useState([]); 
     const [projectsLoading, setProjectsLoading] = useState(false);
     const [projectsError, setProjectsError] = useState("");
 
@@ -171,19 +167,19 @@ export default function SiparisOlustur() {
 
     const columns = useMemo(() => HEADERS, []);
 
-    /* === EKLENDİ: Eşleşme onay modali durumu === */
+    /* Eşleşme onay modali durumu*/
     const [matchModalOpen, setMatchModalOpen] = useState(false);
     const [matchPreview, setMatchPreview] = useState({
         total: 0,
         matchedCount: 0,
         unmatchedCount: 0,
-        samples: [], // {rowIndex, before, matchedAdresAdi, matchedAdresId, matchedCariId, score}
+        samples: [], 
         matchedSamples: [],
         unmatchedSamples: [],
     });
-    const [matchResults, setMatchResults] = useState([]); // her satır için eşleşme sonucu
+    const [matchResults, setMatchResults] = useState([]); 
 
-    /** Projeleri yükle (id + Proje_Adi) -> dropdown için */
+
     useEffect(() => {
         const fetchProjects = async () => {
             setProjectsLoading(true);
@@ -211,7 +207,7 @@ export default function SiparisOlustur() {
         fetchProjects();
     }, []);
 
-    /** Excel içe aktarım */
+
     const isExcelFile = (file) =>
         /\.(xlsx|xlsm|xls)$/i.test(file.name) ||
         [
@@ -252,9 +248,9 @@ export default function SiparisOlustur() {
                         const idx = headerIndexMap[h];
                         obj[h] = idx >= 0 ? normalize(row[idx]) : "";
                     });
-                    return enrichRow(obj); // <<< tarih + araç tipi
+                    return enrichRow(obj); 
                 })
-                .map((r) => ({ ...r, Proje: projeAdi || "" })); // geçici görsel amaçlı
+                .map((r) => ({ ...r, Proje: projeAdi || "" })); 
 
             // Excel yüklenince projeye ait satırları Projeler tablosundan çek ve uygula
             try {
@@ -297,7 +293,7 @@ export default function SiparisOlustur() {
             let allData = [];
             const pageSize = 1000;
 
-            // Önce toplam kayıt sayısını öğrenelim
+            // Önce toplam kayıt sayısı
             const { count, error: countError } = await supabase
                 .from("Teslim_Noktalari")
                 .select("*", { count: "exact", head: true });
@@ -359,11 +355,10 @@ export default function SiparisOlustur() {
     };
     /** Proje satırlarını Projeler tablosundan çek (Proje_Adi eşleşmesi ile) */
     const fetchProjectRows = async (projectName) => {
-        // Artık id ile değil, doğrudan proje_adi ile filtreliyoruz
         const { data, error } = await supabase
             .from(DATA_TABLE)
             .select(`${SELECT_COLS}, Proje_Adi`)
-            .eq("Proje_Adi", projectName);       // <-- KRİTİK: isim ile eşle
+            .eq("Proje_Adi", projectName); 
 
         if (error) throw error;
         return Array.isArray(data) ? data : [];
@@ -392,7 +387,7 @@ export default function SiparisOlustur() {
                     }
                 });
             }
-            return enrichRow(base); // <<< tarih + araç tipi burada da
+            return enrichRow(base); 
         });
 
         return out;
@@ -403,7 +398,7 @@ export default function SiparisOlustur() {
         setRows((prev) => applyOverlay(prev, incoming));
     };
 
-    /* === EKLENDİ: EŞLEŞME YAP — birebir adres_adi + onay modalı === */
+    /*EŞLEŞME YAP — birebir adres_adi + onay modalı === */
     const handleEslesmeYap = async () => {
         try {
             if (!projeAdi) {
@@ -413,22 +408,25 @@ export default function SiparisOlustur() {
             setError("");
             setOverlayLoading(true);
 
-            // 1) Proje overlay (varsa)
+            // 1) Proje overlay
             try {
                 const incoming = await fetchProjectRows(projeAdi);
                 if (incoming && incoming.length) {
                     const merged = applyOverlay(rows, incoming);
                     setRows(merged);
                 }
-            } catch (_) { /* overlay alınamazsa devam */ }
+            } catch (_) {
+
+            }
 
             // --- Yardımcı: adres_adi için “birebir” anahtar ---
             const key = (s) =>
+
                 String(s ?? "")
-                    .replace(/\u00A0/g, " ")    // NBSP -> normal boşluk
-                    .replace(/\s+/g, " ")       // çoklu boşluk -> tek
+                    .replace(/\u00A0/g, " ")    
+                    .replace(/\s+/g, " ")       
                     .trim()
-                    .toLocaleUpperCase("tr");   // TR locale eşitle
+                    .toLocaleUpperCase("tr");   
 
             // 2) Teslim_Noktalari: TÜM kayıtları çek (sayfalı)
             const pageSize = 1000;
@@ -459,8 +457,8 @@ export default function SiparisOlustur() {
                     adres_adi: a?.adres_adi ?? "",
                     cari_hesap_id: a?.cari_hesap_id ?? "",
                 };
-                byAdresAdi.set(key(item.adres_adi), item);          // birebir için
-                return { ...item, _clean: cleanAddr(item.adres_adi) }; // yakın eşleşme için
+                byAdresAdi.set(key(item.adres_adi), item);         
+                return { ...item, _clean: cleanAddr(item.adres_adi) }; 
             });
 
             // 4) Satır satır: önce BİREBİR, yoksa YAKIN eşleşme öner
@@ -473,7 +471,6 @@ export default function SiparisOlustur() {
                 const exact = byAdresAdi.get(key(qRaw));
 
                 if (exact) {
-                    // BİREBİR BULUNDU
                     return {
                         rowIndex: idx,
                         ok: true,
@@ -482,7 +479,7 @@ export default function SiparisOlustur() {
                         matchedAdresId: exact.adres_id,
                         matchedCariId: exact.cari_hesap_id,
                         score: 1,
-                        suggestions: [], // birebir bulundu; öneri gereksiz
+                        suggestions: [], 
                     };
                 }
 
@@ -509,7 +506,7 @@ export default function SiparisOlustur() {
                     ok: false,
                     before: qRaw,
                     score: 0,
-                    suggestions, // yakın adaylar
+                    suggestions,
                 };
             });
 
@@ -543,7 +540,7 @@ export default function SiparisOlustur() {
         }
     };
 
-    // Eşleşmeleri uygula (adres_id → Teslim Firma Adres Adı, cari_id → Alıcı Firma Cari Adı)
+
     const confirmApplyMatches = () => {
         setRows(prev => {
             const byIndex = new Map();
@@ -565,7 +562,6 @@ export default function SiparisOlustur() {
     const cancelMatches = () => setMatchModalOpen(false);
 
 
-    /*** YENİ: Temizle butonu işlevi ***/
     const handleTemizle = () => {
         setRows([]);
         setLastFile(null);
@@ -573,7 +569,7 @@ export default function SiparisOlustur() {
         setMatchResults([]);
         setMatchPreview({ total: 0, matchedCount: 0, unmatchedCount: 0, samples: [], matchedSamples: [], unmatchedSamples: [] });
         setMatchModalOpen(false);
-        // Proje seçimini koruyoruz; istersen değiştirilebilir.
+
     };
 
     return (
@@ -626,7 +622,6 @@ export default function SiparisOlustur() {
                         <button className="so-btn" onClick={handleEslesmeYap} disabled={!projeAdi || overlayLoading}>
                             <LinkIcon size={18} /> {overlayLoading ? "Eşleştiriliyor..." : "Eşleşme Yap"}
                         </button>
-                        {/* ESKİ: Eşleşme ID'lerini Getir butonu KALDIRILDI */}
                         <button className="so-btn" onClick={handleExportExcel} disabled={!rows.length || !projeAdi}>
                             <FileSpreadsheet size={18} /> Dışarı Excel Aktarma
                         </button>
@@ -729,7 +724,7 @@ export default function SiparisOlustur() {
             </div>
 
 
-            {/* === EKLENDİ: Eşleşme onay modali === */}
+            {/* Eşleşme onay modali*/}
             {matchModalOpen && (
                 <div className="so-modal-backdrop" role="dialog" aria-modal="true">
                     <div className="so-modal">
@@ -820,9 +815,6 @@ export default function SiparisOlustur() {
                     </div>
                 </div>
             )}
-
-
-            {/* === /MODAL === */}
         </div>
     );
 }

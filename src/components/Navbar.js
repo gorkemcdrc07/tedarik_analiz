@@ -1,9 +1,7 @@
-﻿// Navbar.js — saf React + CSS (kütüphanesiz)
-
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import "./Navbar.css";
 
-const THEME_KEY = "tema"; // "light" | "dark" | "system"
+const THEME_KEY = "tema"; 
 
 // --- Helpers ---
 function readUserName() {
@@ -41,7 +39,7 @@ function applyTheme(themePref) {
     html.setAttribute("data-theme", effective);
 }
 
-// --- Basit inline ikonlar (SVG) ---
+// ---inline ikonlar---
 const Icon = {
     Sun: (props) => (
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden {...props}>
@@ -101,12 +99,12 @@ export default function Navbar() {
         } catch { }
         applyTheme(themePref);
 
-        // Sistem teması değişirse anlık güncelle
+        // Sistem teması değişirse anlık güncelleme
         if (themePref === "system" && typeof window !== "undefined") {
             const mq = window.matchMedia("(prefers-color-scheme: dark)");
             const handler = () => applyTheme("system");
             if (mq.addEventListener) mq.addEventListener("change", handler);
-            else if (mq.addListener) mq.addListener(handler); // eski tarayıcılar
+            else if (mq.addListener) mq.addListener(handler);
             return () => {
                 if (mq.removeEventListener) mq.removeEventListener("change", handler);
                 else if (mq.removeListener) mq.removeListener(handler);
@@ -131,7 +129,7 @@ export default function Navbar() {
         window.location.reload();
     };
 
-    // light -> dark -> system döngüsü
+
     const cycleTheme = () =>
         setThemePref((prev) => (prev === "light" ? "dark" : prev === "dark" ? "system" : "light"));
 
@@ -141,7 +139,6 @@ export default function Navbar() {
     return (
         <header className="nv-wrapper" role="banner">
             <nav className="nv" aria-label="Üst menü">
-                {/* Sol: Marka + Mobil Menü */}
                 <div className="nv-left">
                     <button
                         className="nv-iconbtn md-hidden"
@@ -157,7 +154,7 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {/* Sağ: Tema + Kullanıcı + Çıkış */}
+
                 <div className="nv-right">
                     <button className="nv-btn" onClick={cycleTheme} aria-label="Temayı değiştir" type="button">
                         {themePref === "system" ? <Icon.Laptop /> : activeTheme === "dark" ? <Icon.Moon /> : <Icon.Sun />}

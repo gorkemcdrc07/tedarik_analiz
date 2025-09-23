@@ -1,9 +1,8 @@
-﻿// src/fiyatlandirma/SeferFiyatlandirma.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./seferFiyatlandirma.css";
 import ExcelJS from "exceljs";
 
-/* ===== ENV ===== */
+
 const API_BASE = (process.env.REACT_APP_API_BASE_URL || "http://localhost:5000")
     .trim()
     .replace(/\/+$/, "");
@@ -14,7 +13,7 @@ const SB_URL = (process.env.REACT_APP_SUPABASE_URL || "").trim();
 const SB_KEY = (process.env.REACT_APP_SUPABASE_KEY || "").trim();
 const HAS_SB = Boolean(SB_URL && SB_KEY);
 
-/* ===== Sabitler ===== */
+/*Sabitler*/
 const PROJECT_NAME = "BUNGE LÜLEBURGAZ FTL";
 const COLUMN_DEFS = [
     { id: "TMSOrderId", label: "TMSOrderID", width: 7 },
@@ -28,7 +27,6 @@ const COLUMN_DEFS = [
     { id: "DeliveryAddressCode", label: "TESLİM NOKTASI", width: 11 },
     { id: "DeliveryCityName", label: "TESLİM İL", width: 6 },
     { id: "DeliveryCountyName", label: "TESLİM İLÇE", width: 6 },
-    // MESAFE sütunu kaldırılmıştı
     { id: "TMSVehicleRequestDocumentNo", label: "POZİSYON NO", width: 7 },
     { id: "SeferFiyati", label: "SEFER FİYATI", width: 8, isNumber: true },
     { id: "UgramaFiyati", label: "UĞRAMA FİYATI", width: 8, isNumber: true },
@@ -38,7 +36,7 @@ const COLUMN_DEFS = [
 
 const DF_FILTER = { value: "", from: "", to: "" };
 
-/* ===== Helpers ===== */
+/*Helpers */
 const fmtDate = (d) => {
     if (!d) return "";
     const date = new Date(d);
@@ -60,7 +58,7 @@ const toLocalISOString = (date, endOfDay = false) => {
     return `${y}-${m}-${d}T${h}:${min}:${s}`;
 };
 
-// TR normalize
+
 const stripDiacritics = (s = "") =>
     s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 const cleanWS = (s = "") => String(s).trim().replace(/\s+/g, " ");
@@ -186,7 +184,6 @@ async function multiRequest(params) {
                     const list = parseListFlexible(text);
                     return { list, connected: `${method} ${url}` };
                 } catch {
-                    /* next */
                 }
             }
         }
@@ -194,7 +191,7 @@ async function multiRequest(params) {
     throw new Error("Tüm kombinasyonlar 404 döndü.\nDenemeler:\n" + tried.join("\n"));
 }
 
-/* ===== Supabase ===== */
+
 const SB_TABLE = "bungeFiyatlar";
 const SB_COLS = "teslim_il,teslim_ilce,mesafe,tir,kamyon";
 
@@ -224,7 +221,7 @@ async function fetchPriceMap(uniqueCities) {
     const map = new Map();
     const setVal = (key, r) => {
         const existing = map.get(key) || {};
-        const mesafeNum = parseTRNumber(r.mesafe); // "762,09" → 762.09
+        const mesafeNum = parseTRNumber(r.mesafe); 
         map.set(key, {
             tir: r.tir ?? existing.tir,
             kamyon: r.kamyon ?? existing.kamyon,
@@ -247,10 +244,9 @@ const splitMulti = (s = "") =>
         .map((t) => cleanWS(t))
         .filter(Boolean);
 
-// TR formatlı sayıyı güvenli parse et (YENİ)
+
 const parseTRNumber = (t) => {
     let s = String(t ?? "").toLowerCase().trim();
-    // "1.234,56 km" vb. karakterleri temizle
     s = s.replace(/[^0-9.,-]/g, "");
     if (!s) return NaN;
 
@@ -258,23 +254,21 @@ const parseTRNumber = (t) => {
     const hasComma = s.includes(",");
 
     if (hasDot && hasComma) {
-        // TR format: . = binlik, , = ondalık
         s = s.replace(/\./g, "").replace(",", ".");
     } else if (hasComma) {
-        // Tek virgül ondalık
         s = s.replace(",", ".");
     }
     const n = Number(s);
     return Number.isFinite(n) ? n : NaN;
 };
 
-// splitMesafeToNums (YENİ)
+
 const splitMesafeToNums = (s = "") =>
     String(s)
         .split(";")
         .map((t) => parseTRNumber(t));
 
-/* ===== Component ===== */
+/*Component*/
 export default function SeferFiyatlandirma() {
     const today = new Date();
     const yesterday = new Date();
@@ -302,8 +296,6 @@ export default function SeferFiyatlandirma() {
     const [colFilters, setColFilters] = useState(buildFiltersInit);
     const [sortBy, setSortBy] = useState({ id: "TMSOrderId", dir: "asc" });
     const [globalSearch, setGlobalSearch] = useState("");
-
-    // sütun genişlikleri
     const [colWidths, setColWidths] = useState(() =>
         Object.fromEntries(COLUMN_DEFS.map((c) => [c.id, c.width || 8]))
     );
@@ -333,7 +325,7 @@ export default function SeferFiyatlandirma() {
         if (!r) return;
         const deltaPx = e.clientX - r.startX;
         const deltaPct = (deltaPx / r.tableW) * 100;
-        const next = Math.max(4, Math.min(40, r.startPct + deltaPct)); // min %4, max %40
+        const next = Math.max(4, Math.min(40, r.startPct + deltaPct));
         setColWidths((prev) => ({ ...prev, [r.id]: next }));
     };
     const stopResize = () => {
@@ -475,8 +467,6 @@ export default function SeferFiyatlandirma() {
                 const acc = Object.fromEntries(
                     Object.entries(accArr).map(([k, arr]) => [k, arr.join("; ")])
                 );
-
-                // Her item için (il, ilçe, mesafe) üçlüsünü topla
                 const __segments = items.map((it) => ({
                     il: cleanWS(it?.DeliveryCityName ?? ""),
                     ilce: cleanWS(it?.DeliveryCountyName ?? ""),
@@ -495,7 +485,7 @@ export default function SeferFiyatlandirma() {
                     PickupDate: fmtDate(base?.PickupDate),
                     SeferFiyati: 0,
                     UgramaFiyati: 0,
-                    __segments,                     // ← yeni
+                    __segments,                   
                 });
             }
 
@@ -508,7 +498,7 @@ export default function SeferFiyatlandirma() {
         }
     };
 
-    // HESAPLA
+
     const handleCalculate = async () => {
         if (!rows.length) return;
         if (!HAS_SB) {
@@ -528,14 +518,12 @@ export default function SeferFiyatlandirma() {
                 return;
             }
 
-            // priceMap.get(`${ncity(il)}||${ncounty(ilce)}`) -> { tir, kamyon, mesafe }
+
             const priceMap = await fetchPriceMap(cities);
 
             setRows((prev) =>
                 prev.map((r) => {
                     let sefer = Number(r.SeferFiyati || 0);
-
-                    // Araç tipine göre doğru fiyat alanını seç
                     const getValByVehicle = (priceObj) => {
                         if (!priceObj) return null;
                         if (isOnTeker(r.VehicleTypeName)) return priceObj.kamyon ?? priceObj.tir ?? null;
@@ -544,10 +532,8 @@ export default function SeferFiyatlandirma() {
                         return priceObj.tir ?? priceObj.kamyon ?? null;
                     };
 
-                    // --- SEGMENTLERİ OLUŞTUR (Supabase mesafesi öncelikli) ---
                     let segments;
                     if (Array.isArray(r.__segments) && r.__segments.length) {
-                        // Gruplama sırasında toplanmış hizalı segmentler
                         segments = r.__segments.map((s) => {
                             const ilRaw = s.il ?? "";
                             const ilceRaw = s.ilce ?? "";
@@ -583,7 +569,7 @@ export default function SeferFiyatlandirma() {
                     // En yüksek mesafe önce
                     segments.sort((a, b) => b.sbMesafe - a.sbMesafe);
 
-                    // Aynı (il, ilçe) tekilleştir (sıra korunur)
+                    // Aynı (il, ilçe) tekilleştir
                     const seen = new Set();
                     const uniqSegments = [];
                     for (const seg of segments) {
@@ -593,7 +579,6 @@ export default function SeferFiyatlandirma() {
                         uniqSegments.push(seg);
                     }
 
-                    // --- Fiyat seçimi: önce il+ilçe, sonra il-genel ---
                     let chosen = null;
                     for (const { il: rawIl, ilce: rawIlce } of uniqSegments) {
                         const il = ncity(rawIl);
@@ -615,14 +600,11 @@ export default function SeferFiyatlandirma() {
                         if (!Number.isNaN(parsed)) sefer = Math.round(parsed * 100) / 100;
                     }
 
-                    // --- UĞRAMA ---
-                    // ";" yoksa uğrama hesaplanmaz (mevcut değer/0 korunur)
-                    // --- UĞRAMA ---
-                    // ";" yoksa uğrama = 0
-                    const deliveryCity = String(r.DeliveryCityName || "");
-                    const semiCount = (deliveryCity.match(/;/g) || []).length; // ";" adedi
 
-                    let ugrama = 0; // varsayılan: 0
+                    const deliveryCity = String(r.DeliveryCityName || "");
+                    const semiCount = (deliveryCity.match(/;/g) || []).length; 
+
+                    let ugrama = 0; 
                     if (semiCount > 0) {
                         let base = null;
                         const vtRaw = r.VehicleTypeName || "";
@@ -631,11 +613,9 @@ export default function SeferFiyatlandirma() {
                         else if (isKirkayak(vtRaw)) base = 1294;
 
                         if (base != null) {
-                            ugrama = Math.round(base * semiCount * 100) / 100; // sadece ";" sayısı kadar
+                            ugrama = Math.round(base * semiCount * 100) / 100; 
                         }
                     }
-
-                    // önceki değeri KORUMUYORUZ; ";" yoksa 0 kalır
                     return { ...r, SeferFiyati: sefer, UgramaFiyati: ugrama };
                 })
             );
@@ -646,7 +626,7 @@ export default function SeferFiyatlandirma() {
             setCalcLoading(false);
         }
     };
-    /* ===== Filtreleme + Arama + Sıralama ===== */
+    /*Filtreleme + Arama + Sıralama*/
     const filteredAndSorted = useMemo(() => {
         let data = rows;
 
@@ -718,31 +698,28 @@ export default function SeferFiyatlandirma() {
         });
     };
 
-    /* ===== EXCEL'E AKTAR ===== */
+    /*EXCEL'E AKTAR*/
     const handleExportExcel = async () => {
         const visibleColsOrder = COLUMN_DEFS.filter((c) => visibleCols[c.id]);
         if (!filteredAndSorted.length || visibleColsOrder.length === 0) return;
 
-        // modern tema renkleri
-        // modern tema renkleri (yüksek kontrast)
         const colors = {
             headerFill: "FF16323E",
             headerFont: "FFFFFFFF",
             gridBorder: "FF7CE6D3",
             bandFill: "FFF3FBF8",
             baseFill: "FFFFFFFF",
-            textDark: "FF000000",   // ← TAM SİYAH
-            money: "FF000000",      // ← PARA DA SİYAH
+            textDark: "FF000000",  
+            money: "FF000000",    
             muted: "FF5AAEA0",
         };
         const wb = new ExcelJS.Workbook();
         wb.created = new Date();
         wb.modified = new Date();
         const ws = wb.addWorksheet("Sefer Fiyatlandırma", {
-            views: [{ state: "frozen", ySplit: 2 }], // başlık + filtre satırı sabit
+            views: [{ state: "frozen", ySplit: 2 }], 
         });
 
-        // Sütun başlıkları + genişlikler (px → yaklaşık karakter)
         const pxToChars = (pct) => Math.max(8, Math.round((pct / 100) * 120));
         ws.columns = visibleColsOrder.map((c) => ({
             header: c.label,
@@ -750,11 +727,11 @@ export default function SeferFiyatlandirma() {
             width: pxToChars(colWidths[c.id] ?? c.width ?? 8),
             style: {
                 alignment: { vertical: "middle", wrapText: true },
-                font: { name: "Segoe UI", size: 11, color: { argb: colors.textDark } }, // FF000000
+                font: { name: "Segoe UI", size: 11, color: { argb: colors.textDark } },
             },
         }));
 
-        // Başlık stili
+
         const headerRow = ws.getRow(1);
         headerRow.values = visibleColsOrder.map((c) => c.label);
         headerRow.font = { name: "Segoe UI Semibold", bold: true, color: { argb: colors.headerFont }, size: 12 };
@@ -774,7 +751,7 @@ export default function SeferFiyatlandirma() {
             };
         });
 
-        // Filtre açıklama satırı (2. satır) — tarih aralığı & sayaç
+
         const infoRow = ws.addRow([
             `Aralık: ${dates.start} → ${dates.end}`,
             `Filtre: ${applyProjectFilter ? PROJECT_NAME : "Tümü"}`,
@@ -785,7 +762,7 @@ export default function SeferFiyatlandirma() {
         infoRow.alignment = { vertical: "middle" };
         infoRow.height = 18;
 
-        // Veriler
+
         const moneyCols = new Set(
             visibleColsOrder.filter((c) => c.id === "SeferFiyati" || c.id === "UgramaFiyati").map((c) => c.id)
         );
@@ -797,12 +774,10 @@ export default function SeferFiyatlandirma() {
             const rowObj = {};
             for (const c of visibleColsOrder) {
                 let v = r[c.id];
-                // Excel hücre tip/formatları
                 if (moneyCols.has(c.id)) {
                     const num = Number(v || 0);
                     v = Number.isFinite(num) ? num : null;
                 } else if (dateCols.has(c.id)) {
-                    // "dd.mm.yyyy" → Date
                     if (typeof v === "string" && /^\d{2}\.\d{2}\.\d{4}$/.test(v)) {
                         const [dd, mm, yyyy] = v.split(".");
                         v = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
@@ -813,26 +788,25 @@ export default function SeferFiyatlandirma() {
             ws.addRow(rowObj);
         }
 
-        // Otomatik filtre (başlıklara)
+
         ws.autoFilter = {
             from: { row: 1, column: 1 },
             to: { row: 1, column: visibleColsOrder.length },
         };
 
-        // Veri satırı stilleri (zebra, kenarlık, para & tarih format)
-        const firstDataRow = 3; // 1: header, 2: info, 3..: data
+
+        const firstDataRow = 3; 
         for (let i = firstDataRow; i <= ws.rowCount; i++) {
             const row = ws.getRow(i);
             const isBand = i % 2 === 0;
             row.eachCell((cell, colNumber) => {
-                // Zemin: şeffaflık yok, opak
                 cell.fill = {
                     type: "pattern",
                     pattern: "solid",
                     fgColor: { argb: isBand ? colors.bandFill : colors.baseFill },
                 };
 
-                // Kenarlık
+
                 cell.border = {
                     top: { style: "thin", color: { argb: colors.gridBorder } },
                     left: { style: "thin", color: { argb: colors.gridBorder } },
@@ -840,14 +814,13 @@ export default function SeferFiyatlandirma() {
                     right: { style: "thin", color: { argb: colors.gridBorder } },
                 };
 
-                // YAZI RENGİ: gövde metinleri koyu
+
                 cell.font = { ...(cell.font || {}), color: { argb: colors.textDark } };
 
                 const colKey = ws.getColumn(colNumber).key;
 
                 if (moneyCols.has(colKey)) {
                     cell.numFmt = '[$₺-tr-TR] #,##0.00;[Red]-[$₺-tr-TR] #,##0.00';
-                    // para hücresinde de koyu kal, yalnızca ton: money
                     cell.font = { ...(cell.font || {}), color: { argb: colors.money } };
                 } else if (dateCols.has(colKey) && cell.value instanceof Date) {
                     cell.numFmt = "dd.mm.yyyy";
@@ -858,7 +831,7 @@ export default function SeferFiyatlandirma() {
             row.height = 18;
         }
 
-        // Sütun başına ideal genişlik (içeriğe göre küçük bir auto-fit)
+
         ws.columns.forEach((col) => {
             let max = col.width || 12;
             col.eachCell({ includeEmpty: false }, (cell) => {
@@ -875,8 +848,6 @@ export default function SeferFiyatlandirma() {
             });
             col.width = Math.max(col.width || 12, max);
         });
-
-        // dosya oluştur
         const buf = await wb.xlsx.writeBuffer();
         const blob = new Blob([buf], {
             type:
@@ -890,7 +861,7 @@ export default function SeferFiyatlandirma() {
         URL.revokeObjectURL(url);
     };
 
-    // TL formatter — tabloda gösterimde kullan
+
     const tl = useMemo(
         () =>
             new Intl.NumberFormat("tr-TR", {
@@ -910,7 +881,6 @@ export default function SeferFiyatlandirma() {
 
     return (
         <section className="fx-content">
-            {/* (mevcut modern stil bloğun burada kalabilir) */}
             <style>{`
         .fx-content{display:flex;flex-direction:column;gap:14px;padding:18px;height:100dvh;overflow:hidden;background:
           radial-gradient(1000px 520px at 10% -10%, rgba(119,255,231,.08), transparent 60%),
@@ -1014,7 +984,6 @@ export default function SeferFiyatlandirma() {
                         Filtreleri Sıfırla
                     </button>
 
-                    {/* CSV yerine EXCEL */}
                     <button
                         className="fx-btn fx-btn-outline"
                         onClick={handleExportExcel}

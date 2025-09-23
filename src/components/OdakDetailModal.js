@@ -5,10 +5,10 @@ const formatDate = (dateStr) => {
     if (!dateStr) return "-";
     const date = new Date(dateStr);
     if (isNaN(date)) return "-";
-    return date.toLocaleDateString("tr-TR"); // GG.AA.YYYY
+    return date.toLocaleDateString("tr-TR"); 
 };
 
-// basit durum sınıfı eşlemesi
+
 const statusClass = (txt = "") => {
     const t = String(txt).toLowerCase();
     if (t.includes("iptal") || t.includes("cancel")) return "pill-danger";
@@ -21,7 +21,6 @@ const OdakDetailModal = ({ projectName, records = [], onClose }) => {
     const modalRef = useRef(null);
 
     useEffect(() => {
-        // ESC ile kapat + arka scroll kilidi
         const onKey = (e) => e.key === "Escape" && onClose?.();
         document.addEventListener("keydown", onKey);
         const prevOverflow = document.body.style.overflow;
@@ -32,7 +31,7 @@ const OdakDetailModal = ({ projectName, records = [], onClose }) => {
         };
     }, [onClose]);
 
-    const stop = (e) => e.stopPropagation(); // içeride tıklama dış overlay'e geçmesin
+    const stop = (e) => e.stopPropagation(); 
 
     return (
         <div className="odak-overlay" onMouseDown={onClose}>

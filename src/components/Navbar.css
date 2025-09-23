@@ -1,12 +1,9 @@
-﻿/* Navbar.css — modern, şık, kütüphanesiz stil */
-/* System font stack, glass arkaplan, yumuşak geçişler */
-
-:root {
+﻿:root {
     --bg: #ffffff;
-    --fg: #0f172a; /* slate-900 */
-    --muted: #64748b; /* slate-500 */
+    --fg: #0f172a; 
+    --muted: #64748b;
     --border: rgba(15, 23, 42, 0.08);
-    --primary: #6d28d9; /* purple-700 */
+    --primary: #6d28d9;
     --ring: rgba(109, 40, 217, 0.25);
     --card: rgba(255, 255, 255, 0.65);
     --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
@@ -14,10 +11,10 @@
 
 [data-theme="dark"], .dark {
     --bg: #0b1220;
-    --fg: #e5e7eb; /* slate-200 */
-    --muted: #94a3b8; /* slate-400 */
+    --fg: #e5e7eb; 
+    --muted: #94a3b8; 
     --border: rgba(226, 232, 240, 0.12);
-    --primary: #a78bfa; /* violet-300 */
+    --primary: #a78bfa; 
     --ring: rgba(167, 139, 250, 0.25);
     --card: rgba(12, 18, 32, 0.6);
     --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
@@ -53,7 +50,7 @@ html, body {
     padding: 0 16px;
 }
 
-/* Sol */
+
 .nv-left {
     display: flex;
     align-items: center;
@@ -79,7 +76,7 @@ html, body {
     letter-spacing: -0.01em;
 }
 
-/* Sağ */
+
 .nv-right {
     display: flex;
     align-items: center;

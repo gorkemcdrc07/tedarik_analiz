@@ -1,8 +1,7 @@
-﻿// src/GelirGider/GelirEkleme.js
-import React, { useRef, useState, useMemo } from "react";
+﻿import React, { useRef, useState, useMemo } from "react";
 import * as XLSX from "xlsx";
 import supabase from "../supabaseClient";
-import { getToken, debugLogToken } from "../auth/tokenManager"; // ✅ REEL token
+import { getToken, debugLogToken } from "../auth/tokenManager"; 
 import "./GelirEkleme.css";
 
 export default function GelirEkleme() {
@@ -11,21 +10,14 @@ export default function GelirEkleme() {
     const [file, setFile] = useState(null);
     const [error, setError] = useState("");
     const [downloading, setDownloading] = useState(false);
-
-    // tarama/önizleme
     const [scanning, setScanning] = useState(false);
-    const [sending, setSending] = useState(false); // ✅ REEL'e gönder
+    const [sending, setSending] = useState(false); 
     const [previewHeaders, setPreviewHeaders] = useState([]);
     const [previewRows, setPreviewRows] = useState([]);
     const [missingHeaders, setMissingHeaders] = useState([]);
-
-    // eşleştirme istatistiği
     const [mapStats, setMapStats] = useState({ matched: 0, unknown: 0 });
-
-    // 🔽 satır durumları ve gönderim özeti
-    // rowResults[rIdx] = { status:'ok'|'fail', message:string, details?: string[] }
     const [rowResults, setRowResults] = useState({});
-    const [sendSummary, setSendSummary] = useState(null); // { ok, fail }
+    const [sendSummary, setSendSummary] = useState(null); 
     const clearSendState = () => {
         setRowResults({});
         setSendSummary(null);
@@ -63,7 +55,7 @@ export default function GelirEkleme() {
         setPreviewRows([]);
         setMissingHeaders([]);
         setMapStats({ matched: 0, unknown: 0 });
-        clearSendState(); // 🆕 yeni dosyada sonuçları temizle
+        clearSendState(); 
     };
 
     const onDragOver = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
@@ -77,7 +69,7 @@ export default function GelirEkleme() {
         setMissingHeaders([]);
         setMapStats({ matched: 0, unknown: 0 });
         if (inputRef.current) inputRef.current.value = "";
-        clearSendState(); // 🆕
+        clearSendState(); 
     };
 
     const formatSize = (bytes) => {
@@ -86,7 +78,7 @@ export default function GelirEkleme() {
         return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     };
 
-    // Supabase → DÖKÜMAN sayfası için
+
     const downloadTemplate = async () => {
         try {
             setDownloading(true);
@@ -147,7 +139,7 @@ export default function GelirEkleme() {
             .toLowerCase()
             .trim();
 
-    // "₺ 1.250,5678912" → "1250.567891" (virgülden sonra en fazla 6 hane, yuvarlama yok)
+
     const toDecimalString = (val, maxDecimals = 6) => {
         if (val === null || val === undefined) return "";
 
@@ -182,7 +174,7 @@ export default function GelirEkleme() {
         return s;
     };
 
-    // Birim Fiyat ve Miktar dip toplamları (çarpım yok)
+    // Birim Fiyat ve Miktar dip toplamları
     const simpleTotals = useMemo(() => {
         if (!previewHeaders.length || !previewRows.length) {
             return { unitPriceSum: 0, qtySum: 0 };
@@ -237,12 +229,10 @@ export default function GelirEkleme() {
         for (const row of previewRows) {
             const u = toNumberLocal(row[iBirimF]);
             const q = toNumberLocal(row[iMiktar]);
-
-            // sendToReel ile tutarlı: miktar yok/≤0 ise 1 kabul et
             const qSafe = (q == null || q <= 0) ? 1 : q;
 
-            if (q != null && q > 0) qty += q;          // gerçek miktarlar toplamı
-            if (u != null) amount += u * qSafe;        // satır toplamı
+            if (q != null && q > 0) qty += q;         
+            if (u != null) amount += u * qSafe;     
         }
 
         return { qty, amount };
@@ -273,13 +263,13 @@ export default function GelirEkleme() {
         return map;
     };
 
-    // TARAY: sadece "ŞABLON"
+
     const startScan = async () => {
         if (!file) return;
         try {
             setScanning(true);
             setError("");
-            clearSendState(); // 🆕 yeni taramada önceki sonuçları temizle
+            clearSendState(); 
 
             const buf = await file.arrayBuffer();
             const wb = XLSX.read(buf, { type: "array" });
@@ -312,7 +302,7 @@ export default function GelirEkleme() {
             if (cariIdx === -1) { setError(`"Cari Unvan" başlığı bulunamadı.`); return; }
             if (hesapIdx === -1) { setError(`"Hesap Adı" başlığı bulunamadı.`); return; }
 
-            // "Hizmet/Masraf" yoksa 3. kolona ekle
+
             let hmIdx = headers.indexOf("Hizmet/Masraf");
             if (hmIdx === -1) {
                 const insertAt = 2;
@@ -346,8 +336,6 @@ export default function GelirEkleme() {
 
             rows = rows.map((r) => {
                 const copy = [...r];
-
-                // Hesap Adı (metin) -> tip_id / detay_id
                 const hizmetAdiCell = copy[hesapIdx];
                 const rec = dokumanLookup.get(norm(hizmetAdiCell));
                 if (rec) {
@@ -359,7 +347,7 @@ export default function GelirEkleme() {
                     copy[hmIdx] = copy[hmIdx] ?? "";
                 }
 
-                // Cari Unvan (metin) -> firma_id
+
                 const cariCell = copy[cariIdx];
                 const firm = firmaLookup.get(norm(cariCell));
                 if (firm) {
@@ -373,7 +361,7 @@ export default function GelirEkleme() {
                 }
                 if (kdvIdx !== -1) {
                     const v = copy[kdvIdx];
-                    if (v === "" || v === null || typeof v === "undefined") copy[kdvIdx] = "0,2"; // default
+                    if (v === "" || v === null || typeof v === "undefined") copy[kdvIdx] = "0,2"; 
                 }
                 if (tevIdx !== -1) {
                     const v = copy[tevIdx];
@@ -401,12 +389,12 @@ export default function GelirEkleme() {
         }
     };
 
-    // ✅ REEL’e Gönder: satır bazlı sonuç + açıklayıcı mesajlar
+
     const sendToReel = async () => {
         try {
             setSending(true);
             setError("");
-            clearSendState(); // 🆕 önceki sonuçları temizle
+            clearSendState(); 
 
             const token = await getToken();
 
@@ -466,16 +454,16 @@ export default function GelirEkleme() {
                 const hasAny = row.some((cell) => cell !== "" && cell !== null && typeof cell !== "undefined");
                 if (!hasAny) continue;
 
-                // Zorunlu ID'leri hazırla
+
                 const rawSefer = row[iSeferID];
                 const rawCari = row[iCari];
                 const rawHM = row[iHM];
                 const rawHesap = row[iHesapAdi];
 
                 const tmsDespatchId = toPosInt(rawSefer);
-                const currentAccountId = toPosInt(rawCari);     // tarama sonrası burada firma_id (sayı) olmalı
-                const lineMovementType = toPosInt(rawHM);       // tip_id
-                const lineMovementId = toPosInt(rawHesap);    // detay_id
+                const currentAccountId = toPosInt(rawCari);     
+                const lineMovementType = toPosInt(rawHM);       
+                const lineMovementId = toPosInt(rawHesap);    
 
                 if (!tmsDespatchId || !currentAccountId || !lineMovementType || !lineMovementId) {
                     const details = [];
@@ -623,7 +611,6 @@ export default function GelirEkleme() {
                             </div>
                         </div>
 
-                        {/* ⚙️ İstenen sıra: Taramayı Başlat · REEL’e Gönder · Kaldır */}
                         <div className="ge-actions">
                             <button className="btn" onClick={startScan} disabled={scanning}>
                                 {scanning ? "Taranıyor…" : "Taramayı Başlat"}
@@ -680,7 +667,7 @@ export default function GelirEkleme() {
                             </div>
                         )}
 
-                        {/* Hatalı satır listesi (alt madde olarak açıklamalarla) */}
+                        {/* Hatalı satır listesi*/}
                         {Object.entries(rowResults).some(([, v]) => v?.status === "fail") && (
                             <div className="ge-error" style={{ marginTop: 12 }}>
                                 <strong>Hatalı satırlar:</strong>
@@ -688,7 +675,7 @@ export default function GelirEkleme() {
                                     {Object.entries(rowResults)
                                         .filter(([, v]) => v?.status === "fail")
                                         .map(([idx, v]) => {
-                                            const excelRow = Number(idx) + 2; // başlık 1, data 2’den başlar
+                                            const excelRow = Number(idx) + 2; 
                                             return (
                                                 <li key={idx}>
                                                     Satır {excelRow}: {v?.message || "Bilinmeyen hata"}

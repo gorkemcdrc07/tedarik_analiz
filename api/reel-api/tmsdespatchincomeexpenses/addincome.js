@@ -18,7 +18,6 @@ export default async function handler(req, res) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    // Frontend’den gelen Authorization header’ýný aynen iletelim
                     Authorization: req.headers.authorization || "",
                 },
                 body: JSON.stringify(req.body),

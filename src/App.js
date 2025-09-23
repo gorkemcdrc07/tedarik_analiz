@@ -1,5 +1,4 @@
-﻿// src/App.js
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./Login";
@@ -9,10 +8,9 @@ import Layout from "./Layout";
 import GelirEkleme from "./GelirGider/GelirEkleme";
 import GiderEkleme from "./GelirGider/GiderEkleme";
 import SiparisOlustur from "./SiparisIslemleri/SiparisOlustur";
-
-// ✅ Yeni: Sefer Fiyatlandırma ekranı
+import Arkas from "./SiparisIslemleri/Arkas";
 import SeferFiyatlandirma from "./fiyatlandirma/seferFiyatlandirma";
-// import FiyatListesi from "./fiyatlandirma/FiyatListesi"; // hazır olduğunda açın
+import Fasdat from "./SiparisIslemleri/Fasdat"; // <-- EKLENDİ
 
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -80,7 +78,17 @@ export default function App() {
                     }
                 />
 
-                {/* ✅ Yeni rota: Sefer Fiyatlandırma */}
+                <Route
+                    path="/SiparisIslemleri/Arkas"
+                    element={
+                        isAuthenticated ? (
+                            <Layout><Arkas /></Layout>
+                        ) : (
+                            <Navigate to="/" />
+                        )
+                    }
+                />
+
                 <Route
                     path="/fiyatlandirma/seferFiyatlandirma"
                     element={
@@ -92,20 +100,18 @@ export default function App() {
                     }
                 />
 
-                {/* İsterseniz hazır olduğunda açın
-        <Route
-          path="/fiyatlandirma/fiyatListesi"
-          element={
-            isAuthenticated ? (
-              <Layout><FiyatListesi /></Layout>
-            ) : (
-              <Navigate to="/" />
-            )
-          }
-        />
-        */}
+                {/* <-- YENİ ROUTE */}
+                <Route
+                    path="/SiparisIslemleri/Fasdat"
+                    element={
+                        isAuthenticated ? (
+                            <Layout><Fasdat /></Layout>
+                        ) : (
+                            <Navigate to="/" />
+                        )
+                    }
+                />
 
-                {/* Opsiyonel: bilinmeyen rotaları ana sayfaya yönlendir */}
                 <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/"} />} />
             </Routes>
         </Router>
