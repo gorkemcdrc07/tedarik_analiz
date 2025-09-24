@@ -194,6 +194,7 @@ export default function Fasdat() {
         )),
         []
     );
+    /*deneme*/
 
     return (
         <div className="p-6 space-y-6 max-w-6xl mx-auto text-slate-900 dark:text-slate-100">
