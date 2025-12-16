@@ -37,35 +37,37 @@ export default function Login({ onLoginSuccess }) {
                 return;
             }
 
- 
-            if (remember) localStorage.setItem("kullanici", JSON.stringify(data));
+            // login bilgilerini kaydet
+            if (remember) {
+                localStorage.setItem("kullanici", JSON.stringify(data));
+            }
 
+            // Reel bilgilerini belirle
             const reelUser =
                 data.Reel_kullanici ??
                 data.reel_kullanici ??
                 data.reelUserName ??
                 data.reel_username ??
-                "";
+                email;            // 🔥 fallback eklendi
+
             const reelPass =
                 data.Reel_sifre ??
                 data.reel_sifre ??
                 data.reelPassword ??
                 data.reel_password ??
-                "";
+                password;        // 🔥 fallback eklendi
 
-            if (reelUser) localStorage.setItem("Reel_kullanici", reelUser);
-            if (reelPass) localStorage.setItem("Reel_sifre", reelPass);
+            // 🔥 REEL auth için GEREKLİ zorunlu kayıtlar
+            localStorage.setItem("Reel_kullanici", reelUser);
+            localStorage.setItem("Reel_sifre", reelPass);
 
-            if (reelUser && reelPass) {
-                localStorage.setItem(
-                    "reelCreds",
-                    JSON.stringify({ userName: reelUser, password: reelPass })
-                );
-            }
+            localStorage.setItem(
+                "reelCreds",
+                JSON.stringify({ userName: reelUser, password: reelPass })
+            );
 
             onLoginSuccess?.();
         } catch (err) {
-
             console.error(err);
             setError("Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.");
         } finally {

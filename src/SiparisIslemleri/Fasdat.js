@@ -90,6 +90,21 @@ function mapYuklemeFirmasiToId(val) {
     if (s.includes("KARAPINAR PATATES TARLA")) return "36114";
     if (s.includes("ATAKEY EĞRİBAYAT")) return "27682";
     if (s.includes("FASDAT KARATAY YARMA TARLA")) return "35837";
+    if (s.includes("TOPRAKLIK MEVKİ KONYA")) return "36341";
+    if (s.includes("KARADAYI KÖYÜ BÜNYAN")) return "36420";
+    if (s.includes("HHG PATATES TARLA")) return "35587";
+    if (s.includes("EMİRGAZİ TARLA")) return "36308";
+    if (s.includes("BEYLİKOVA KÖYÜ PATATES")) return "36477";
+    if (s.includes("ATAKEY DEVELİ PATATES")) return "36746";
+    if (s.includes("FASDAT BALA PATATES")) return "36597";
+    if (s.includes("ATAKEY HACINUMAN KÖYÜ")) return "36747";
+    if (s.includes("MERAM BORUKTOLU SOĞAN")) return "36497";
+    if (s.includes("YÜKSECİK MEVKİ PATATES TARLA")) return "36799";
+    if (s.includes("POLATLI YÜZÜKBAŞI KÖYÜ PATATES")) return "36853";
+    if (s.includes("MEZGİTLİ PATATES TARLA")) return "36537";
+    if (s.includes("PATNOS ÜRKÜT KÖYÜ")) return "36855";
+    if (s.includes("AHLAT TAŞHARMAN KÖYÜ")) return "36856";
+    if (s.includes("ADİLCEVAZ GÖZDÜZÜ KÖYÜ")) return "36857";
     return val ?? ""; // eşleşme yoksa orijinali koru
 }
 

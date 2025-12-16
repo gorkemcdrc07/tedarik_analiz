@@ -1,125 +1,124 @@
-﻿const STORAGE_KEY = "reel_api_token_v1";
-const SKEW_MS = 60 * 1000; 
-let current = null; 
+﻿// src/tokenManager.js
+// --------------------------------------------------------------
+// TMS API ile uyumlu token yönetimi
+// REEL token sistemi kaldırıldı.
+// Artık token tamamen TMS login endpoint'inden alınıyor.
+// --------------------------------------------------------------
+
+const STORAGE_KEY = "tms_api_token_v1";
+const SKEW_MS = 60 * 1000; // Token 1 dk kala yenilensin
+let current = null;
 let refreshInFlight = null;
 let timerId = null;
 
- 
-const TOKEN_URL =
-    process.env.NODE_ENV === "production"
-        ? "/api/reel-auth/login"
-        : "/reel-auth/api/auth/login";
+// 🎯 TMS TOKEN ENDPOINT — DOĞRU OLAN BU!
+const TOKEN_URL = "/reel-auth/api/auth/login";
+
+console.log("[TMS] TOKEN_URL:", TOKEN_URL);
 
 // Yardımcılar
 const safeParse = (s, fallback = null) => {
     try { return JSON.parse(s); } catch { return fallback; }
 };
 
-function getReelCreds() {
-    const userFromLS = localStorage.getItem("Reel_kullanici") || "";
-    const passFromLS = localStorage.getItem("Reel_sifre") || "";
-    if (userFromLS && passFromLS) return { userName: userFromLS, password: passFromLS };
+// LocalStorage'dan kullanıcı adı/şifreyi alır
+function getUserCredentials() {
+    const u = localStorage.getItem("Reel_kullanici") || "";
+    const p = localStorage.getItem("Reel_sifre") || "";
 
-    const kullanici = safeParse(localStorage.getItem("kullanici") || "{}", {});
-    const userName =
-        kullanici?.Reel_kullanici ??
-        kullanici?.reel_kullanici ?? "";
-    const password =
-        kullanici?.Reel_sifre ??
-        kullanici?.reel_sifre ?? "";
-    return { userName, password };
+    if (!u || !p) {
+        throw new Error("Kullanıcı bilgileri LocalStorage'da bulunamadı.");
+    }
+    return { userName: u, password: p };
 }
 
+// Storage'dan token yükle
 function loadFromStorage() {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return;
+
     const obj = safeParse(raw);
-    if (obj?.token && obj?.exp && obj.exp > Date.now()) {
+    if (obj?.token && obj?.exp > Date.now()) {
         current = obj;
-        console.log("%c[REEL] Mevcut token storage’dan kullanılıyor.", "color:#3b82f6");
+        console.log("%c[TMS] Geçerli token storage'dan kullanılıyor.", "color:#3b82f6");
         scheduleRefresh();
     } else {
         sessionStorage.removeItem(STORAGE_KEY);
     }
 }
 
+// Token storage'a kaydet
 function saveToStorage(obj) {
-    if (!obj) { sessionStorage.removeItem(STORAGE_KEY); return; }
+    if (!obj) {
+        sessionStorage.removeItem(STORAGE_KEY);
+        return;
+    }
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
 }
 
+// Token yenileme zamanlayıcısı
 function scheduleRefresh() {
     if (timerId) clearTimeout(timerId);
     if (!current?.exp) return;
-    const delay = Math.max(current.exp - Date.now() - SKEW_MS, 5_000);
-    timerId = setTimeout(() => { refreshToken().catch(() => { }); }, delay);
+
+    const delay = Math.max(current.exp - Date.now() - SKEW_MS, 5000);
+    timerId = setTimeout(() => {
+        refreshToken().catch(() => { });
+    }, delay);
 }
 
-
-function extractTokenAndTtl(responseJson) {
-    const d = responseJson || {};
-    const nested = d.data || {};
-
-    const token =
-        d.token || d.access_token || d.accessToken ||
-        nested.token || nested.access_token || nested.accessToken;
-
-    const ttlSec =
-        d.expires_in ?? d.expiresIn ??
-        nested.expires_in ?? nested.expiresIn ?? 300;
-
-    return { token, ttlSec: Number(ttlSec) };
-}
-
-
-// Token alma / yenileme
+// Token alma
 async function requestNewToken() {
-    const { userName, password } = getReelCreds();
-    if (!userName || !password) throw new Error("REEL kullanıcı bilgileri bulunamadı (localStorage).");
+    const { userName, password } = getUserCredentials();
 
     let res;
     try {
         res = await fetch(TOKEN_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userName, password }),
+            body: JSON.stringify({ userName, password })
         });
-    } catch (err) {
-        throw new Error("Login isteği atılamadı (ağ/SSL): " + String(err));
+    } catch (e) {
+        throw new Error("TMS login isteği başarısız: " + e);
     }
 
     if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`Token alınamadı (${res.status}) ${text}`);
+        const t = await res.text().catch(() => "");
+        throw new Error(`TMS token alınamadı (${res.status}) ${t}`);
     }
 
     const data = await res.json().catch(() => ({}));
-    const { token, ttlSec } = extractTokenAndTtl(data);
-    if (!token) throw new Error("Yanıt içinde token bulunamadı.");
 
-    const exp = Date.now() + (Number.isFinite(ttlSec) ? ttlSec * 1000 : 300_000);
+    const token = data?.token || data?.access_token || data?.accessToken;
+    const ttlSec = data?.expires_in || data?.expiresIn || 300;
+
+    if (!token) {
+        throw new Error("TMS login yanıtında token bulunamadı.");
+    }
+
+    const exp = Date.now() + ttlSec * 1000;
     current = { token, exp };
     saveToStorage(current);
     scheduleRefresh();
 
-    if (process.env.NODE_ENV !== "production") {
-        console.log("%c[REEL] Yeni token alındı:", "color:#10b981", token);
-    }
+    console.log("%c[TMS] Yeni token alındı:", "color:#10b981", token);
     return token;
 }
 
 export async function refreshToken() {
     if (refreshInFlight) return refreshInFlight;
-    refreshInFlight = requestNewToken().finally(() => { refreshInFlight = null; });
+    refreshInFlight = requestNewToken().finally(() => refreshInFlight = null);
     return refreshInFlight;
 }
 
+// Geçerli token'ı getir
 export async function getToken() {
     if (!current) loadFromStorage();
     if (current && Date.now() < current.exp - SKEW_MS) return current.token;
     return refreshToken();
 }
 
+// Token sıfırlama
 export function invalidateToken() {
     current = null;
     saveToStorage(null);
@@ -127,43 +126,53 @@ export function invalidateToken() {
     timerId = null;
 }
 
+// ------------- AUTHORIZED FETCH -----------------
 
-// Yetkili istek yardımcıları
-export async function authorizedFetch(input, init = {}) {
-    const t = await getToken();
+export async function authorizedFetch(url, init = {}) {
+    const token = await getToken();
+
     const headers = new Headers(init.headers || {});
-    headers.set("Authorization", `Bearer ${t}`);
+    headers.set("Authorization", `Bearer ${token}`);
 
-    let res = await fetch(input, { ...init, headers });
+    let res = await fetch(url, { ...init, headers });
 
+    // Token süresi dolarsa yeniden dene
     if (res.status === 401) {
-        console.warn("%c[REEL] 401 alındı, token yenileniyor…", "color:#f59e0b");
+        console.warn("%c[TMS] 401 → Token yenileniyor…", "color:#f59e0b");
+
         await refreshToken();
-        const t2 = await getToken();
-        headers.set("Authorization", `Bearer ${t2}`);
-        res = await fetch(input, { ...init, headers });
+        const token2 = await getToken();
+
+        headers.set("Authorization", `Bearer ${token2}`);
+        res = await fetch(url, { ...init, headers });
     }
+
     return res;
 }
 
-export async function authorizedJson(url, method, bodyObj) {
+// JSON dönen istek
+export async function authorizedJson(url, method = "GET", bodyObj = undefined) {
     const res = await authorizedFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: bodyObj === undefined ? undefined : JSON.stringify(bodyObj),
+        body: bodyObj !== undefined ? JSON.stringify(bodyObj) : undefined,
     });
+
     const text = await res.text();
     let json;
     try { json = JSON.parse(text); } catch { json = { raw: text }; }
+
     if (!res.ok) {
-        const msg = (json && (json.message || json.error)) || text || "İstek başarısız";
+        const msg = json?.message || json?.error || text;
         throw new Error(`${res.status}: ${msg}`);
     }
+
     return json;
 }
 
+// Debug için mevcut token'ı yazdır
 export async function debugLogToken() {
     const t = await getToken();
-    console.log("%c[REEL] Aktif token:", "color:#a855f7", t);
+    console.log("%c[TMS] Aktif token:", "color:#a855f7", t);
     return t;
 }

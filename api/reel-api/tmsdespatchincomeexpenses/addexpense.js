@@ -12,13 +12,25 @@ export default async function handler(req, res) {
     }
 
     try {
+        const rawAuth = req.headers.authorization || "";
+        const token = rawAuth.startsWith("Bearer ")
+            ? rawAuth.slice(7)
+            : rawAuth;
+
+        if (!token) {
+            return res.status(401).json({
+                error: "Token missing",
+                detail: "Authorization: Bearer <token> gönderilmedi",
+            });
+        }
+
         const upstream = await fetch(
             "https://tms.odaklojistik.com.tr/api/tmsdespatchincomeexpenses/addexpense",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: req.headers.authorization || "",
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(req.body),
             }

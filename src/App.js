@@ -1,16 +1,23 @@
-﻿import React, { useState, useEffect } from "react";
+﻿// src/App.js
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./Login";
 import AnaSayfa from "./AnaSayfa";
 import Dashboard from "./Dashboard";
 import Layout from "./Layout";
+
+import SiparisAcanlar from "./SiparisIslemleri/siparisAcanlar"; // <-- Sipariş Açanlar
 import GelirEkleme from "./GelirGider/GelirEkleme";
 import GiderEkleme from "./GelirGider/GiderEkleme";
+import TestGelir from "./GelirGider/TestGelir";
+import TestGider from "./GelirGider/TestGider";
 import SiparisOlustur from "./SiparisIslemleri/SiparisOlustur";
 import Arkas from "./SiparisIslemleri/Arkas";
 import SeferFiyatlandirma from "./fiyatlandirma/seferFiyatlandirma";
-import Fasdat from "./SiparisIslemleri/Fasdat"; // <-- EKLENDİ
+import Fasdat from "./SiparisIslemleri/Fasdat";
+
+import OzetTablo from "./analiz/ozetTablo"; // <-- YENİ: Özet Tablo
 
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -67,6 +74,30 @@ export default function App() {
                     }
                 />
 
+                {/* Test Gelir */}
+                <Route
+                    path="/GelirGider/TestGelir"
+                    element={
+                        isAuthenticated ? (
+                            <Layout><TestGelir /></Layout>
+                        ) : (
+                            <Navigate to="/" />
+                        )
+                    }
+                />
+
+                {/* Test Gider */}
+                <Route
+                    path="/GelirGider/TestGider"
+                    element={
+                        isAuthenticated ? (
+                            <Layout><TestGider /></Layout>
+                        ) : (
+                            <Navigate to="/" />
+                        )
+                    }
+                />
+
                 <Route
                     path="/SiparisIslemleri/SiparisOlustur"
                     element={
@@ -90,22 +121,33 @@ export default function App() {
                 />
 
                 <Route
-                    path="/fiyatlandirma/seferFiyatlandirma"
+                    path="/SiparisIslemleri/Fasdat"
                     element={
                         isAuthenticated ? (
-                            <Layout><SeferFiyatlandirma /></Layout>
+                            <Layout><Fasdat /></Layout>
                         ) : (
                             <Navigate to="/" />
                         )
                     }
                 />
 
-                {/* <-- YENİ ROUTE */}
                 <Route
-                    path="/SiparisIslemleri/Fasdat"
+                    path="/SiparisIslemleri/SiparisAcanlar"
                     element={
                         isAuthenticated ? (
-                            <Layout><Fasdat /></Layout>
+                            <Layout><SiparisAcanlar /></Layout>
+                        ) : (
+                            <Navigate to="/" />
+                        )
+                    }
+                />
+
+                {/* YENİ: Özet Tablo */}
+                <Route
+                    path="/analiz/ozet"
+                    element={
+                        isAuthenticated ? (
+                            <Layout><OzetTablo /></Layout>
                         ) : (
                             <Navigate to="/" />
                         )

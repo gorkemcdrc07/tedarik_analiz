@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-
     if (req.method === "OPTIONS") {
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -12,25 +11,13 @@ export default async function handler(req, res) {
     }
 
     try {
-        const rawAuth = req.headers.authorization || "";
-        const token = rawAuth.startsWith("Bearer ")
-            ? rawAuth.slice(7)
-            : rawAuth;
-
-        if (!token) {
-            return res.status(401).json({
-                error: "Token missing",
-                detail: "Authorization: Bearer <token> gönderilmedi",
-            });
-        }
-
         const upstream = await fetch(
-            "https://tms.odaklojistik.com.tr/api/tmsdespatchincomeexpenses/addincome",
+            "https://testtms.odaklojistik.com.tr/api/tmsdespatchincomeexpenses/addincome",
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    Authorization: (req.headers.authorization || "").trim(),
                 },
                 body: JSON.stringify(req.body),
             }
@@ -39,6 +26,7 @@ export default async function handler(req, res) {
         const text = await upstream.text();
         res.setHeader("Access-Control-Allow-Origin", "*");
         return res.status(upstream.status).send(text);
+
     } catch (e) {
         return res.status(502).json({ error: "Upstream error", detail: String(e) });
     }

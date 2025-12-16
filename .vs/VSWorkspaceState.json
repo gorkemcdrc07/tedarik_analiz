@@ -1,10 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\src",
-    "\\src\\components",
-    "\\src\\GelirGider",
-    "\\src\\SiparisIslemleri"
+    "\\api",
+    "\\api\\reel-api",
+    "\\api\\reel-api\\tmsdespatchincomeexpenses",
+    "\\api\\reel-auth",
+    "\\pages",
+    "\\pages\\api",
+    "\\pages\\api\\reel-api",
+    "\\pages\\api\\reel-api\\tmsdespatchincomeexpenses",
+    "\\pages\\api\\reel-api\\tmsdespatchincomeexpenses\\test",
+    "\\src"
   ],
   "PreviewInSolutionExplorer": false
 }
