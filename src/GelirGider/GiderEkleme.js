@@ -334,7 +334,13 @@ export default function GiderEkleme() {
 
     // --- Tarama Fonksiyonu (Güncellendi) ---
     const startScan = async (overrideFile) => {
-        const f = overrideFile || file;
+        // 👇 Eğer butondan click event geldiyse overrideFile aslında event olur.
+        const isEvent =
+            overrideFile &&
+            typeof overrideFile === "object" &&
+            ("preventDefault" in overrideFile || "target" in overrideFile);
+
+        const f = isEvent ? file : (overrideFile || file);
         if (!f) return;
 
         try {
@@ -786,11 +792,11 @@ export default function GiderEkleme() {
                         </div>
 
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <button
-                                style={{ ...STYLES.buttonBase, ...STYLES.buttonPrimary, ...(scanning || sending ? STYLES.disabled : {}) }}
-                                onClick={startScan}
-                                disabled={scanning || sending}
-                            >
+                                <button
+                                    style={{ ...STYLES.buttonBase, ...STYLES.buttonPrimary, ...(scanning || sending ? STYLES.disabled : {}) }}
+                                    onClick={() => startScan()}
+                                    disabled={scanning || sending}
+                                >
                                 {scanning ? <><FiRefreshCw className="spinner" style={{ animation: 'spin 1s linear infinite' }} /> Taranıyor…</> : <><FiSearch /> Taramayı Başlat</>}
                             </button>
                             <button

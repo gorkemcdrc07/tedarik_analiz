@@ -1,16 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\api",
-    "\\api\\reel-api",
-    "\\api\\reel-api\\tmsdespatchincomeexpenses",
-    "\\api\\reel-auth",
+    "\\images",
     "\\pages",
     "\\pages\\api",
     "\\pages\\api\\reel-api",
     "\\pages\\api\\reel-api\\tmsdespatchincomeexpenses",
     "\\pages\\api\\reel-api\\tmsdespatchincomeexpenses\\test",
-    "\\src"
+    "\\server",
+    "\\src",
+    "\\src\\auth"
   ],
+  "SelectedNode": "\\src\\auth\\tokenManager.js",
   "PreviewInSolutionExplorer": false
 }

@@ -1,24 +1,28 @@
 ﻿// src/tokenManager.js
 // --------------------------------------------------------------
 // TMS API ile uyumlu token yönetimi
-// REEL token sistemi kaldırıldı.
-// Artık token tamamen TMS login endpoint'inden alınıyor.
+// Token tamamen /reel-auth/api/auth/login endpoint'inden alınıyor.
+// (Bu endpoint backend/proxy olmalı.)
 // --------------------------------------------------------------
 
 const STORAGE_KEY = "tms_api_token_v1";
 const SKEW_MS = 60 * 1000; // Token 1 dk kala yenilensin
+
 let current = null;
 let refreshInFlight = null;
 let timerId = null;
 
-// 🎯 TMS TOKEN ENDPOINT — DOĞRU OLAN BU!
+// ✅ Frontend her zaman bunu çağıracak (proxy route)
 const TOKEN_URL = "/reel-auth/api/auth/login";
-
 console.log("[TMS] TOKEN_URL:", TOKEN_URL);
 
-// Yardımcılar
+// Yardımcı
 const safeParse = (s, fallback = null) => {
-    try { return JSON.parse(s); } catch { return fallback; }
+    try {
+        return JSON.parse(s);
+    } catch {
+        return fallback;
+    }
 };
 
 // LocalStorage'dan kullanıcı adı/şifreyi alır
@@ -76,7 +80,7 @@ async function requestNewToken() {
         res = await fetch(TOKEN_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userName, password })
+            body: JSON.stringify({ userName, password }),
         });
     } catch (e) {
         throw new Error("TMS login isteği başarısız: " + e);
@@ -90,24 +94,33 @@ async function requestNewToken() {
     const data = await res.json().catch(() => ({}));
 
     const token = data?.token || data?.access_token || data?.accessToken;
-    const ttlSec = data?.expires_in || data?.expiresIn || 300;
+    if (!token) throw new Error("TMS login yanıtında token bulunamadı.");
 
-    if (!token) {
-        throw new Error("TMS login yanıtında token bulunamadı.");
+    // ✅ expiration destekle
+    let exp = Date.now() + 5 * 60 * 1000; // fallback 5dk
+
+    if (data?.expiration) {
+        const d = new Date(data.expiration);
+        if (!Number.isNaN(d.getTime())) exp = d.getTime();
     }
 
-    const exp = Date.now() + ttlSec * 1000;
+    // opsiyonel: expires_in destekle
+    if (data?.expires_in || data?.expiresIn) {
+        const ttlSec = Number(data.expires_in ?? data.expiresIn);
+        if (Number.isFinite(ttlSec) && ttlSec > 0) exp = Date.now() + ttlSec * 1000;
+    }
+
     current = { token, exp };
     saveToStorage(current);
     scheduleRefresh();
 
-    console.log("%c[TMS] Yeni token alındı:", "color:#10b981", token);
+    console.log("%c[TMS] Yeni token alındı.", "color:#10b981");
     return token;
 }
 
 export async function refreshToken() {
     if (refreshInFlight) return refreshInFlight;
-    refreshInFlight = requestNewToken().finally(() => refreshInFlight = null);
+    refreshInFlight = requestNewToken().finally(() => (refreshInFlight = null));
     return refreshInFlight;
 }
 
@@ -127,7 +140,6 @@ export function invalidateToken() {
 }
 
 // ------------- AUTHORIZED FETCH -----------------
-
 export async function authorizedFetch(url, init = {}) {
     const token = await getToken();
 
@@ -160,7 +172,11 @@ export async function authorizedJson(url, method = "GET", bodyObj = undefined) {
 
     const text = await res.text();
     let json;
-    try { json = JSON.parse(text); } catch { json = { raw: text }; }
+    try {
+        json = JSON.parse(text);
+    } catch {
+        json = { raw: text };
+    }
 
     if (!res.ok) {
         const msg = json?.message || json?.error || text;
@@ -170,7 +186,6 @@ export async function authorizedJson(url, method = "GET", bodyObj = undefined) {
     return json;
 }
 
-// Debug için mevcut token'ı yazdır
 export async function debugLogToken() {
     const t = await getToken();
     console.log("%c[TMS] Aktif token:", "color:#a855f7", t);
