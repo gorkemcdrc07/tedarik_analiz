@@ -8,7 +8,7 @@ import { FiUploadCloud, FiFile, FiCheckCircle, FiXCircle, FiAlertTriangle, FiTra
 // API Base URL (Değişmedi)
 const INCOME_BASE =
     (import.meta?.env?.VITE_REEL_INCOME_BASE || process.env.REACT_APP_REEL_INCOME_BASE) ||
-    (process.env.NODE_ENV === "production" ? "/reel-api" : "/reel-api-test");
+    "/api/reel-api";
 
 // --- Renk Paleti ve Stil Sabitleri ---
 const COLORS = {
@@ -522,7 +522,7 @@ export default function GelirEkleme() {
                 return Number.isFinite(n) && n > 0 ? n : null;
             };
 
-            const endpoint = `${INCOME_BASE}/api/tmsdespatchincomeexpenses/addincome`;
+            const endpoint = `${INCOME_BASE}/tmsdespatchincomeexpenses/addincome`;
 
             let ok = 0, fail = 0;
             const setRowResult = (rowIdx, result) =>

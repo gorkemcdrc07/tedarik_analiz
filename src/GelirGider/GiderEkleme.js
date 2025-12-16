@@ -8,7 +8,7 @@ import { FiUploadCloud, FiFile, FiCheckCircle, FiXCircle, FiAlertTriangle, FiTra
 // API Base URL
 const EXPENSE_BASE =
     (import.meta?.env?.VITE_REEL_EXPENSE_BASE || process.env.REACT_APP_REEL_EXPENSE_BASE) ||
-    (process.env.NODE_ENV === "production" ? "/reel-api" : "/reel-api-test");
+    "/api/reel-api";
 
 
 // --- Renk Paleti ve Stil Sabitleri ---
@@ -593,7 +593,7 @@ export default function GiderEkleme() {
                 return Number.isFinite(n) && n > 0 ? n : null;
             };
 
-            const endpoint = `${EXPENSE_BASE}/api/tmsdespatchincomeexpenses/addexpense`;
+            const endpoint = `${EXPENSE_BASE}/tmsdespatchincomeexpenses/addexpense`;
             let ok = 0, fail = 0;
 
             const setRowResult = (rowIdx, result) =>
@@ -653,7 +653,7 @@ export default function GiderEkleme() {
                     unitPrice: unitPriceNum,
                     quantity: Number(safeQty.toFixed(2)),
                     vatRate: toRate(row[iKDV]),
-                    whitholdingRate: toRate(row[iTevkifat]), // Dikkat: whitholdingRate yazım hatası orijinal kodda da var.
+                    withholdingRate: toRate(row[iTevkifat]),
                     description: row[iAciklama] ?? "",
                     isFreight: false,
                 };
