@@ -13,7 +13,7 @@ let refreshInFlight = null;
 let timerId = null;
 
 // ✅ Frontend her zaman bunu çağıracak (proxy route)
-const TOKEN_URL = "/reel-auth/api/auth/login";
+const TOKEN_URL = "/api/reel-auth/login";
 console.log("[TMS] TOKEN_URL:", TOKEN_URL);
 
 // Yardımcı
