@@ -1,0 +1,12 @@
+﻿{
+  "rewrites": [
+    {
+      "source": "/reel-auth/:path*",
+      "destination": "https://tedarik-analiz-backend.onrender.com/reel-auth/:path*"
+    },
+    {
+      "source": "/reel-api/:path*",
+      "destination": "https://tedarik-analiz-backend.onrender.com/reel-api/:path*"
+    }
+  ]
+}
