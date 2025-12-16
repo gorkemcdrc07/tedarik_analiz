@@ -1,12 +1,13 @@
 ﻿{
+  "version": 2,
   "rewrites": [
     {
-      "source": "/reel-auth/:path*",
-      "destination": "https://tedarik-analiz-backend.onrender.com/reel-auth/:path*"
+      "source": "/reel-auth/(.*)",
+      "destination": "https://tedarik-analiz-backend.onrender.com/reel-auth/$1"
     },
     {
-      "source": "/reel-api/:path*",
-      "destination": "https://tedarik-analiz-backend.onrender.com/reel-api/:path*"
+      "source": "/reel-api/(.*)",
+      "destination": "https://tedarik-analiz-backend.onrender.com/reel-api/$1"
     }
   ]
 }
