@@ -6,9 +6,7 @@ import { FiUploadCloud, FiFile, FiCheckCircle, FiXCircle, FiAlertTriangle, FiTra
 // import "./GiderEkleme.css"; // Harici CSS kaldırıldı.
 
 // API Base URL
-const EXPENSE_BASE =
-    (import.meta?.env?.VITE_REEL_EXPENSE_BASE || process.env.REACT_APP_REEL_EXPENSE_BASE) ||
-    "/api/reel-api";
+const endpoint = `/api/reel-api/tmsdespatchincomeexpenses/addexpense`;
 
 
 // --- Renk Paleti ve Stil Sabitleri ---
@@ -593,7 +591,7 @@ export default function GiderEkleme() {
                 return Number.isFinite(n) && n > 0 ? n : null;
             };
 
-            const endpoint = `${EXPENSE_BASE}/tmsdespatchincomeexpenses/addexpense`;
+            const endpoint = `/api/reel-api/tmsdespatchincomeexpenses/addexpense`;
             let ok = 0, fail = 0;
 
             const setRowResult = (rowIdx, result) =>
