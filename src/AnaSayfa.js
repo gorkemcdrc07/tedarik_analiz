@@ -1,232 +1,215 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-// import { List } from "react-window"; // List artık kullanılmıyor
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    LayoutDashboard,
+    PlusCircle,
+    TrendingUp,
+    ArrowDownCircle,
+    RefreshCcw,
+    Package,
+    Calendar,
+    Database,
+    Layers,
+    ArrowRight
+} from "lucide-react";
 
-
-// --- Yardımcı Bileşenler (Kullanımı azaltıldı) ---
-
-const GlowCard = ({ children, className = "" }) => (
-    <div className={`p-[1px] rounded-2xl bg-gradient-to-br from-white/15 via-white/5 to-transparent ${className}`}>
-        <div className="rounded-2xl border border-white/10 bg-gray-900/60 backdrop-blur">
-            {children}
-        </div>
-    </div>
-);
-
-const Card = ({ children, className = "" }) => (
-    <div className={`rounded-2xl border border-white/10 bg-white/5 backdrop-blur ${className}`}>{children}</div>
-);
-const CardHeader = ({ children, className = "" }) => <div className={`px-5 pt-4 ${className}`}>{children}</div>;
-const CardTitle = ({ children, className = "" }) => <h3 className={`text-base font-semibold ${className}`}>{children}</h3>;
-const CardDescription = ({ children, className = "" }) => (
-    <p className={`text-sm text-gray-400 mt-1 ${className}`}>{children}</p>
-);
-const CardContent = ({ children, className = "" }) => <div className={`p-5 ${className}`}>{children}</div>;
-// Badge, Button, LiveDot, UyumBar, ToggleChip, Modal artık ana render içinde kullanılmadığı için sadece tanımları kaldı.
-const Badge = ({ children, className = "" }) => (
-    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${className}`}>{children}</span>
-);
-const Button = ({ children, className = "", variant = "solid", ...props }) => (
-    <button
-        className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm transition ${variant === "outline"
-            ? "border border-white/10 bg-white/5 text-gray-200 hover:bg-white/10"
-            : variant === "ghost"
-                ? "text-gray-300 hover:text-white hover:bg-white/5"
-                : "bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg hover:shadow-indigo-500/25"
-            } ${className}`}
-        {...props}
+// --- Veri Kartı Bileşeni ---
+const StatCard = ({ title, value, icon: Icon, colorClass, subtitle }) => (
+    <motion.div
+        whileHover={{ y: -4 }}
+        className="relative overflow-hidden rounded-2xl border border-white/5 bg-gray-900/40 p-5 backdrop-blur-xl"
     >
-        {children}
-    </button>
-);
-
-const LiveDot = ({ ok = true }) => (
-    <span className="relative inline-flex items-center">
-        <span className={`absolute -left-3 ${ok ? "animate-ping" : ""} inline-flex h-2 w-2 rounded-full ${ok ? "bg-emerald-400" : "bg-rose-400"} opacity-75`}></span>
-        <span className={`-ml-3 inline-flex h-2 w-2 rounded-full ${ok ? "bg-emerald-500" : "bg-rose-500"}`}></span>
-    </span>
-);
-
-const UyumBar = ({ value = 0 }) => {
-    const pct = Math.max(0, Math.min(100, Number(value) || 0));
-    const color = pct < 70 ? "bg-rose-500" : pct < 90 ? "bg-amber-500" : "bg-emerald-500";
-    return (
-        <div className="flex items-center gap-2">
-            <div className="h-2 w-28 rounded-full bg-white/10 overflow-hidden">
-                <div className={`h-2 ${color}`} style={{ width: `${pct}%` }} />
+        <div className="flex justify-between items-start text-left">
+            <div>
+                <p className="text-sm font-medium text-gray-400">{title}</p>
+                <h3 className="mt-2 text-2xl font-bold text-white tracking-tight">
+                    {value || "0"}
+                </h3>
+                <p className="mt-1 text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
+                    {subtitle}
+                </p>
             </div>
-            <span className="text-xs font-semibold">%{pct}</span>
+            <div className={`rounded-xl p-3 ${colorClass}`}>
+                <Icon size={22} className="text-white" />
+            </div>
         </div>
-    );
-};
+        <div className="absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+    </motion.div>
+);
 
-const ToggleChip = ({ active, onClick, children }) => (
+const ActionButton = ({ icon: Icon, label, onClick, primary }) => (
     <button
         onClick={onClick}
-        className={`rounded-full px-3 py-1 text-xs border transition ${active ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-200" : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"
-            }`}
+        className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all
+            ${primary
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20 hover:bg-blue-500 active:scale-95"
+                : "bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 active:scale-95"}`}
     >
-        {children}
+        <Icon size={18} />
+        {label}
     </button>
 );
 
-const Modal = ({ open, onClose, title, children }) => {
-    if (!open) return null;
-    return (
-        <div className="fixed inset-0 z-[200] grid place-items-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
-            <div className="w-full max-w-5xl rounded-2xl border border-white/10 bg-gray-900/90" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-                    <h3 className="text-lg font-semibold">{title}</h3>
-                    <button onClick={onClose} className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/20">✕</button>
-                </div>
-                <div className="p-5 max-h-[70vh] overflow-auto">{children}</div>
-            </div>
-        </div>
-    );
-};
-
-
 const AnaSayfa = () => {
-    const todayStr = new Date().toISOString().slice(0, 10);
-    // Artık kullanılmadığı için sadeleştirme (dummy) amaçlı state'ler:
-    const [startDate, setStartDate] = useState(todayStr); // Sadece console uyarılarını susturmak için tutuldu
-    const [endDate, setEndDate] = useState(todayStr); // Sadece console uyarılarını susturmak için tutuldu
-
-    const DEFAULT_REFRESH_MS = 120000;
-    const [autoRefresh, setAutoRefresh] = useState(false);
-    const [refreshMs, setRefreshMs] = useState(DEFAULT_REFRESH_MS);
-
     const [loading, setLoading] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
-    const [error, setError] = useState(null);
-    const [lastUpdated, setLastUpdated] = useState(null);
+    const [lastUpdated, setLastUpdated] = useState(new Date());
 
-    // UI state'leri de işlevsizleşti
-    const [dense, setDense] = useState(false);
-    const [q, setQ] = useState("");
-    const [modalOpen, setModalOpen] = useState(false);
+    // Veri State'leri
+    const [stats, setStats] = useState({
+        gelir: "₺0,00",
+        gider: "₺0,00",
+        siparis: "0",
+        kapasite: "%0"
+    });
 
-    const busyRef = useRef(false);
-
-    // handleLoad fonksiyonu artık sadece state simülasyonu yapar
-    const handleLoad = async ({ initial = false } = {}) => {
-        if (busyRef.current) return;
-        busyRef.current = true;
-        setError(null);
-        initial ? setLoading(true) : setRefreshing(true);
-
-        // Simülasyon gecikmesi
-        await new Promise(resolve => setTimeout(resolve, initial ? 500 : 200));
-
+    const handleRefresh = async () => {
+        setLoading(true);
+        await new Promise(resolve => setTimeout(resolve, 600));
         setLastUpdated(new Date());
-
-        initial ? setLoading(false) : setRefreshing(false);
-        busyRef.current = false;
+        setLoading(false);
     };
-
-
-    useEffect(() => {
-        handleLoad({ initial: true });
-        // startDate ve endDate artık kullanılmıyor, ancak dependency listesinde tutulabilir.
-    }, [startDate, endDate]);
-
-    // otomatik yenileme (görünürken)
-    useEffect(() => {
-        if (!autoRefresh) return;
-        const tick = () => { if (!document.hidden) handleLoad(); };
-        const id = setInterval(tick, refreshMs);
-        return () => clearInterval(id);
-    }, [autoRefresh, refreshMs, startDate, endDate]); // dependency listesi korundu
-
-
-    useEffect(() => {
-        const onFocus = () => { if (!document.hidden && autoRefresh) handleLoad(); };
-        window.addEventListener("visibilitychange", onFocus);
-        window.addEventListener("focus", onFocus);
-        return () => {
-            window.removeEventListener("visibilitychange", onFocus);
-            window.removeEventListener("focus", onFocus);
-        };
-    }, [autoRefresh, startDate, endDate]); // dependency listesi korundu
-
-
-    // CSV Dışa Aktar fonksiyonu da işlevsizdir
-    const exportCsv = () => {
-        const header = ["Boş", "Veri"];
-        const lines = [header.join(";")];
-
-        const csv = "\uFEFF" + lines.join("\n");
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `iskelet_${startDate}_${endDate}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
 
     return (
-        <div className="relative min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-100">
-            {/* arka plan glow */}
-            <div className="pointer-events-none absolute inset-0 -z-10">
-                <div className="absolute right-[-10%] top-[-10%] h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl"></div>
-                <div className="absolute left-[-10%] bottom-[-10%] h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl"></div>
+        <div className="min-h-screen bg-[#020617] text-gray-100 selection:bg-blue-500/30 font-sans pt-6">
+            {/* Arka Plan Glow Efektleri */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[10%] left-[10%] w-[30%] h-[30%] bg-blue-600/5 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] bg-indigo-600/5 blur-[120px] rounded-full" />
             </div>
 
-            {/* Üst Bar (HEADER) TAMAMEN KALDIRILDI */}
-            {/* <header className="sticky top-0 z-30 border-b border-white/5 backdrop-blur supports-[backdrop-filter]:bg-gray-950/50">
-                ... Kontroller kaldırıldı ...
-            </header> */}
+            <main className="mx-auto max-w-[1600px] px-6 space-y-8">
 
-            {/* İçerik */}
-            <main className="w-full space-y-6 px-6 py-6 min-h-[90vh] flex flex-col justify-center items-center">
+                {/* Aksiyon ve Başlık Alanı */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-white tracking-tight">Operasyon Yönetimi</h1>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Sistem Bağlantısı Aktif</p>
+                        </div>
+                    </div>
 
-                {/* Yükleme Simülasyonu */}
-                {loading && !error && (
-                    <Card className="w-full max-w-lg">
-                        <CardContent className="animate-pulse text-sm text-gray-400 text-center">İskelet yükleniyor...</CardContent>
-                    </Card>
-                )}
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            onClick={handleRefresh}
+                            className="p-2.5 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:text-white transition-all active:rotate-180 duration-500"
+                            title="Verileri Güncelle"
+                        >
+                            <RefreshCcw size={20} className={loading ? "animate-spin" : ""} />
+                        </button>
+                        <ActionButton icon={ArrowDownCircle} label="Gider Girişi" />
+                        <ActionButton icon={TrendingUp} label="Gelir Girişi" />
+                        <ActionButton icon={PlusCircle} label="Yeni Sipariş Oluştur" primary />
+                    </div>
+                </div>
 
-                {/* Hata Mesajı */}
-                {!loading && error && (
-                    <Card className="w-full max-w-lg">
-                        <CardHeader>
-                            <CardTitle>Hata</CardTitle>
-                            <CardDescription>Uygulama İskeletinde Hata</CardDescription>
-                        </CardHeader>
-                        <CardContent className="text-sm text-rose-300">{error}</CardContent>
-                    </Card>
-                )}
+                {/* Ana Metrik Kartları */}
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    <StatCard
+                        title="Dönemlik Gelir"
+                        value={stats.gelir}
+                        icon={TrendingUp}
+                        subtitle="Onaylanmış İşlemler"
+                        colorClass="bg-emerald-500/10 text-emerald-500"
+                    />
+                    <StatCard
+                        title="Dönemlik Gider"
+                        value={stats.gider}
+                        icon={ArrowDownCircle}
+                        subtitle="Sabit & Değişken"
+                        colorClass="bg-rose-500/10 text-rose-500"
+                    />
+                    <StatCard
+                        title="Bekleyen Sipariş"
+                        value={stats.siparis}
+                        icon={Package}
+                        subtitle="Sevkiyat Hazırlığı"
+                        colorClass="bg-blue-500/10 text-blue-500"
+                    />
+                    <StatCard
+                        title="Filo Kapasitesi"
+                        value={stats.kapasite}
+                        icon={LayoutDashboard}
+                        subtitle="Anlık Doluluk Oranı"
+                        colorClass="bg-indigo-500/10 text-indigo-500"
+                    />
+                </div>
 
-                {/* Ana İçerik Alanı (Boş) */}
-                {!loading && !error && (
-                    <Card className="w-full max-w-lg">
-                        <CardHeader>
-                            <CardTitle>Boş İskelet</CardTitle>
-                            <CardDescription>CargoFlow kontrol paneli kaldırılmıştır.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="text-sm text-gray-400">
-                            Sayfanın üst çubuğu (header), dashboard panelleri ve tablolar kaldırıldığı için bu alan boştur.
-                            Sadece arka plan ve alt bilgi (footer) görünmektedir.
-                            {lastUpdated && <p className="mt-2 text-xs">Son Yenileme Simülasyonu: {lastUpdated.toLocaleTimeString("tr-TR")}</p>}
-                        </CardContent>
-                    </Card>
-                )}
+                {/* Alt Panel: Veri Tablosu İskeleti ve Bilgi Kutusu */}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 pb-12">
+                    <div className="lg:col-span-2 rounded-2xl border border-white/5 bg-gray-900/40 backdrop-blur-xl flex flex-col min-h-[400px]">
+                        <div className="flex items-center justify-between border-b border-white/5 p-5">
+                            <div className="flex items-center gap-3">
+                                <Layers size={18} className="text-blue-500" />
+                                <h3 className="font-bold text-sm">Son Finansal Hareketler</h3>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                            <AnimatePresence mode="wait">
+                                {loading ? (
+                                    <motion.div
+                                        key="loading"
+                                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                        className="space-y-4 w-full max-w-md"
+                                    >
+                                        {[1, 2, 3].map(i => (
+                                            <div key={i} className="h-12 w-full animate-pulse rounded-xl bg-white/5" />
+                                        ))}
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        key="empty"
+                                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                                        className="flex flex-col items-center"
+                                    >
+                                        <div className="rounded-2xl bg-white/5 p-5 text-gray-700 mb-4 border border-white/5">
+                                            <Database size={32} />
+                                        </div>
+                                        <h4 className="text-gray-400 font-semibold text-sm">Görüntülenecek veri bulunmuyor</h4>
+                                        <p className="text-xs text-gray-600 mt-2 max-w-xs leading-relaxed">
+                                            Operasyonel süreçlerinizi başlatmak için yukarıdaki butonları kullanarak ilk kaydınızı oluşturun.
+                                        </p>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="rounded-2xl border border-white/5 bg-gray-900/40 backdrop-blur-xl p-6">
+                            <div className="flex items-center gap-2 mb-6 text-gray-300 font-bold">
+                                <Calendar size={18} className="text-blue-500" />
+                                <h3 className="text-sm">Operasyonel Notlar</h3>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10">
+                                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Hatırlatıcı</p>
+                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                        Gelir ve gider girişleriniz anlık olarak muhasebe panelinde izlenebilir hale gelmektedir.
+                                    </p>
+                                </div>
+                                <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition group text-left">
+                                    <div>
+                                        <p className="text-xs font-bold text-white">Raporlar</p>
+                                        <p className="text-[10px] text-gray-500 mt-0.5">Dönemlik özetleri inceleyin</p>
+                                    </div>
+                                    <ArrowRight size={16} className="text-gray-600 group-hover:text-blue-500 transition-transform group-hover:translate-x-1" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
 
-            {/* Detay Modal (Gereksiz ama tanım olarak bırakıldı) */}
-            <Modal
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
-                title={"İşlev Devre Dışı"}
-            >
-                <div className="text-sm text-gray-400">Tüm veri bileşenleri kaldırıldığı için detay gösterimi devre dışıdır.</div>
-            </Modal>
-
-            {/* Alt Bilgi */}
-            <footer className="w-full px-6 pb-10 pt-2 text-xs text-gray-500">
-                © {new Date().getFullYear()} Sade İskelet • Tüm kontroller kaldırılmıştır.
+            {/* Footer */}
+            <footer className="mx-auto max-w-[1600px] border-t border-white/5 px-6 py-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] text-gray-600 font-medium uppercase tracking-widest">
+                <p>© {new Date().getFullYear()} FLEETPORTAL LOJİSTİK YÖNETİMİ</p>
+                <div className="flex items-center gap-6">
+                    <span>SON SENKRONİZASYON: {lastUpdated.toLocaleTimeString("tr-TR")}</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/50" />
+                    <span>V 4.0.0</span>
+                </div>
             </footer>
         </div>
     );

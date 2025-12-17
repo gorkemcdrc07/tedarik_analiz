@@ -1,11 +1,22 @@
 ﻿import React, { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import styled, { keyframes } from "styled-components";
-import { motion } from "framer-motion";
-import { Truck, Package, MapPin, ShieldCheck, Eye, EyeOff, Headset } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    Truck,
+    ShieldCheck,
+    Eye,
+    EyeOff,
+    Headset,
+    Lock,
+    User,
+    PlusCircle,
+    TrendingUp,
+    ArrowDownCircle,
+    Layers
+} from "lucide-react";
 
-
-
+// Supabase Yapılandırması (Mevcut mantık korundu)
 const supabase = createClient(
     process.env.REACT_APP_SUPABASE_URL,
     process.env.REACT_APP_SUPABASE_KEY
@@ -33,43 +44,24 @@ export default function Login({ onLoginSuccess }) {
                 .single();
 
             if (error || !data) {
-                setError("Hatalı kullanıcı adı veya şifre.");
+                setError("Kimlik bilgileri doğrulanamadı.");
                 return;
             }
 
-            // login bilgilerini kaydet
             if (remember) {
                 localStorage.setItem("kullanici", JSON.stringify(data));
             }
 
-            // Reel bilgilerini belirle
-            const reelUser =
-                data.Reel_kullanici ??
-                data.reel_kullanici ??
-                data.reelUserName ??
-                data.reel_username ??
-                email;            // 🔥 fallback eklendi
+            const reelUser = data.Reel_kullanici ?? data.reel_kullanici ?? data.reelUserName ?? data.reel_username ?? email;
+            const reelPass = data.Reel_sifre ?? data.reel_sifre ?? data.reelPassword ?? data.reel_password ?? password;
 
-            const reelPass =
-                data.Reel_sifre ??
-                data.reel_sifre ??
-                data.reelPassword ??
-                data.reel_password ??
-                password;        // 🔥 fallback eklendi
-
-            // 🔥 REEL auth için GEREKLİ zorunlu kayıtlar
             localStorage.setItem("Reel_kullanici", reelUser);
             localStorage.setItem("Reel_sifre", reelPass);
-
-            localStorage.setItem(
-                "reelCreds",
-                JSON.stringify({ userName: reelUser, password: reelPass })
-            );
+            localStorage.setItem("reelCreds", JSON.stringify({ userName: reelUser, password: reelPass }));
 
             onLoginSuccess?.();
         } catch (err) {
-            console.error(err);
-            setError("Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.");
+            setError("Sunucu bağlantısı kurulamadı.");
         } finally {
             setLoading(false);
         }
@@ -77,392 +69,381 @@ export default function Login({ onLoginSuccess }) {
 
     return (
         <Screen>
-            <MovingRoutes aria-hidden />
-            <Decor>
-                <Badge as={motion.div} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                    <ShieldCheck size={16} />
-                    <span>Kurumsal Güvenli Erişim</span>
-                </Badge>
-                <Hero>
-                    <Circle1 />
-                    <Circle2 />
-                    <TruckIcon>
-                        <Truck />
-                    </TruckIcon>
-                    <Pin1>
-                        <MapPin size={18} />
-                    </Pin1>
-                    <Pin2>
-                        <MapPin size={18} />
-                    </Pin2>
-                    <Boxes>
-                        <Package size={16} />
-                        <Package size={16} />
-                        <Package size={16} />
-                    </Boxes>
-                </Hero>
-            </Decor>
+            <AmbientLight />
 
-            <Card
-                as={motion.section}
-                initial={{ opacity: 0, y: 24 }}
+            <LoginCard
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+                transition={{ duration: 0.6 }}
             >
-                <TopStripe />
+                <SideDecor>
+                    <BrandWrapper>
+                        <LogoIcon>
+                            <Truck size={32} />
+                        </LogoIcon>
+                        <BrandText>
+                            <h3>FleetPortal</h3>
+                            <span>v4.2 Enterprise</span>
+                        </BrandText>
+                    </BrandWrapper>
 
-                <Header>
-                    <Logo>
-                        <Truck size={18} />
-                    </Logo>
-                    <Title>
-                        FleetPortal
-                        <Sub>Operasyon Yönetim Paneli</Sub>
-                    </Title>
-                </Header>
+                    <FeatureList>
+                        <FeatureItem>
+                            <PlusCircle size={18} color="#10b981" />
+                            <div>
+                                <strong>Sipariş Yönetimi</strong>
+                                <p>Hızlı sipariş oluşturma ve takip</p>
+                            </div>
+                        </FeatureItem>
+                        <FeatureItem>
+                            <TrendingUp size={18} color="#3b82f6" />
+                            <div>
+                                <strong>Gelir Takibi</strong>
+                                <p>Anlık nakit akış analizi</p>
+                            </div>
+                        </FeatureItem>
+                        <FeatureItem>
+                            <ArrowDownCircle size={18} color="#ef4444" />
+                            <div>
+                                <strong>Gider Kontrolü</strong>
+                                <p>Operasyonel maliyet yönetimi</p>
+                            </div>
+                        </FeatureItem>
+                    </FeatureList>
 
-                <Tagline>Sevkiyatlarınızı tek ekrandan yönetin</Tagline>
+                    <SecurityBadge>
+                        <ShieldCheck size={14} />
+                        Uçtan Uca Şifreli Erişim
+                    </SecurityBadge>
+                </SideDecor>
 
-                <Form onSubmit={handleLogin} noValidate>
-                    <Field>
-                        <Label>Kullanıcı Adı</Label>
-                        <Input
-                            type="text"
-                            placeholder="kullanici_adi"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            autoComplete="username"
-                            required
-                        />
-                    </Field>
+                <MainFormSection>
+                    <Header>
+                        <h1>Yönetici Girişi</h1>
+                        <p>Lütfen devam etmek için oturum açın.</p>
+                    </Header>
 
-                    <Field>
-                        <Label>Şifre</Label>
-                        <PasswordWrap>
-                            <Input
-                                type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                autoComplete="current-password"
-                                required
-                            />
-                            <IconBtn
-                                type="button"
-                                onClick={() => setShowPassword((s) => !s)}
-                                aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
-                            >
-                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                            </IconBtn>
-                        </PasswordWrap>
-                    </Field>
+                    <Form onSubmit={handleLogin}>
+                        <InputWrapper>
+                            <Label>Kullanıcı Adı</Label>
+                            <div className="input-field">
+                                <User size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="admin_kullanici"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </InputWrapper>
 
-                    <Options>
-                        <label>
-                            <Checkbox type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-                            Beni hatırla
-                        </label>
-                        <GhostBtn type="button" onClick={() => alert("Şifre sıfırlama için IT ile iletişime geçin.")}>Şifremi unuttum</GhostBtn>
-                    </Options>
+                        <InputWrapper>
+                            <Label>Şifre</Label>
+                            <div className="input-field">
+                                <Lock size={18} />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)}>
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                        </InputWrapper>
 
-                    {error && <Error role="alert">{error}</Error>}
+                        <FlexBetween>
+                            <CheckboxContainer>
+                                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} id="rem" />
+                                <label htmlFor="rem">Beni hatırla</label>
+                            </CheckboxContainer>
+                            <GhostLink>Şifremi Unuttum</GhostLink>
+                        </FlexBetween>
 
-                    <Submit
-                        type="submit"
-                        disabled={loading || !email || !password}
-                        as={motion.button}
-                        whileTap={{ scale: 0.98 }}
-                    >
-                        {loading ? <Loader aria-label="Giriş yapılıyor" /> : "Giriş Yap"}
-                    </Submit>
+                        <AnimatePresence>
+                            {error && (
+                                <ErrorBox
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                >
+                                    {error}
+                                </ErrorBox>
+                            )}
+                        </AnimatePresence>
 
-                    <Divider>
-                        <Line />
-                        <span>veya</span>
-                        <Line />
-                    </Divider>
+                        <SubmitBtn
+                            type="submit"
+                            disabled={loading || !email || !password}
+                            whileTap={{ scale: 0.97 }}
+                        >
+                            {loading ? <Loader /> : "Sisteme Giriş Yap"}
+                        </SubmitBtn>
+                    </Form>
 
-                    <SSORow>
-                        <SSOButton type="button" onClick={() => alert("SSO yapılandırılmadı")}>Google ile devam et</SSOButton>
-                        <SSOButton type="button" onClick={() => alert("SSO yapılandırılmadı")}>Microsoft ile devam et</SSOButton>
-                    </SSORow>
-                </Form>
+                    <SupportFooter>
+                        <button onClick={() => alert("Destek hattına bağlanılıyor...")}>
+                            <Headset size={16} /> Teknik Destek Talebi
+                        </button>
+                    </SupportFooter>
+                </MainFormSection>
+            </LoginCard>
 
-                <Footer>
-                    <MiniRow>
-                        <Dot /> 99.95% Uptime
-                        <Sep />
-                        <Dot /> ISO 27001
-                        <Sep />
-                        <Dot /> TLS 1.3
-                    </MiniRow>
-                    <Support onClick={() => alert("Destek: support@logistics.co")}> <Headset size={14} /> Destek</Support>
-                    <Copy>© {new Date().getFullYear()} FleetCorp Logistics</Copy>
-                </Footer>
-            </Card>
+            <Copyright>© {new Date().getFullYear()} FleetCorp Logistics Management System</Copyright>
         </Screen>
     );
 }
 
-
-const fly = keyframes`
-  0% { transform: translateX(-10%); }
-  100% { transform: translateX(110%); }
-`;
-
-const pulse = keyframes`
-  0% { transform: scale(1); opacity: .9 }
-  70% { transform: scale(1.03); opacity: 1 }
-  100% { transform: scale(1); opacity: .9 }
-`;
-
-const shimmer = keyframes`
-  0% { background-position: -200% 50%; }
-  100% { background-position: 200% 50%; }
-`;
-
-const dash = keyframes`
-  to { stroke-dashoffset: -200; }
-`;
-
-const spin = keyframes`
-  to { transform: rotate(360deg); }
-`;
-
+// STYLED COMPONENTS (Koyu Tema)
 const Screen = styled.main`
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: radial-gradient(1200px 800px at 5% 10%, #0a0f1f 0%, #070c19 40%, #050913 100%);
-  color: #e7eaff;
-  overflow: hidden;
+    min-height: 100vh;
+    background-color: #020617; // Slate 950
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow: hidden;
 `;
 
-const MovingRoutes = styled.div`
-  position: absolute;
-  inset: -10% -10% -10% -10%;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle at 20% 30%, rgba(0,255,194,.08) 0 30%, transparent 31%),
-    radial-gradient(circle at 80% 70%, rgba(59,130,246,.10) 0 30%, transparent 31%),
-    radial-gradient(800px 600px at 10% 10%, rgba(99,102,241,.12), transparent 70%);
-  filter: saturate(1.2);
-  &::after {
-    content: '';
+const AmbientLight = styled.div`
     position: absolute;
-    left: -20%; right: -20%; top: 50%; height: 2px;
-    background:
-      repeating-linear-gradient(90deg, rgba(255,255,255,.2) 0 16px, transparent 16px 32px);
-    transform: translateY(-50%);
-    animation: ${fly} 18s linear infinite;
-  }
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+    top: -200px;
+    right: -100px;
+    pointer-events: none;
 `;
 
-const Decor = styled.aside`
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
+const LoginCard = styled(motion.div)`
+    display: flex;
+    width: 100%;
+    max-width: 900px;
+    min-height: 580px;
+    background: #0f172a; // Slate 900
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+    }
 `;
 
-const Badge = styled.div`
-  position: absolute;
-  top: 26px; left: 26px;
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 10px;
-  font-size: 12px; color: #b9f3ff;
-  border: 1px solid rgba(186, 230, 253, .3);
-  background: linear-gradient(180deg, rgba(12, 28, 36, .7), rgba(9, 22, 30, .7));
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.08);
+const SideDecor = styled.div`
+    flex: 1;
+    background: rgba(30, 41, 59, 0.5); // Slate 800
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+
+    @media (max-width: 768px) {
+        display: none;
+    }
 `;
 
-const Hero = styled.div`
-  position: absolute; right: 6vw; bottom: 10vh;
-  width: min(420px, 40vw); height: min(420px, 40vw);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(16, 185, 129, .15), transparent 70%);
-  filter: blur(0.2px);
-  animation: ${pulse} 10s ease-in-out infinite;
+const BrandWrapper = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 60px;
 `;
 
-const Circle1 = styled.div`
-  position: absolute; inset: 8%; border-radius: 50%;
-  border: 1px dashed rgba(255,255,255,.2);
-  animation: ${dash} 20s linear infinite;
-  box-shadow: inset 0 0 40px rgba(34,197,94,.08);
+const LogoIcon = styled.div`
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    padding: 10px;
+    border-radius: 14px;
+    color: white;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 `;
 
-const Circle2 = styled.div`
-  position: absolute; inset: 20%; border-radius: 50%;
-  border: 1px dashed rgba(255,255,255,.18);
-  animation: ${dash} 28s linear infinite reverse;
+const BrandText = styled.div`
+    h3 { color: white; margin: 0; font-size: 20px; letter-spacing: -0.5px; }
+    span { color: #64748b; font-size: 12px; }
 `;
 
-const TruckIcon = styled.div`
-  position: absolute; left: 10%; top: 50%; transform: translateY(-50%);
-  width: 44px; height: 44px; border-radius: 12px;
-  display: grid; place-items: center; color: #0b132b;
-  background: linear-gradient(135deg, #22d3ee, #60a5fa);
-  box-shadow: 0 12px 30px rgba(34,211,238,.35);
+const FeatureList = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 `;
 
-const Pin1 = styled.div`
-  position: absolute; right: 18%; top: 28%; color: #93c5fd;
-`;
-const Pin2 = styled.div`
-  position: absolute; right: 6%; bottom: 18%; color: #5eead4;
-`;
-
-const Boxes = styled.div`
-  position: absolute; left: 24%; bottom: 18%; display: flex; gap: 6px; color: #a5b4fc;
+const FeatureItem = styled.div`
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    strong { display: block; color: #f1f5f9; font-size: 14px; margin-bottom: 2px; }
+    p { color: #64748b; font-size: 12px; margin: 0; }
 `;
 
-const Card = styled.div`
-  position: relative;
-  width: min(460px, 92vw);
-  border-radius: 18px;
-  padding: 28px 26px 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-  box-shadow: 0 10px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(14px) saturate(1.2);
+const SecurityBadge = styled.div`
+    margin-top: auto;
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
 `;
 
-const TopStripe = styled.div`
-  position: absolute; inset: 0 0 auto 0; height: 6px; border-radius: 18px 18px 0 0;
-  background: linear-gradient(90deg, #06b6d4, #60a5fa, #8b5cf6);
-  background-size: 220% 100%;
-  animation: ${shimmer} 7s linear infinite;
+const MainFormSection = styled.div`
+    flex: 1.2;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    @media (max-width: 500px) {
+        padding: 30px;
+    }
 `;
 
 const Header = styled.header`
-  display: flex; align-items: center; gap: 12px;
-`;
-
-const Logo = styled.div`
-  width: 40px; height: 40px; display: grid; place-items: center;
-  border-radius: 12px; color: #0b132b;
-  background: linear-gradient(135deg, #22d3ee, #60a5fa);
-  border: 1px solid rgba(255,255,255,.25);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 8px 24px rgba(34,211,238,.35);
-`;
-
-const Title = styled.h1`
-  margin: 0; font-size: clamp(18px, 2.2vw, 22px); font-weight: 800; letter-spacing: .2px;
-`;
-
-const Sub = styled.span`
-  display: block; font-weight: 500; font-size: 12px; color: #a9b3e6;
-`;
-
-const Tagline = styled.p`
-  margin: 10px 0 18px; color: #b9c0ff; font-size: 14px;
+    margin-bottom: 35px;
+    h1 { color: white; font-size: 28px; margin-bottom: 10px; }
+    p { color: #94a3b8; font-size: 15px; }
 `;
 
 const Form = styled.form`
-  display: grid; gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 `;
 
-const Field = styled.div`
-  display: grid; gap: 8px;
+const InputWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .input-field {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        transition: all 0.3s;
+
+        svg { margin-left: 15px; color: #64748b; }
+
+        input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 14px 15px;
+            color: white;
+            font-size: 15px;
+            &:focus { outline: none; }
+        }
+
+        button {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            padding-right: 15px;
+            cursor: pointer;
+            &:hover { color: #3b82f6; }
+        }
+
+        &:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+    }
 `;
 
 const Label = styled.label`
-  font-size: 13px; color: #c7cdff;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 500;
 `;
 
-const Input = styled.input`
-  width: 100%; height: 46px; padding: 0 14px; color: #e9ecff; font-size: 15px;
-  border-radius: 12px; outline: none; border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(180deg, rgba(12,17,36,.8), rgba(10,14,28,.8));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 0 999px rgba(255,255,255,0), 0 6px 20px rgba(0,0,0,.25);
-  transition: box-shadow .2s ease, border-color .2s ease, transform .05s ease;
-  ::placeholder { color: #7c86b2; }
-  &:focus { border-color: rgba(99,102,241,.6); box-shadow: 0 10px 30px rgba(80,91,230,.25), 0 0 0 3px rgba(99,102,241,.25) inset; }
+const FlexBetween = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 `;
 
-const PasswordWrap = styled.div`
-  position: relative;
+const CheckboxContainer = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 14px;
+    input { accent-color: #3b82f6; }
 `;
 
-const IconBtn = styled.button`
-  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-  height: 30px; padding: 0 8px; border-radius: 8px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
-  color: #cfd5ff; display: grid; place-items: center;
-  cursor: pointer; transition: transform .08s ease, background .2s ease;
-  &:active { transform: translateY(-50%) scale(.98); }
+const GhostLink = styled.button`
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
 `;
 
-const Options = styled.div`
-  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2px;
-  font-size: 13px; color: #cfd5ff;
+const SubmitBtn = styled(motion.button)`
+    background: #3b82f6;
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
-const Checkbox = styled.input`
-  margin-right: 6px; vertical-align: middle;
+const ErrorBox = styled(motion.div)`
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    text-align: center;
 `;
 
-const GhostBtn = styled.button`
-  background: transparent; border: none; color: #99a3ff; font-size: 13px; cursor: pointer; text-decoration: underline;
+const SupportFooter = styled.div`
+    margin-top: 40px;
+    button {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        &:hover { color: #f1f5f9; }
+    }
 `;
 
-const Error = styled.div`
-  font-size: 13px; color: #ffb4c1; background: linear-gradient(180deg, rgba(255, 99, 132,.12), rgba(255, 99, 132,.08));
-  border: 1px solid rgba(255,255,255,.14); padding: 10px 12px; border-radius: 12px; backdrop-filter: blur(6px);
+const Copyright = styled.div`
+    margin-top: 30px;
+    color: #475569;
+    font-size: 12px;
 `;
 
-const Submit = styled.button`
-  height: 46px; border-radius: 12px; border: 1px solid rgba(255,255,255,.18);
-  background: linear-gradient(90deg, #22d3ee, #60a5fa, #8b5cf6);
-  background-size: 200% 100%; animation: ${shimmer} 6s linear infinite;
-  color: white; font-weight: 700; letter-spacing: .3px; cursor: pointer; display: grid; place-items: center;
-  transition: filter .2s ease, transform .06s ease, opacity .2s ease; box-shadow: 0 10px 30px rgba(34,211,238,.35);
-  &:disabled { opacity: .55; cursor: not-allowed; filter: grayscale(.2); }
-  &:active { transform: translateY(1px); }
-`;
-
-const Divider = styled.div`
-  margin: 6px 0; display: flex; align-items: center; gap: 10px; color: #8fa0d9; font-size: 12px;
-`;
-const Line = styled.span`
-  height: 1px; flex: 1; background: linear-gradient(90deg, rgba(255,255,255,.0), rgba(255,255,255,.22), rgba(255,255,255,0));
-`;
-
-const SSORow = styled.div`
-  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-`;
-const SSOButton = styled.button`
-  height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06); color: #e8ecff; font-weight: 600; cursor: pointer;
-`;
-
-const Footer = styled.footer`
-  margin-top: 14px; display: grid; place-items: center; gap: 8px;
-`;
-
-const MiniRow = styled.div`
-  display: inline-flex; align-items: center; gap: 8px; color: #8ea1d9; font-size: 12px;
-`;
-const Dot = styled.span`
-  width: 6px; height: 6px; background: #60a5fa; border-radius: 50%; display: inline-block;
-`;
-const Sep = styled.span`
-  width: 6px; height: 1px; background: rgba(255,255,255,.25); display: inline-block; transform: translateY(-1px);
-`;
-
-const Support = styled.button`
-  display: inline-flex; align-items: center; gap: 6px; background: transparent; border: none; color: #99a3ff; cursor: pointer; font-size: 12px; text-decoration: underline;
-`;
-
-const Copy = styled.small`
-  color: #8891bf;
-`;
-
+const spin = keyframes` to { transform: rotate(360deg); } `;
 const Loader = styled.div`
-  width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,.7); border-top-color: transparent; animation: ${spin} .8s linear infinite;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: ${spin} 0.8s linear infinite;
+    margin: 0 auto;
 `;

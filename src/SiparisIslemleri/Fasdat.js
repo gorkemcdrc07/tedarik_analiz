@@ -1,9 +1,18 @@
 import React, { useCallback, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
+import {
+    FileSpreadsheet,
+    UploadCloud,
+    Download,
+    FileText,
+    Trash2,
+    CheckCircle2,
+    AlertCircle,
+    Table as TableIcon
+} from "lucide-react";
 
-/* === Yardımcılar === */
+/* === Yardımcı Fonksiyonlar (Mantık Aynı Kaldı) === */
 const TR_LOCALE = "tr-TR";
-
 function normalizeHeader(h) {
     if (!h && h !== 0) return "";
     const s = String(h).trim().replace(/\s+/g, " ");
@@ -22,8 +31,7 @@ function parseExcelDate(value) {
     if (value == null || value === "") return null;
     if (typeof value === "number") {
         const utcDays = Math.floor(value - 25569);
-        const utcValue = utcDays * 86400;
-        const dateInfo = new Date(utcValue * 1000);
+        const dateInfo = new Date(utcDays * 86400 * 1000);
         const fractionalDay = value - Math.floor(value);
         if (fractionalDay) {
             const totalSeconds = Math.round(86400 * fractionalDay);
@@ -46,251 +54,227 @@ function formatDateTR(date) {
     return new Intl.DateTimeFormat(TR_LOCALE, { year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }
 
-/* === Hedef sütunlar === */
 const TARGET_COLUMNS = [
     "Vkn", "Proje", "Sipariş Tarihi", "Yükleme Tarihi", "Teslim Tarihi", "Müşteri Sipariş No", "Müşteri Referans No",
     "İstenilen Araç Tipi", "Açıklama", "Yükleme Firması Adı", "Alıcı Firma Cari Adı", "Teslim Firma Adres Adı",
     "İrsaliye No", "İrsaliye Miktarı", "Ürün", "Kap Adet", "Ambalaj Tipi", "Brüt KG", "M3", "Desi",
 ];
 
-/* === Kolon genişlikleri (px) === */
-const COL_W = {
-    "Vkn": 100, "Proje": 90,
-    "Sipariş Tarihi": 120, "Yükleme Tarihi": 120, "Teslim Tarihi": 120,
-    "Müşteri Sipariş No": 160, "Müşteri Referans No": 160,
-    "İstenilen Araç Tipi": 150, "Açıklama": 260,
-    "Yükleme Firması Adı": 220, "Alıcı Firma Cari Adı": 200, "Teslim Firma Adres Adı": 240,
-    "İrsaliye No": 140, "İrsaliye Miktarı": 140,
-    "Ürün": 90, "Kap Adet": 90, "Ambalaj Tipi": 120, "Brüt KG": 120, "M3": 90, "Desi": 90,
-};
+const AUTO = { VKN: "3850012676", PROJE: "747", URUN: "176", KAP_ADET: "1", AMBALAJ_TIPI: "1", BRUT_KG: "25000" };
 
-/* === Otomatik sabitler === */
-const AUTO = {
-    VKN: "3850012676",
-    PROJE: "747",
-    URUN: "176",
-    KAP_ADET: "1",
-    AMBALAJ_TIPI: "1",
-    BRUT_KG: "25000",
-};
+const normVal = (v) => String(v ?? "").trim().replace(/\s+/g, " ").toLocaleUpperCase("tr-TR");
 
-/* === Metin normalize (içerik karşılaştırmaları için) === */
-const normVal = (v) =>
-    String(v ?? "")
-        .trim()
-        .replace(/\s+/g, " ")
-        .toLocaleUpperCase("tr-TR");
-
-/* === Özel eşleştirmeler === */
-// 1) Yükleme Firması Adı -> belirli yazıları görürsek ID yaz
 function mapYuklemeFirmasiToId(val) {
     const s = normVal(val);
-    if (s.includes("ATAKEY SARNIÇ KÖYÜ")) return "35989";
-    if (s.includes("ATAKEY TOMARZA")) return "35990";
-    if (s.includes("KARAPINAR PATATES TARLA")) return "36114";
-    if (s.includes("ATAKEY EĞRİBAYAT")) return "27682";
-    if (s.includes("FASDAT KARATAY YARMA TARLA")) return "35837";
-    if (s.includes("TOPRAKLIK MEVKİ KONYA")) return "36341";
-    if (s.includes("KARADAYI KÖYÜ BÜNYAN")) return "36420";
-    if (s.includes("HHG PATATES TARLA")) return "35587";
-    if (s.includes("EMİRGAZİ TARLA")) return "36308";
-    if (s.includes("BEYLİKOVA KÖYÜ PATATES")) return "36477";
-    if (s.includes("ATAKEY DEVELİ PATATES")) return "36746";
-    if (s.includes("FASDAT BALA PATATES")) return "36597";
-    if (s.includes("ATAKEY HACINUMAN KÖYÜ")) return "36747";
-    if (s.includes("MERAM BORUKTOLU SOĞAN")) return "36497";
-    if (s.includes("YÜKSECİK MEVKİ PATATES TARLA")) return "36799";
-    if (s.includes("POLATLI YÜZÜKBAŞI KÖYÜ PATATES")) return "36853";
-    if (s.includes("MEZGİTLİ PATATES TARLA")) return "36537";
-    if (s.includes("PATNOS ÜRKÜT KÖYÜ")) return "36855";
-    if (s.includes("AHLAT TAŞHARMAN KÖYÜ")) return "36856";
-    if (s.includes("ADİLCEVAZ GÖZDÜZÜ KÖYÜ")) return "36857";
-    return val ?? ""; // eşleşme yoksa orijinali koru
-}
-
-// 2) Teslim Firma Adres Adı “ATAKEY AFYON” ise: adres = 34732, alıcı cari = 21828
-function mapTeslimAdresAndMaybeCari(teslimAdres, aliciCari) {
-    const s = normVal(teslimAdres);
-    if (s.includes("ATAKEY AFYON")) {
-        return { teslimAdres: "34732", aliciCari: "21828" };
-    }
-    return { teslimAdres: teslimAdres ?? "", aliciCari: aliciCari ?? "" };
+    const mapping = {
+        "ATAKEY SARNIÇ KÖYÜ": "35989", "ATAKEY TOMARZA": "35990", "KARAPINAR PATATES TARLA": "36114",
+        "ATAKEY EĞRİBAYAT": "27682", "FASDAT KARATAY YARMA TARLA": "35837", "TOPRAKLIK MEVKİ KONYA": "36341",
+        "KARADAYI KÖYÜ BÜNYAN": "36420", "HHG PATATES TARLA": "35587", "EMİRGAZİ TARLA": "36308",
+        "BEYLİKOVA KÖYÜ PATATES": "36477", "ATAKEY DEVELİ PATATES": "36746", "FASDAT BALA PATATES": "36597",
+        "ATAKEY HACINUMAN KÖYÜ": "36747", "MERAM BORUKTOLU SOĞAN": "36497", "YÜKSECİK MEVKİ PATATES TARLA": "36799",
+        "POLATLI YÜZÜKBAŞI KÖYÜ PATATES": "36853", "MEZGİTLİ PATATES TARLA": "36537", "PATNOS ÜRKÜT KÖYÜ": "36855",
+        "AHLAT TAŞHARMAN KÖYÜ": "36856", "ADİLCEVAZ GÖZDÜZÜ KÖYÜ": "36857"
+    };
+    for (const key in mapping) { if (s.includes(key)) return mapping[key]; }
+    return val ?? "";
 }
 
 export default function Fasdat() {
     const [rows, setRows] = useState([]);
     const [error, setError] = useState("");
     const [fileName, setFileName] = useState("");
+    const [isDragging, setIsDragging] = useState(false);
 
     const onFiles = useCallback(async (file) => {
+        if (!file) return;
         setError("");
-        setFileName(file?.name || "");
+        setFileName(file.name);
         try {
             const buf = await file.arrayBuffer();
             const wb = XLSX.read(buf, { type: "array" });
             const ws = wb.Sheets[wb.SheetNames[0]];
             const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
-            if (!json.length) { setRows([]); setError("Excel sayfasında veri bulunamadı."); return; }
+
+            if (!json.length) throw new Error("Excel sayfasında veri bulunamadı.");
 
             const mapped = json.map((r) => {
-                // Kaynaktan oku
-                const siparisRaw = getField(r, "Sipariş Tarihi");
-                const musteriSipNo = getField(r, "Müşteri Sipariş No");
-                const aracTipi = getField(r, "İstenilen Araç Tipi");
-                const aciklama = getField(r, "Açıklama");
-                let yuklemeFirma = getField(r, "Yükleme Firması Adı");
-                let aliciCari = getField(r, "Alıcı Firma Cari Adı");
-                let teslimAdres = getField(r, "Teslim Firma Adres Adı");
-
-                // Tarihler
-                const dSip = parseExcelDate(siparisRaw);
+                const sipRaw = getField(r, "Sipariş Tarihi");
+                const dSip = parseExcelDate(sipRaw);
                 const dYuk = dSip ? new Date(dSip) : null;
-                const dTes = dSip ? new Date(dSip.getTime() + 24 * 60 * 60 * 1000) : null;
+                const dTes = dSip ? new Date(dSip.getTime() + 86400000) : null;
 
-                // Özel kurallar:
-                yuklemeFirma = mapYuklemeFirmasiToId(yuklemeFirma);
-                const ta = mapTeslimAdresAndMaybeCari(teslimAdres, aliciCari);
-                teslimAdres = ta.teslimAdres;
-                aliciCari = ta.aliciCari;
+                let yf = mapYuklemeFirmasiToId(getField(r, "Yükleme Firması Adı"));
+                let ta = getField(r, "Teslim Firma Adres Adı");
+                let ac = getField(r, "Alıcı Firma Cari Adı");
+
+                if (normVal(ta).includes("ATAKEY AFYON")) {
+                    ta = "34732"; ac = "21828";
+                }
 
                 return {
-                    "Vkn": AUTO.VKN,
-                    "Proje": AUTO.PROJE,
-                    "Sipariş Tarihi": formatDateTR(dSip),
-                    "Yükleme Tarihi": formatDateTR(dYuk),   // = Sipariş Tarihi
-                    "Teslim Tarihi": formatDateTR(dTes),    // = +1 gün
-                    "Müşteri Sipariş No": musteriSipNo || "",
-                    "Müşteri Referans No": "",
-                    "İstenilen Araç Tipi": aracTipi || "",  // kaynaktaki değer
-                    "Açıklama": aciklama || "",
-                    "Yükleme Firması Adı": yuklemeFirma || "",
-                    "Alıcı Firma Cari Adı": aliciCari || "",
-                    "Teslim Firma Adres Adı": teslimAdres || "",
-                    "İrsaliye No": "",
-                    "İrsaliye Miktarı": "",
-                    "Ürün": AUTO.URUN,
-                    "Kap Adet": AUTO.KAP_ADET,
-                    "Ambalaj Tipi": AUTO.AMBALAJ_TIPI,
-                    "Brüt KG": AUTO.BRUT_KG,
-                    "M3": "",
-                    "Desi": "",
+                    "Vkn": AUTO.VKN, "Proje": AUTO.PROJE,
+                    "Sipariş Tarihi": formatDateTR(dSip), "Yükleme Tarihi": formatDateTR(dYuk),
+                    "Teslim Tarihi": formatDateTR(dTes), "Müşteri Sipariş No": getField(r, "Müşteri Sipariş No"),
+                    "Müşteri Referans No": "", "İstenilen Araç Tipi": getField(r, "İstenilen Araç Tipi"),
+                    "Açıklama": getField(r, "Açıklama"), "Yükleme Firması Adı": yf,
+                    "Alıcı Firma Cari Adı": ac, "Teslim Firma Adres Adı": ta,
+                    "İrsaliye No": "", "İrsaliye Miktarı": "", "Ürün": AUTO.URUN,
+                    "Kap Adet": AUTO.KAP_ADET, "Ambalaj Tipi": AUTO.AMBALAJ_TIPI,
+                    "Brüt KG": AUTO.BRUT_KG, "M3": "", "Desi": "",
                 };
             });
-
             setRows(mapped);
         } catch (e) {
-            console.error(e);
-            setError("Dosya okunurken bir hata oluştu. Lütfen geçerli bir Excel dosyası yükleyin.");
+            setError(e.message || "Dosya okuma hatası.");
         }
     }, []);
 
-    const onDrop = useCallback((e) => { e.preventDefault(); if (e.dataTransfer.files?.[0]) onFiles(e.dataTransfer.files[0]); }, [onFiles]);
-    const onDragOver = useCallback((e) => { e.preventDefault(); }, []);
-
-    const downloadExcel = useCallback(() => {
-        if (!rows.length) return;
+    const downloadExcel = () => {
         const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(rows, { header: TARGET_COLUMNS, skipHeader: false });
-        XLSX.utils.book_append_sheet(wb, ws, "Fasdat");
-        XLSX.writeFile(wb, `fasdat_${Date.now()}.xlsx`);
-    }, [rows]);
+        const ws = XLSX.utils.json_to_sheet(rows, { header: TARGET_COLUMNS });
+        XLSX.utils.book_append_sheet(wb, ws, "Fasdat_Formatted");
+        XLSX.writeFile(wb, `Fasdat_Export_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    };
 
-    const headerCells = useMemo(
-        () => TARGET_COLUMNS.map((c) => (
-            <th
-                key={c}
-                className="px-3 py-2 text-left text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis
-                   text-slate-900 dark:text-white"
-                style={{ width: COL_W[c] ?? 140 }}
-                title={c}
-            >
-                {c}
-            </th>
-        )),
-        []
-    );
-    /*deneme*/
+    const reset = () => { setRows([]); setFileName(""); setError(""); };
 
     return (
-        <div className="p-6 space-y-6 max-w-6xl mx-auto text-slate-900 dark:text-slate-100">
-            <div className="flex items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold">Fasdat</h1>
-                    <p className="text-sm text-gray-600 dark:text-slate-300">
-                        Excel’i sürükleyip bırakın. “Sipariş Tarihi” → Sipariş &amp; Yükleme, “Teslim Tarihi” = +1 gün.
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <label className="px-3 py-2 rounded-xl shadow border cursor-pointer text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white">
-                        Dosya Seç
-                        <input type="file" accept=".xlsx,.xls" className="hidden" onChange={(e) => e.target.files && onFiles(e.target.files[0])} />
-                    </label>
-                    <button
-                        onClick={downloadExcel}
-                        disabled={!rows.length}
-                        className="px-3 py-2 rounded-xl shadow border text-sm disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                    >
-                        Excel indir
-                    </button>
-                </div>
-            </div>
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] p-4 md:p-8 font-sans transition-colors duration-300">
+            <div className="max-w-7xl mx-auto space-y-6">
 
-            {/* Sürükle-bırak */}
-            <div
-                onDrop={onDrop}
-                onDragOver={onDragOver}
-                className="border-2 border-dashed rounded-2xl p-10 text-center hover:bg-gray-50 transition shadow-sm
-                   dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
-            >
-                <p className="text-base dark:text-white">
-                    Dosyanızı buraya <span className="font-medium">sürükleyip bırakın</span>
-                    {fileName && <> — yüklendi: <span className="font-semibold">{fileName}</span></>}
-                </p>
-                <p className="text-xs text-gray-500 mt-2 dark:text-slate-400">Destek: .xlsx, .xls</p>
-            </div>
+                {/* Header Section */}
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-6 rounded-3xl border border-white dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none">
+                            <FileSpreadsheet className="w-8 h-8 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-black tracking-tight text-slate-800 dark:text-white">Fasdat Veri Dönüştürücü</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Lojistik formatlama ve otomatik ID eşleştirme paneli</p>
+                        </div>
+                    </div>
 
-            {error && (
-                <div className="p-3 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm dark:bg-rose-900/30 dark:text-rose-200 dark:border-rose-800">
-                    {error}
-                </div>
-            )}
-
-            {/* Tablo paneli */}
-            <div className="rounded-2xl border shadow-sm h-[560px] overflow-auto bg-white dark:bg-slate-900 dark:border-slate-700">
-                <table className="min-w-[1200px] w-full text-sm text-slate-900 dark:text-white">
-                    <colgroup>
-                        {TARGET_COLUMNS.map((c) => (
-                            <col key={c} style={{ width: COL_W[c] ?? 140 }} />
-                        ))}
-                    </colgroup>
-                    <thead className="bg-gray-100 dark:bg-slate-800 sticky top-0 z-10">
-                        <tr>{headerCells}</tr>
-                    </thead>
-                    <tbody>
-                        {rows.length === 0 ? (
-                            <tr>
-                                <td className="px-3 py-4 text-gray-500 dark:text-slate-300" colSpan={TARGET_COLUMNS.length}>
-                                    Henüz veri yok. Bir Excel yükleyin.
-                                </td>
-                            </tr>
-                        ) : (
-                            rows.map((row, idx) => (
-                                <tr key={idx} className="odd:bg-white even:bg-gray-50 dark:odd:bg-slate-900 dark:even:bg-slate-800">
-                                    {TARGET_COLUMNS.map((col) => (
-                                        <td
-                                            key={col}
-                                            className="px-3 py-2 whitespace-nowrap overflow-hidden text-ellipsis text-slate-900 dark:text-white"
-                                            title={row[col] ?? ""}
-                                        >
-                                            {row[col] ?? ""}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))
+                    <div className="flex items-center gap-3">
+                        {rows.length > 0 && (
+                            <button onClick={reset} className="p-2.5 text-slate-400 hover:text-rose-500 transition-colors bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-700">
+                                <Trash2 className="w-5 h-5" />
+                            </button>
                         )}
-                    </tbody>
-                </table>
+                        <button
+                            onClick={downloadExcel}
+                            disabled={!rows.length}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 dark:bg-blue-600 text-white rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 shadow-lg shadow-slate-200 dark:shadow-blue-900/20"
+                        >
+                            <Download className="w-4 h-4" /> Excel İndir
+                        </button>
+                    </div>
+                </header>
+
+                {/* Main Content */}
+                <div className="grid grid-cols-1 gap-6">
+
+                    {/* Upload Zone */}
+                    {!rows.length ? (
+                        <div
+                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                            onDragLeave={() => setIsDragging(false)}
+                            onDrop={(e) => { e.preventDefault(); setIsDragging(false); onFiles(e.dataTransfer.files[0]); }}
+                            className={`relative group border-2 border-dashed rounded-[2.5rem] p-16 transition-all duration-500 overflow-hidden
+                                ${isDragging ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-500/10 scale-[0.99]' : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50'}
+                                hover:border-blue-400 dark:hover:border-blue-500/50 shadow-2xl shadow-slate-200/40 dark:shadow-none`}
+                        >
+                            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => onFiles(e.target.files[0])} />
+                            <div className="flex flex-col items-center text-center space-y-4">
+                                <div className="p-6 bg-slate-50 dark:bg-slate-800 rounded-full group-hover:scale-110 transition-transform duration-500">
+                                    <UploadCloud className={`w-12 h-12 ${isDragging ? 'text-blue-500' : 'text-slate-400'}`} />
+                                </div>
+                                <div>
+                                    <p className="text-xl font-bold text-slate-700 dark:text-slate-200">Excel dosyasını buraya bırakın</p>
+                                    <p className="text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-widest text-[10px] font-black">veya tıklayarak seçin</p>
+                                </div>
+                                <div className="flex gap-2 text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-full">
+                                    <span className="text-blue-500">.XLSX</span>
+                                    <span>.XLS</span>
+                                    <span>.CSV</span>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        /* Data Stats & Success */
+                        <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                            <div className="flex-1">
+                                <p className="text-emerald-700 dark:text-emerald-400 font-bold text-sm">Başarıyla İşlendi</p>
+                                <p className="text-emerald-600/70 dark:text-emerald-500/60 text-xs font-medium">{fileName} — {rows.length} satır hazır.</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="flex items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl animate-shake">
+                            <AlertCircle className="w-5 h-5 text-rose-500" />
+                            <p className="text-rose-600 dark:text-rose-400 font-bold text-sm">{error}</p>
+                        </div>
+                    )}
+
+                    {/* Table View */}
+                    <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
+                            <div className="flex items-center gap-2">
+                                <TableIcon className="w-4 h-4 text-blue-500" />
+                                <span className="text-xs font-black uppercase tracking-tighter text-slate-500">Önizleme Paneli</span>
+                            </div>
+                            <span className="px-3 py-1 bg-white dark:bg-slate-950 rounded-lg text-[10px] font-bold shadow-sm dark:text-slate-400 tracking-widest">
+                                {rows.length} KAYIT
+                            </span>
+                        </div>
+
+                        <div className="overflow-x-auto h-[500px] scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="sticky top-0 z-20 bg-white dark:bg-slate-900 shadow-sm">
+                                    <tr>
+                                        {TARGET_COLUMNS.map((col) => (
+                                            <th key={col} className="px-5 py-4 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b dark:border-slate-800">
+                                                <div className="whitespace-nowrap">{col}</div>
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                                    {rows.map((row, idx) => (
+                                        <tr key={idx} className="hover:bg-blue-50/30 dark:hover:bg-blue-500/5 transition-colors group">
+                                            {TARGET_COLUMNS.map((col) => (
+                                                <td key={col} className="px-5 py-3.5 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                                    <span className="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                        {row[col] || "-"}
+                                                    </span>
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                    {rows.length === 0 && (
+                                        <tr>
+                                            <td colSpan={TARGET_COLUMNS.length} className="py-32 text-center">
+                                                <div className="flex flex-col items-center opacity-20">
+                                                    <FileText className="w-16 h-16 mb-4" />
+                                                    <p className="font-bold tracking-tighter">Görüntülenecek veri bulunmuyor</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            {/* Floating Hint */}
+            <footer className="max-w-7xl mx-auto mt-6 px-6 py-4 bg-white/30 dark:bg-slate-800/20 backdrop-blur rounded-2xl border border-white/20 text-center">
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                    Sistem Otomatik Tarih Hesaplar: <span className="text-blue-500">Sipariş → Yükleme</span> | <span className="text-indigo-500">Teslim = Sipariş + 1 Gün</span>
+                </p>
+            </footer>
         </div>
     );
 }

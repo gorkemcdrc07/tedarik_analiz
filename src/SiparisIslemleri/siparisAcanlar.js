@@ -41,10 +41,15 @@ const Modal = ({ open, onClose, title, children }) => {
     if (!open) return null;
     return (
         <div className="fixed inset-0 z-[200] grid place-items-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
-            <div className="w-full max-w-3xl rounded-2xl border border-white/10 bg-gray-900/90" onClick={(e) => e.stopPropagation()}>
+            <div
+                className="w-full max-w-3xl rounded-2xl border border-white/10 bg-gray-900/90"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
                     <h3 className="text-lg font-semibold">{title}</h3>
-                    <button onClick={onClose} className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/20">✕</button>
+                    <button onClick={onClose} className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/20">
+                        ✕
+                    </button>
                 </div>
                 <div className="p-5 max-h-[70vh] overflow-auto">{children}</div>
             </div>
@@ -53,14 +58,7 @@ const Modal = ({ open, onClose, title, children }) => {
 };
 
 /* ====== Domain: kullanıcı listesi (DEĞİŞMEDİ) ====== */
-const RAW_ALLOWED_USERS = [
-    "IŞIL GÖKÇE KATRAN",
-    "YASEMİN YILMAZ",
-    "HALİT BAKACAK",
-    "EZGİ GÜNAY",
-    "İDİL ÇEVİK",
-
-];
+const RAW_ALLOWED_USERS = ["IŞIL GÖKÇE KATRAN", "YASEMİN YILMAZ", "HALİT BAKACAK", "EZGİ GÜNAY", "İDİL ÇEVİK"];
 const norm = (s) => (s || "").toString().trim().toUpperCase();
 const ALLOWED_USERS = new Set(RAW_ALLOWED_USERS.map(norm));
 
@@ -139,7 +137,9 @@ export default function SiparisAcanlar() {
             setLoading(false);
         }
     };
-    useEffect(() => { load(); /* eslint-disable-line */ }, [startDate, endDate]);
+    useEffect(() => {
+        load(); /* eslint-disable-line */
+    }, [startDate, endDate]);
 
     useEffect(() => {
         let alive = true;
@@ -154,7 +154,9 @@ export default function SiparisAcanlar() {
                 if (alive) setLoadingWeek(false);
             }
         })();
-        return () => { alive = false; };
+        return () => {
+            alive = false;
+        };
     }, [weekStart, endDate]);
 
     // Hesaplanan Değerler (useMemo'lar - DEĞİŞMEDİ)
@@ -171,31 +173,27 @@ export default function SiparisAcanlar() {
         });
     }, [allowedRows, startDate, endDate]);
 
+    // ✅ SATIR SAYISI: kullanıcı bazlı toplam satır + proje bazlı satır
     const { leaderboard, userProjectMap } = useMemo(() => {
-        const userDocSet = new Map();
-        const userProjSet = new Map();
+        const userCount = new Map(); // user -> row count
+        const userProjCount = new Map(); // user -> (project -> row count)
 
         for (const r of filtered) {
             const user = r.OrderCreatedBy || "-";
             const proj = (r.ProjectName || "-").trim();
-            const doc = r.TMSVehicleRequestDocumentNo || "-";
 
-            if (doc) {
-                if (!userDocSet.has(user)) userDocSet.set(user, new Set());
-                userDocSet.get(user).add(doc);
+            userCount.set(user, (userCount.get(user) || 0) + 1);
 
-                if (!userProjSet.has(user)) userProjSet.set(user, new Map());
-                const pMap = userProjSet.get(user);
-                if (!pMap.has(proj)) pMap.set(proj, new Set());
-                pMap.get(proj).add(doc);
-            }
+            if (!userProjCount.has(user)) userProjCount.set(user, new Map());
+            const pMap = userProjCount.get(user);
+            pMap.set(proj, (pMap.get(proj) || 0) + 1);
         }
 
-        const lb = Array.from(userDocSet.entries())
-            .map(([OrderCreatedBy, set]) => ({ OrderCreatedBy, Count: set.size }))
+        const lb = Array.from(userCount.entries())
+            .map(([OrderCreatedBy, Count]) => ({ OrderCreatedBy, Count }))
             .sort((a, b) => b.Count - a.Count);
 
-        return { leaderboard: lb, userProjectMap: userProjSet };
+        return { leaderboard: lb, userProjectMap: userProjCount };
     }, [filtered]);
 
     const userRecordsMapWeek = useMemo(() => {
@@ -213,7 +211,7 @@ export default function SiparisAcanlar() {
     const topProjectsFor = (user, limit = 3) => {
         const pMap = userProjectMap.get(user) || new Map();
         const arr = Array.from(pMap.entries())
-            .map(([p, set]) => ({ ProjectName: p, Count: set.size }))
+            .map(([p, count]) => ({ ProjectName: p, Count: count }))
             .sort((a, b) => b.Count - a.Count);
         return { top: arr.slice(0, limit), restCount: Math.max(0, arr.length - limit) };
     };
@@ -228,13 +226,13 @@ export default function SiparisAcanlar() {
         const windowDays = Math.max(1, Math.floor((endDateObj - startDateObj) / 86400000) + 1);
 
         const recs = recsRaw
-            .map(r => {
+            .map((r) => {
                 const createdTs = r.OrderCreatedDate ? new Date(r.OrderCreatedDate).getTime() : NaN;
                 const refTs = r.RefDate ? new Date(r.RefDate).getTime() : NaN;
                 const ts = Number.isFinite(createdTs) ? createdTs : refTs;
                 return { ...r, ts, createdTs };
             })
-            .filter(r => Number.isFinite(r.ts) && r.ts >= tsStart && r.ts <= tsEnd)
+            .filter((r) => Number.isFinite(r.ts) && r.ts >= tsStart && r.ts <= tsEnd)
             .sort((a, b) => a.ts - b.ts);
 
         if (recs.length === 0) {
@@ -254,9 +252,9 @@ export default function SiparisAcanlar() {
             };
         }
 
-        const lastCreated = recs.filter(x => Number.isFinite(x.createdTs)).slice(-1)[0];
+        const lastCreated = recs.filter((x) => Number.isFinite(x.createdTs)).slice(-1)[0];
         const lastAny = recs[recs.length - 1];
-        const lastTime = new Date((lastCreated?.createdTs ?? lastAny.ts));
+        const lastTime = new Date(lastCreated?.createdTs ?? lastAny.ts);
 
         const dayMap = new Map();
         for (const r of recs) {
@@ -332,9 +330,9 @@ export default function SiparisAcanlar() {
             const key = norm(display);
 
             const recs = allowedRows
-                .filter(r => r.OrderCreatedBy === key && r.OrderCreatedDate)
-                .map(r => new Date(r.OrderCreatedDate).getTime())
-                .filter(t => Number.isFinite(t) && t >= s && t <= e)
+                .filter((r) => r.OrderCreatedBy === key && r.OrderCreatedDate)
+                .map((r) => new Date(r.OrderCreatedDate).getTime())
+                .filter((t) => Number.isFinite(t) && t >= s && t <= e)
                 .sort((a, b) => a - b);
 
             const dayMap = new Map();
@@ -362,14 +360,14 @@ export default function SiparisAcanlar() {
     const { pieData } = useMemo(() => {
         const data = (leaderboard || [])
             .filter(Boolean)
-            .map(d => ({ OrderCreatedBy: String(d?.OrderCreatedBy || "-"), Count: Number(d?.Count || 0) }))
-            .filter(d => d.Count > 0);
+            .map((d) => ({ OrderCreatedBy: String(d?.OrderCreatedBy || "-"), Count: Number(d?.Count || 0) }))
+            .filter((d) => d.Count > 0);
         return { pieData: data };
     }, [leaderboard]);
 
     /* ====== 🔹 Kapanan Siparişler Analizi ====== */
     const closingRows = useMemo(() => {
-        const rows200 = filtered.filter(r => Number(r.OrderStatu) === 200);
+        const rows200 = filtered.filter((r) => Number(r.OrderStatu) === 200);
         const map = new Map(); // ProjectName -> (Reason -> { count, latestTs })
 
         for (const r of rows200) {
@@ -401,10 +399,11 @@ export default function SiparisAcanlar() {
             }
         }
 
-        out.sort((a, b) =>
-            a.ProjectName.localeCompare(b.ProjectName, "tr") ||
-            b.Count - a.Count ||
-            a.OrderClosingReasonName.localeCompare(b.OrderClosingReasonName, "tr")
+        out.sort(
+            (a, b) =>
+                a.ProjectName.localeCompare(b.ProjectName, "tr") ||
+                b.Count - a.Count ||
+                a.OrderClosingReasonName.localeCompare(b.OrderClosingReasonName, "tr")
         );
         return out;
     }, [filtered]);
@@ -414,22 +413,19 @@ export default function SiparisAcanlar() {
     // ----------------------------------------------------
 
     return (
-        // Sayfa layout'unun sorumluluğunu üstlenen ana div (h-screen, overflow-y-auto, vb. çıkarıldı)
-        <div className="w-full text-gray-100">
-
-            {/* Arka plan glow (Layout'ta değil, sayfa içinde kalabilir) */}
+        <div className="relative w-full text-gray-100 pl-0 md:pl-[var(--sidebar-width,260px)]">
+            {/* Arka plan glow */}
             <div className="pointer-events-none absolute inset-0 -z-10">
                 <div className="absolute -top-16 -right-16 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl" />
                 <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-indigo-500/15 blur-3xl" />
             </div>
 
-            {/* Üst bar - Layout'taki ana header yerine, sadece bu sayfaya ait kontrol paneli */}
-            {/* DÜZELTME: sticky top-0 -> sticky top-16 (Ana üst barın altına yapışması için varsayımsal 64px kaydırıldı) */}
-            {/* Z-Index: z-10 -> z-20 (Ana üst barın altında kalmaması için z-index yükseltildi) */}
             <header className="sticky top-16 z-20 border-b border-white/10 backdrop-blur bg-gray-950/60">
                 <div className="w-full flex flex-wrap items-center justify-between gap-3 px-6 py-4">
                     <div className="flex items-center gap-3">
-                        <div className="grid w-10 h-10 place-items-center rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/20">📊</div>
+                        <div className="grid w-10 h-10 place-items-center rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/20">
+                            📊
+                        </div>
                         <div>
                             <p className="text-[10px] uppercase tracking-widest text-gray-400">Sipariş Açanlar</p>
                             <h1 className="text-lg font-semibold">Kullanıcı Liderliği (Günlük Ortalamalar + Proje)</h1>
@@ -439,11 +435,23 @@ export default function SiparisAcanlar() {
                     <div className="flex flex-wrap gap-3 items-center">
                         <div className="relative">
                             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">📅</span>
-                            <Input type="date" value={startDate} max={endDate} onChange={(e) => setStartDate(e.target.value)} style={{ paddingLeft: 30, width: 160 }} />
+                            <Input
+                                type="date"
+                                value={startDate}
+                                max={endDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                style={{ paddingLeft: 30, width: 160 }}
+                            />
                         </div>
                         <div className="relative">
                             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">📅</span>
-                            <Input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} style={{ paddingLeft: 30, width: 160 }} />
+                            <Input
+                                type="date"
+                                value={endDate}
+                                min={startDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                style={{ paddingLeft: 30, width: 160 }}
+                            />
                         </div>
                         <Button onClick={load} title="Yenile">
                             <RefreshCw className="w-4 h-4" /> Yenile
@@ -452,32 +460,38 @@ export default function SiparisAcanlar() {
                 </div>
             </header>
 
-            {/* İçerik - Max yükseklik kaldırıldı, çünkü bu yükseklik Sidebara bağlı Layout tarafından yönetilmeli */}
             <main className="w-full space-y-6 px-6 py-6">
                 {(loading || loadingWeek) && !error && (
                     <>
                         <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
                             {Array.from({ length: 4 }).map((_, i) => (
-                                <GlowCard key={i}><div className="p-5">
-                                    <Skeleton className="h-4 w-24 mb-3" />
-                                    <Skeleton className="h-8 w-32" />
-                                </div></GlowCard>
+                                <GlowCard key={i}>
+                                    <div className="p-5">
+                                        <Skeleton className="h-4 w-24 mb-3" />
+                                        <Skeleton className="h-8 w-32" />
+                                    </div>
+                                </GlowCard>
                             ))}
                         </div>
-                        <GlowCard><div className="p-5"><Skeleton className="h-80 w-full" /></div></GlowCard>
+                        <GlowCard>
+                            <div className="p-5">
+                                <Skeleton className="h-80 w-full" />
+                            </div>
+                        </GlowCard>
                     </>
                 )}
 
                 {!loading && error && (
                     <Card>
-                        <CardHeader><CardTitle>Hata</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle>Hata</CardTitle>
+                        </CardHeader>
                         <CardContent className="text-sm text-rose-300">{error}</CardContent>
                     </Card>
                 )}
 
                 {!loading && !error && (
                     <>
-                        {/* Üst panel: kullanıcı bazlı günlük ortalamalar */}
                         <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
                             <GlowCard className="md:col-span-2">
                                 <CardHeader className="pb-2">
@@ -511,9 +525,10 @@ export default function SiparisAcanlar() {
                                 </CardContent>
                             </GlowCard>
 
-                            {/* Pasta grafiği */}
                             <GlowCard className="md:col-span-2">
-                                <CardHeader className="pb-2"><CardTitle>OrderCreatedBy → Distinct Doc (Pasta)</CardTitle></CardHeader>
+                                <CardHeader className="pb-2">
+                                    <CardTitle>OrderCreatedBy → Sipariş (Satır) Dağılımı</CardTitle>
+                                </CardHeader>
                                 <CardContent>
                                     {pieData.length === 0 ? (
                                         <div className="text-sm text-gray-400">Kayıt bulunamadı.</div>
@@ -522,18 +537,31 @@ export default function SiparisAcanlar() {
                                             <div className="w-full h-[280px]">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <PieChart>
-                                                        <Pie dataKey="Count" nameKey="OrderCreatedBy" data={pieData} outerRadius={110} innerRadius={55} paddingAngle={2} isAnimationActive={false}>
-                                                            {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                                        <Pie
+                                                            dataKey="Count"
+                                                            nameKey="OrderCreatedBy"
+                                                            data={pieData}
+                                                            outerRadius={110}
+                                                            innerRadius={55}
+                                                            paddingAngle={2}
+                                                            isAnimationActive={false}
+                                                        >
+                                                            {pieData.map((_, i) => (
+                                                                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                                            ))}
                                                         </Pie>
-                                                        <Tooltip formatter={(v, _n, p) => [`${v}`, p?.payload?.OrderCreatedBy || ""]} />
+                                                        <Tooltip formatter={(v, _n, p) => [`${v} satır`, p?.payload?.OrderCreatedBy || ""]} />
                                                     </PieChart>
                                                 </ResponsiveContainer>
                                             </div>
+
                                             <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-300">
                                                 {pieData.map((d, i) => (
                                                     <span key={`${d.OrderCreatedBy}-${i}`} className="inline-flex items-center gap-2">
                                                         <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: COLORS[i % COLORS.length] }} />
-                                                        <span>{d.OrderCreatedBy} <span className="text-gray-400">({d.Count})</span></span>
+                                                        <span>
+                                                            {d.OrderCreatedBy} <span className="text-gray-400">({d.Count})</span>
+                                                        </span>
                                                     </span>
                                                 ))}
                                             </div>
@@ -543,7 +571,6 @@ export default function SiparisAcanlar() {
                             </GlowCard>
                         </div>
 
-                        {/* Kullanıcı kartları (seçili aralık) */}
                         <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
                             {pieData.map((u, idx) => {
                                 const { top, restCount } = topProjectsFor(u.OrderCreatedBy, 3);
@@ -556,18 +583,22 @@ export default function SiparisAcanlar() {
                                                     <div className="text-base font-semibold text-gray-100">{u.OrderCreatedBy}</div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-xs text-gray-400">Distinct Doc</div>
+                                                    <div className="text-xs text-gray-400">Sipariş (Satır)</div>
                                                     <div className="text-2xl font-bold">{u.Count}</div>
                                                 </div>
                                             </div>
 
-                                            <div className="text-xs text-gray-400">Projeler (Distinct):</div>
+                                            <div className="text-xs text-gray-400">Projeler (Satır):</div>
                                             <div className="flex flex-wrap gap-2">
                                                 {top.length === 0 ? (
                                                     <span className="text-sm text-gray-400">-</span>
                                                 ) : (
                                                     top.map((p) => (
-                                                        <span key={p.ProjectName} title={`${p.ProjectName}: ${p.Count}`} className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs">
+                                                        <span
+                                                            key={p.ProjectName}
+                                                            title={`${p.ProjectName}: ${p.Count}`}
+                                                            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
+                                                        >
                                                             {p.ProjectName}
                                                             <span className="rounded bg-white/10 px-1">{p.Count}</span>
                                                         </span>
@@ -594,11 +625,12 @@ export default function SiparisAcanlar() {
                                 );
                             })}
                             {pieData.length === 0 && (
-                                <Card><CardContent>Seçilen aralıkta kullanıcı verisi bulunamadı.</CardContent></Card>
+                                <Card>
+                                    <CardContent>Seçilen aralıkta kullanıcı verisi bulunamadı.</CardContent>
+                                </Card>
                             )}
                         </div>
 
-                        {/* 🔹 EN ALTTaki PANEL: Kapanan Siparişler (OrderStatu=200) — Reason + Son Kapanış */}
                         <GlowCard>
                             <CardHeader className="pb-2">
                                 <CardTitle>Kapanan Siparişler (OrderStatu = 200) • Kapanış Nedenleri</CardTitle>
@@ -639,7 +671,6 @@ export default function SiparisAcanlar() {
                 )}
             </main>
 
-            {/* Detay modal — SON 1 HAFTA */}
             <Modal open={!!detailUser} onClose={() => setDetailUser(null)} title={detailUser ? `Detay • ${detailUser}` : "Detay"}>
                 {!detailUser ? (
                     <div className="text-sm text-gray-400">Kayıt yok.</div>
@@ -649,7 +680,7 @@ export default function SiparisAcanlar() {
                     (() => {
                         const pMap = userProjectMap.get(detailUser) || new Map();
                         const projRows = Array.from(pMap.entries())
-                            .map(([ProjectName, set]) => ({ ProjectName, Count: set.size }))
+                            .map(([ProjectName, count]) => ({ ProjectName, Count: count }))
                             .sort((a, b) => b.Count - a.Count);
 
                         const stats = buildDetailStats(detailUser);
@@ -658,27 +689,50 @@ export default function SiparisAcanlar() {
                             <div className="space-y-6">
                                 <Card className="p-4">
                                     <div className="text-xs text-gray-300">
-                                        <strong>Son 1 haftada:</strong> {weekStart} – {endDate} • <strong>Veri bulunan gün:</strong> {stats.activeDays} / {stats.windowDays}
+                                        <strong>Son 1 haftada:</strong> {weekStart} – {endDate} • <strong>Veri bulunan gün:</strong> {stats.activeDays} /{" "}
+                                        {stats.windowDays}
                                     </div>
                                 </Card>
 
                                 <Card className="p-4">
                                     <div className="text-xs text-gray-400 mb-2">Analiz (Son 1 Hafta)</div>
                                     <ul className="list-disc pl-5 space-y-1 text-sm">
-                                        <li><strong>Son işlem:</strong> {stats.lastTime}</li>
-                                        <li><strong>Aktif gün:</strong> {stats.activeDays} gün</li>
-                                        <li><strong>Toplam sipariş:</strong> {stats.totalOrders}</li>
-                                        {stats.busiestDay && (<li><strong>En yoğun gün:</strong> {stats.busiestDay.day} ({stats.busiestDay.orders} sipariş)</li>)}
-                                        {stats.longestSpan && (<li><strong>En uzun açma süresi (gün içi):</strong> {stats.longestSpan.day} ({stats.longestSpan.spanHM})</li>)}
-                                        <li><strong>Günlük ort. açma süresi (7 gün):</strong> {stats.avgDailySpanHM}</li>
-                                        <li><strong>Günlük ort. sipariş (7 gün):</strong> {stats.avgOrdersPerDay}</li>
-                                        <li><strong>Ort. iki sipariş arası:</strong> {stats.avgIntervalMin} dk</li>
+                                        <li>
+                                            <strong>Son işlem:</strong> {stats.lastTime}
+                                        </li>
+                                        <li>
+                                            <strong>Aktif gün:</strong> {stats.activeDays} gün
+                                        </li>
+                                        <li>
+                                            <strong>Toplam sipariş (satır):</strong> {stats.totalOrders}
+                                        </li>
+                                        {stats.busiestDay && (
+                                            <li>
+                                                <strong>En yoğun gün:</strong> {stats.busiestDay.day} ({stats.busiestDay.orders} sipariş)
+                                            </li>
+                                        )}
+                                        {stats.longestSpan && (
+                                            <li>
+                                                <strong>En uzun açma süresi (gün içi):</strong> {stats.longestSpan.day} ({stats.longestSpan.spanHM})
+                                            </li>
+                                        )}
+                                        <li>
+                                            <strong>Günlük ort. açma süresi (7 gün):</strong> {stats.avgDailySpanHM}
+                                        </li>
+                                        <li>
+                                            <strong>Günlük ort. sipariş (7 gün):</strong> {stats.avgOrdersPerDay}
+                                        </li>
+                                        <li>
+                                            <strong>Ort. iki sipariş arası:</strong> {stats.avgIntervalMin} dk
+                                        </li>
                                     </ul>
                                 </Card>
 
                                 {stats.perDayRows.length > 0 && (
                                     <Card>
-                                        <CardHeader className="pb-2"><CardTitle>Gün Bazında Özet (Son 1 Hafta)</CardTitle></CardHeader>
+                                        <CardHeader className="pb-2">
+                                            <CardTitle>Gün Bazında Özet (Son 1 Hafta)</CardTitle>
+                                        </CardHeader>
                                         <CardContent className="p-0">
                                             <div className="overflow-auto">
                                                 <table className="w-full text-sm">
@@ -711,16 +765,17 @@ export default function SiparisAcanlar() {
                                     </Card>
                                 )}
 
-                                {/* Proje dağılımı (ekran aralığı) */}
                                 <Card>
-                                    <CardHeader className="pb-2"><CardTitle>Proje Dağılımı (Distinct Doc)</CardTitle></CardHeader>
+                                    <CardHeader className="pb-2">
+                                        <CardTitle>Proje Dağılımı (Satır)</CardTitle>
+                                    </CardHeader>
                                     <CardContent className="p-0">
                                         <div className="overflow-auto">
                                             <table className="w-full text-sm">
                                                 <thead>
                                                     <tr className="text-left text-gray-300 border-b border-white/10">
                                                         <th className="py-2 pr-2">ProjectName</th>
-                                                        <th className="py-2 pr-2">Distinct Doc</th>
+                                                        <th className="py-2 pr-2">Satır</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -731,7 +786,11 @@ export default function SiparisAcanlar() {
                                                         </tr>
                                                     ))}
                                                     {projRows.length === 0 && (
-                                                        <tr><td className="py-2 pr-2 text-gray-400" colSpan={2}>Proje bulunamadı.</td></tr>
+                                                        <tr>
+                                                            <td className="py-2 pr-2 text-gray-400" colSpan={2}>
+                                                                Proje bulunamadı.
+                                                            </td>
+                                                        </tr>
                                                     )}
                                                 </tbody>
                                             </table>

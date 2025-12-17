@@ -1,16 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\images",
-    "\\pages",
-    "\\pages\\api",
-    "\\pages\\api\\reel-api",
-    "\\pages\\api\\reel-api\\tmsdespatchincomeexpenses",
-    "\\pages\\api\\reel-api\\tmsdespatchincomeexpenses\\test",
     "\\server",
-    "\\src",
-    "\\src\\auth"
+    "\\src"
   ],
-  "SelectedNode": "\\pages\\api\\reel-api\\tmsdespatchincomeexpenses",
+  "SelectedNode": "\\server\\index.js",
   "PreviewInSolutionExplorer": false
 }
