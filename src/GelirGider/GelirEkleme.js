@@ -319,8 +319,27 @@ export default function GelirEkleme() {
     const onDragOver = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
     const onDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
 
-    const downloadTemplate = () => {
-        window.open("/gelir_sablon.xlsx", "_blank");
+    const downloadTemplate = async () => {
+        try {
+            const res = await fetch("/gelir_sablon.xlsx", { method: "GET" });
+            if (!res.ok) throw new Error("Şablon indirilemedi.");
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "gelir_sablon.xlsx"; // dosya adı burada
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            window.URL.revokeObjectURL(url);
+        } catch (e) {
+            const msg = e?.message || "Şablon indirirken hata oluştu.";
+            setError(`❌ ${msg}`);
+            setNotification({ message: msg, type: "fail" });
+        }
     };
 
     // --- Tarama Fonksiyonu (Güncellendi) ---

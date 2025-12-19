@@ -231,9 +231,8 @@ const Pill = ({ text, tone }) => <span className={`pill-val ${tone ? `pill--${to
 
 /* ---- Main ---- */
 export default function Dashboard() {
-    // Kullanıcı / yetki
-    const userObj = JSON.parse(localStorage.getItem("kullanici") || "{}");
-    const user = (userObj.kullanici || "").trim().toLocaleUpperCase("tr-TR");
+    // Kullanıcı / yetki  ✅ (localStorage string tutuluyor)
+    const user = (localStorage.getItem("kullanici") || "").trim().toLocaleUpperCase("tr-TR");
     const isPriv = ["ONUR KEREM ÖZTÜRK", "TAHSİN BENLİ", "ATAKAN AKALIN", "ENVER BEŞİRLİ"].includes(user);
 
     // Columns

@@ -325,9 +325,35 @@ export default function GiderEkleme() {
     const onDragOver = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
     const onDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
 
-    const downloadTemplate = () => {
-        // Yeni: Linki değiştirdik.
-        window.open("/gider_sablon.xlsx", "_blank");
+    const downloadTemplate = async () => {
+        try {
+            setDownloading(true);
+
+            const res = await fetch("/gider_sablon.xlsx", { method: "GET" });
+            if (!res.ok) throw new Error("Şablon indirilemedi.");
+
+            const blob = await res.blob();
+
+            // (opsiyonel ama iyi) Content-Type yanlış gelirse yine de xlsx olarak indir
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "gider_sablon.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            window.URL.revokeObjectURL(url);
+
+            setNotification({ message: "Gider şablonu indirildi.", type: "success" });
+        } catch (e) {
+            const msg = e?.message || "Şablon indirirken hata oluştu.";
+            setError(`❌ ${msg}`);
+            setNotification({ message: msg, type: "fail" });
+        } finally {
+            setDownloading(false);
+        }
     };
 
     // --- Tarama Fonksiyonu (Güncellendi) ---

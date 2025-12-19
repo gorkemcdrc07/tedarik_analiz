@@ -1,19 +1,22 @@
 import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
-    Box, List, ListItem, ListItemButton, ListItemIcon,
-    ListItemText, Collapse, Typography, Tooltip
+    Box,
+    List,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    Collapse,
+    Typography,
+    Tooltip,
 } from "@mui/material";
+
 // İkonları tek tek ve garantili isimlerle import ediyoruz
 import OrderIcon from "@mui/icons-material/ShoppingCartOutlined";
-import LocationIcon from "@mui/icons-material/LocationOnOutlined";
-import ReportIcon from "@mui/icons-material/BarChartOutlined";
 import MoneyInIcon from "@mui/icons-material/PaidOutlined";
-import MoneyOutIcon from "@mui/icons-material/MoneyOffCsredOutlined";
-import CalcIcon from "@mui/icons-material/CalculateOutlined";
 import PriceIcon from "@mui/icons-material/PriceChangeOutlined";
 import DashboardIcon from "@mui/icons-material/AutoGraph";
-import ChevronIcon from "@mui/icons-material/ArrowForwardIos"; // Listenizde mevcut
+import ChevronIcon from "@mui/icons-material/ArrowForwardIos";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 
 const drawerWidthOpen = 280;
@@ -36,6 +39,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
     const menuConfig = [
         {
+            groupName: "GENEL",
+            items: [
+                {
+                    title: "DASHBOARD",
+                    icon: DashboardIcon,
+                    route: "/dashboard",
+                },
+            ],
+        },
+        {
             groupName: "OPERASYON",
             items: [
                 {
@@ -47,9 +60,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                         { label: "Sipariş Açanlar", route: "/SiparisIslemleri/SiparisAcanlar" },
                         { label: "Arkas", route: "/SiparisIslemleri/Arkas" },
                         { label: "Fasdat", route: "/SiparisIslemleri/Fasdat" },
-                    ]
-                }
-            ]
+                    ],
+                },
+            ],
         },
         {
             groupName: "FİNANS",
@@ -61,7 +74,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                         { label: "Gelir Ekleme", route: "/GelirGider/GelirEkleme" },
                         { label: "Gider Ekleme", route: "/GelirGider/GiderEkleme" },
                         { label: "Eskalasyon", route: "/eskalasyon" },
-                    ]
+                    ],
                 },
                 {
                     title: "FİYATLANDIRMA",
@@ -69,10 +82,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     subItems: [
                         { label: "Sefer Fiyatlandırma", route: "/fiyatlandirma/seferFiyatlandirma" },
                         { label: "Fiyat Listesi", route: "/Fiyatlandirma/FiyatListesi" },
-                    ]
-                }
-            ]
-        }
+                    ],
+                },
+            ],
+        },
     ];
 
     return (
@@ -80,29 +93,40 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             component="aside"
             sx={{
                 width: isOpen ? drawerWidthOpen : drawerWidthClosed,
-                height: '100vh',
-                position: 'fixed',
-                left: 0, top: 0,
+                height: "100vh",
+                position: "fixed",
+                left: 0,
+                top: 0,
                 bgcolor: sidebarBg,
-                borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-                transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+                transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 zIndex: 1200,
-                display: 'flex', flexDirection: 'column',
-                overflow: 'hidden'
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
             }}
         >
             {/* Header / Logo */}
-            <Box sx={{ p: 3, display: 'flex', alignItems: 'center', minHeight: 80 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mx: isOpen ? 0 : 'auto' }}>
-                    <Box sx={{
-                        width: 36, height: 36, borderRadius: '10px',
-                        bgcolor: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: `0 0 15px ${accentColor}55`, flexShrink: 0
-                    }}>
-                        <DashboardIcon sx={{ color: '#fff', fontSize: 20 }} />
+            <Box sx={{ p: 3, display: "flex", alignItems: "center", minHeight: 80 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mx: isOpen ? 0 : "auto" }}>
+                    <Box
+                        sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: "10px",
+                            bgcolor: accentColor,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            boxShadow: `0 0 15px ${accentColor}55`,
+                            flexShrink: 0,
+                        }}
+                    >
+                        <DashboardIcon sx={{ color: "#fff", fontSize: 20 }} />
                     </Box>
+
                     {isOpen && (
-                        <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: 18, letterSpacing: -0.5 }}>
+                        <Typography sx={{ color: "#fff", fontWeight: 800, fontSize: 18, letterSpacing: -0.5 }}>
                             Fleet<span style={{ color: accentColor }}>OS</span>
                         </Typography>
                     )}
@@ -110,21 +134,69 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </Box>
 
             {/* Navigation Content */}
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1.5 }}>
+            <Box sx={{ flexGrow: 1, overflowY: "auto", px: 1.5 }}>
                 {menuConfig.map((section) => (
                     <Box key={section.groupName} sx={{ mb: 2 }}>
                         {isOpen && (
-                            <Typography sx={{
-                                color: 'rgba(255,255,255,0.25)', fontSize: '10px',
-                                fontWeight: 700, ml: 2, mb: 1, letterSpacing: '0.1em'
-                            }}>
+                            <Typography
+                                sx={{
+                                    color: "rgba(255,255,255,0.25)",
+                                    fontSize: "10px",
+                                    fontWeight: 700,
+                                    ml: 2,
+                                    mb: 1,
+                                    letterSpacing: "0.1em",
+                                }}
+                            >
                                 {section.groupName}
                             </Typography>
                         )}
 
                         {section.items.map((group) => {
-                            const isExpanded = !!openSections[group.title] && isOpen;
                             const GroupIcon = group.icon;
+
+                            // ✅ TEK SEVİYELİ MENÜ (Dashboard gibi)
+                            if (group.route) {
+                                const isActive = location.pathname === group.route;
+
+                                return (
+                                    <Tooltip title={!isOpen ? group.title : ""} placement="right" arrow key={group.title}>
+                                        <ListItemButton
+                                            component={NavLink}
+                                            to={group.route}
+                                            sx={{
+                                                borderRadius: "12px",
+                                                minHeight: 48,
+                                                mb: 0.5,
+                                                color: isActive ? accentColor : "rgba(255,255,255,0.5)",
+                                                bgcolor: isActive ? "rgba(59, 130, 246, 0.08)" : "transparent",
+                                                "&:hover": { bgcolor: "rgba(255,255,255,0.04)", color: "#fff" },
+                                            }}
+                                        >
+                                            <ListItemIcon
+                                                sx={{
+                                                    minWidth: 0,
+                                                    mr: isOpen ? 2 : 0,
+                                                    color: "inherit",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                <GroupIcon sx={{ fontSize: 22 }} />
+                                            </ListItemIcon>
+
+                                            {isOpen && (
+                                                <ListItemText
+                                                    primary={group.title}
+                                                    primaryTypographyProps={{ fontSize: "12px", fontWeight: 600 }}
+                                                />
+                                            )}
+                                        </ListItemButton>
+                                    </Tooltip>
+                                );
+                            }
+
+                            // ✅ COLLAPSE'LI MENÜ (subItems olanlar)
+                            const isExpanded = !!openSections[group.title] && isOpen;
 
                             return (
                                 <Box key={group.title} sx={{ mb: 0.5 }}>
@@ -132,13 +204,20 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                                         <ListItemButton
                                             onClick={() => handleSectionClick(group.title)}
                                             sx={{
-                                                borderRadius: '12px',
+                                                borderRadius: "12px",
                                                 minHeight: 48,
-                                                color: isExpanded ? '#fff' : 'rgba(255,255,255,0.5)',
-                                                '&:hover': { bgcolor: 'rgba(255,255,255,0.04)', color: '#fff' }
+                                                color: isExpanded ? "#fff" : "rgba(255,255,255,0.5)",
+                                                "&:hover": { bgcolor: "rgba(255,255,255,0.04)", color: "#fff" },
                                             }}
                                         >
-                                            <ListItemIcon sx={{ minWidth: 0, mr: isOpen ? 2 : 0, color: 'inherit', justifyContent: 'center' }}>
+                                            <ListItemIcon
+                                                sx={{
+                                                    minWidth: 0,
+                                                    mr: isOpen ? 2 : 0,
+                                                    color: "inherit",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
                                                 <GroupIcon sx={{ fontSize: 22 }} />
                                             </ListItemIcon>
 
@@ -146,13 +225,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                                                 <>
                                                     <ListItemText
                                                         primary={group.title}
-                                                        primaryTypographyProps={{ fontSize: '12px', fontWeight: 600 }}
+                                                        primaryTypographyProps={{ fontSize: "12px", fontWeight: 600 }}
                                                     />
-                                                    <ChevronIcon sx={{
-                                                        fontSize: 10,
-                                                        transform: isExpanded ? 'rotate(90deg)' : 'none',
-                                                        transition: '0.2s', opacity: 0.5
-                                                    }} />
+                                                    <ChevronIcon
+                                                        sx={{
+                                                            fontSize: 10,
+                                                            transform: isExpanded ? "rotate(90deg)" : "none",
+                                                            transition: "0.2s",
+                                                            opacity: 0.5,
+                                                        }}
+                                                    />
                                                 </>
                                             )}
                                         </ListItemButton>
@@ -160,7 +242,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
                                     <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                                         <List disablePadding sx={{ mt: 0.5, ml: isOpen ? 2.5 : 0 }}>
-                                            {group.subItems.map((item) => {
+                                            {group.subItems?.map((item) => {
                                                 const isActive = location.pathname === item.route;
                                                 return (
                                                     <ListItemButton
@@ -169,16 +251,19 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                                                         to={item.route}
                                                         sx={{
                                                             minHeight: 34,
-                                                            borderRadius: '8px',
+                                                            borderRadius: "8px",
                                                             mb: 0.3,
-                                                            color: isActive ? accentColor : 'rgba(255,255,255,0.4)',
-                                                            bgcolor: isActive ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-                                                            '&:hover': { color: '#fff', bgcolor: 'rgba(255,255,255,0.02)' }
+                                                            color: isActive ? accentColor : "rgba(255,255,255,0.4)",
+                                                            bgcolor: isActive ? "rgba(59, 130, 246, 0.08)" : "transparent",
+                                                            "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.02)" },
                                                         }}
                                                     >
                                                         <ListItemText
                                                             primary={item.label}
-                                                            primaryTypographyProps={{ fontSize: '12px', fontWeight: isActive ? 600 : 400 }}
+                                                            primaryTypographyProps={{
+                                                                fontSize: "12px",
+                                                                fontWeight: isActive ? 600 : 400,
+                                                            }}
                                                         />
                                                     </ListItemButton>
                                                 );
@@ -193,20 +278,25 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </Box>
 
             {/* Footer Control */}
-            <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <Box sx={{ p: 2, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                 <ListItemButton
                     onClick={toggleSidebar}
                     sx={{
-                        borderRadius: '12px',
-                        justifyContent: isOpen ? 'initial' : 'center',
-                        color: 'rgba(255,255,255,0.4)',
-                        '&:hover': { color: '#fff', bgcolor: 'rgba(255,255,255,0.04)' }
+                        borderRadius: "12px",
+                        justifyContent: isOpen ? "initial" : "center",
+                        color: "rgba(255,255,255,0.4)",
+                        "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.04)" },
                     }}
                 >
-                    <ListItemIcon sx={{ minWidth: 0, mr: isOpen ? 2 : 0, color: 'inherit' }}>
-                        <MenuOpenIcon sx={{ fontSize: 20, transform: !isOpen ? 'scaleX(-1)' : 'none' }} />
+                    <ListItemIcon sx={{ minWidth: 0, mr: isOpen ? 2 : 0, color: "inherit" }}>
+                        <MenuOpenIcon sx={{ fontSize: 20, transform: !isOpen ? "scaleX(-1)" : "none" }} />
                     </ListItemIcon>
-                    {isOpen && <ListItemText primary="Menüyü Daralt" primaryTypographyProps={{ fontSize: '12px', fontWeight: 600 }} />}
+                    {isOpen && (
+                        <ListItemText
+                            primary="Menüyü Daralt"
+                            primaryTypographyProps={{ fontSize: "12px", fontWeight: 600 }}
+                        />
+                    )}
                 </ListItemButton>
             </Box>
         </Box>
