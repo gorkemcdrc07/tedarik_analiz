@@ -1,0 +1,321 @@
+﻿/* ==== Global görünüm (koyu cam/blur + neon aksan) ========================= */
+:root {
+    --bg1: #0b1220;
+    --bg2: #0d1426;
+    --panel: rgba(16, 22, 36, .70);
+    --panel-strong: rgba(16, 22, 36, .85);
+    --border: rgba(255,255,255,.08);
+    --fg: #e6eaf2;
+    --muted: #8ea0bc;
+    --accent: #8b5cf6; /* violet-500 */
+    --accent2: #22d3ee; /* cyan-400 */
+    --ring: rgba(139,92,246,.45);
+    --shadow: 0 12px 40px rgba(0,0,0,.35);
+    --success: #27ae60;
+    --warn: #f39c12;
+    --danger: #e74c3c;
+    /* YENİ: yalnızca dikey kısaltma için */
+    --table-max-h: 60vh; /* İstersen 55vh/50vh yap */
+}
+
+/* Arka plan */
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    color: var(--fg);
+    background: radial-gradient(1200px 600px at 20% -10%, rgba(139,92,246,.20), transparent 60%), radial-gradient(900px 600px at 110% 10%, rgba(34,211,238,.15), transparent 50%), linear-gradient(180deg, var(--bg1), var(--bg2));
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* İnce scrollbar */
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(148,163,184,.25);
+    border-radius: 10px;
+    border: 2px solid rgba(14,20,34,.5);
+}
+
+/* ==== Sayfa iskeleti ====================================================== */
+.app-container {
+    padding: 16px;
+    display: grid;
+    gap: 14px;
+}
+
+/* Bölüm genel panel */
+.section {
+    background: var(--panel);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 14px;
+}
+
+/* ==== Filtre çubuğu (Dashboard üstündeki) ================================= */
+.filter-bar {
+    background: var(--panel-strong);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 10px 12px;
+}
+
+    .filter-bar label {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    /* Inputs (date) */
+    .filter-bar input[type="date"],
+    .filter-bar input[type="text"],
+    .filter-bar input[type="search"],
+    .filter-bar select {
+        appearance: none;
+        background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+        color: var(--fg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 8px 10px;
+        outline: none;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .filter-bar input::placeholder {
+        color: var(--muted);
+    }
+
+    .filter-bar input:focus {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+
+/* Birincil buton */
+.btn-primary {
+    background: linear-gradient(120deg, rgba(139,92,246,.25), rgba(34,211,238,.20));
+    color: var(--fg);
+    border: 1px solid rgba(139,92,246,.40);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(139,92,246,.15);
+    transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
+}
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 34px rgba(139,92,246,.22);
+    }
+
+    .btn-primary:disabled {
+        opacity: .6;
+        cursor: default;
+        transform: none;
+    }
+
+/* ==== Uyarı kutusu (uyari-modal) ========================================= */
+.uyari-modal {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px 12px 14px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+}
+
+    .uyari-modal h4 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        letter-spacing: .02em;
+    }
+
+    .uyari-modal ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .uyari-modal li {
+        margin: 2px 0;
+    }
+
+.modal-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.35);
+    color: #fff;
+    border: 1px solid var(--border);
+    cursor: pointer;
+}
+
+/* ==== Tablo görünümü ====================================================== */
+.table-wrapper {
+    /* GENİŞLİĞE DOKUNMADAN sadece dikey kısaltma */
+    max-height: var(--table-max-h); /* YENİ */
+    overflow: auto; /* hem yatay hem dikey scroll */
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+}
+
+/* modern tablo */
+.styled-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 960px; /* orijinal: ekrana sığmazsa yatay scroll */
+}
+
+    /* Başlık */
+    .styled-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: linear-gradient(180deg, rgba(16,22,36,.96), rgba(16,22,36,.90));
+        color: #d7def0;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: .02em;
+        border-bottom: 1px solid var(--border);
+        padding: 10px 10px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .styled-table thead tr:first-child th {
+        background: linear-gradient(180deg, rgba(19, 27, 44, .98), rgba(19, 27, 44, .92));
+    }
+
+    .styled-table thead tr:nth-child(2) th {
+        font-weight: 600;
+        color: #c7d2ee;
+    }
+
+    /* Hücreler */
+    .styled-table td {
+        padding: 9px 10px;
+        border-bottom: 1px solid rgba(255,255,255,.05);
+        text-align: center;
+        font-size: 13px;
+        color: #e9edf7;
+    }
+
+        /* İlk sütun (Proje) sola hizalı ve “link” hissi */
+        .styled-table td:first-child, .styled-table th:first-child {
+            text-align: left;
+        }
+
+.clickable-project {
+    color: #60a5fa;
+    font-weight: 700;
+    text-decoration: none;
+    position: relative;
+}
+
+    .clickable-project:hover {
+        text-decoration: underline;
+    }
+
+/* E-tablo / Reel işaretli hücre rozet hissi */
+td.etablo, td.reel {
+    font-weight: 700;
+    border-radius: 10px;
+}
+
+td.etablo {
+    background: linear-gradient(180deg, rgba(139,92,246,.12), rgba(139,92,246,.06));
+    color: #c9b6ff;
+    border: 1px solid rgba(139,92,246,.25);
+}
+
+td.reel {
+    background: linear-gradient(180deg, rgba(34,211,238,.12), rgba(34,211,238,.06));
+    color: #a7f3ff;
+    border: 1px solid rgba(34,211,238,.25);
+}
+
+/* Satır vurguları */
+.styled-table tbody tr:hover {
+    background: rgba(255,255,255,.03);
+}
+
+.styled-table tbody tr.fazla-reel-talep {
+    box-shadow: inset 0 0 0 9999px rgba(34,197,94,.08);
+}
+
+.styled-table tbody tr.uyumsuz-satir {
+    box-shadow: inset 0 0 0 9999px rgba(239,68,68,.07);
+}
+
+/* Alt toplam (tfoot) */
+.styled-table tfoot td {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(16,22,36,.96), rgba(16,22,36,.92));
+    border-top: 1px solid var(--border);
+    font-weight: 800;
+}
+
+/* Yükleniyor metni */
+.loading {
+    margin: 12px 0 0 6px;
+    opacity: .75;
+}
+
+/* Küçük ekran iyileştirme */
+@media (max-width: 720px) {
+    .section {
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    .filter-bar {
+        border-radius: 12px;
+    }
+
+    .table-wrapper {
+        border-radius: 12px;
+    }
+
+    .styled-table thead th {
+        font-size: 11px;
+        padding: 8px;
+    }
+
+    .styled-table td {
+        font-size: 12px;
+        padding: 7px 8px;
+    }
+}
+
+/* ================== OPSİYONEL: Daha kısa ve kompakt mod ================== */
+/* Yalnızca tablo yüksekliğini daha da azaltmak istersen: */
+.table-wrapper.kisa {
+    --table-max-h: 52vh;
+}
+
+/* Satır/padding sıkıştırma için: */
+.styled-table.compact thead th {
+    padding: 8px 8px;
+    font-size: 11px;
+}
+
+.styled-table.compact td {
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.2;
+}
