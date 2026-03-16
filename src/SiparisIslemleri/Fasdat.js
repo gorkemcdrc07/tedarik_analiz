@@ -73,7 +73,7 @@ function mapYuklemeFirmasiToId(val) {
         "BEYLİKOVA KÖYÜ PATATES": "36477", "ATAKEY DEVELİ PATATES": "36746", "FASDAT BALA PATATES": "36597",
         "ATAKEY HACINUMAN KÖYÜ": "36747", "MERAM BORUKTOLU SOĞAN": "36497", "YÜKSECİK MEVKİ PATATES TARLA": "36799",
         "POLATLI YÜZÜKBAŞI KÖYÜ PATATES": "36853", "MEZGİTLİ PATATES TARLA": "36537", "PATNOS ÜRKÜT KÖYÜ": "36855",
-        "AHLAT TAŞHARMAN KÖYÜ": "36856", "ADİLCEVAZ GÖZDÜZÜ KÖYÜ": "36857"
+        "AHLAT TAŞHARMAN KÖYÜ": "36856", "ADİLCEVAZ GÖZDÜZÜ KÖYÜ": "36857", "PATATES TARLA ERBAA": "34735", "PATATES TARLA NİKSAR": "34736"
     };
     for (const key in mapping) { if (s.includes(key)) return mapping[key]; }
     return val ?? "";
