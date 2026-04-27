@@ -13,10 +13,8 @@ import {
     PlusCircle,
     TrendingUp,
     ArrowDownCircle,
-    Layers
 } from "lucide-react";
 
-// Supabase Yapılandırması (Mevcut mantık korundu)
 const supabase = createClient(
     process.env.REACT_APP_SUPABASE_URL,
     process.env.REACT_APP_SUPABASE_KEY
@@ -30,6 +28,17 @@ export default function Login({ onLoginSuccess }) {
     const [showPassword, setShowPassword] = useState(false);
     const [remember, setRemember] = useState(true);
 
+    const safeParse = (value) => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+
+        try {
+            return JSON.parse(value);
+        } catch {
+            return [];
+        }
+    };
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
@@ -41,32 +50,47 @@ export default function Login({ onLoginSuccess }) {
                 .select("*")
                 .eq("kullanici_adi", email)
                 .eq("sifre", password)
-                .single();
+                .maybeSingle(); // 🔥 single yerine
 
             if (error || !data) {
                 setError("Kimlik bilgileri doğrulanamadı.");
                 return;
             }
 
+            // 🔥 YENİ SİSTEM (EN ÖNEMLİ KISIM)
+            const userData = {
+                id: data.id,
+                kullanici: data.kullanici,
+                kullanici_adi: data.kullanici_adi,
+                rol: data.rol,
+                allowedScreens: safeParse(data.allowedScreens),
+                allowedButtons: safeParse(data.allowedButtons)
+            };
+
+            localStorage.setItem("loginUser", JSON.stringify(userData));
+
+            // 🔴 eski sistem (bozmasın diye istersen kaldırabilirsin)
             if (remember) {
                 localStorage.setItem("kullanici", JSON.stringify(data));
             }
 
-            const reelUser = data.Reel_kullanici ?? data.reel_kullanici ?? data.reelUserName ?? data.reel_username ?? email;
-            const reelPass = data.Reel_sifre ?? data.reel_sifre ?? data.reelPassword ?? data.reel_password ?? password;
+            const reelUser = data.Reel_kullanici ?? email;
+            const reelPass = data.Reel_sifre ?? password;
 
             localStorage.setItem("Reel_kullanici", reelUser);
             localStorage.setItem("Reel_sifre", reelPass);
-            localStorage.setItem("reelCreds", JSON.stringify({ userName: reelUser, password: reelPass }));
+
+            localStorage.setItem("userName", data.kullanici ?? email);
+            localStorage.setItem("userRole", data.rol ?? "kullanici");
 
             onLoginSuccess?.();
+
         } catch (err) {
             setError("Sunucu bağlantısı kurulamadı.");
         } finally {
             setLoading(false);
         }
     };
-
     return (
         <Screen>
             <AmbientLight />
@@ -157,10 +181,15 @@ export default function Login({ onLoginSuccess }) {
 
                         <FlexBetween>
                             <CheckboxContainer>
-                                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} id="rem" />
+                                <input
+                                    type="checkbox"
+                                    checked={remember}
+                                    onChange={(e) => setRemember(e.target.checked)}
+                                    id="rem"
+                                />
                                 <label htmlFor="rem">Beni hatırla</label>
                             </CheckboxContainer>
-                            <GhostLink>Şifremi Unuttum</GhostLink>
+                            <GhostLink type="button">Şifremi Unuttum</GhostLink>
                         </FlexBetween>
 
                         <AnimatePresence>
@@ -168,6 +197,7 @@ export default function Login({ onLoginSuccess }) {
                                 <ErrorBox
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
                                 >
                                     {error}
                                 </ErrorBox>
@@ -184,7 +214,7 @@ export default function Login({ onLoginSuccess }) {
                     </Form>
 
                     <SupportFooter>
-                        <button onClick={() => alert("Destek hattına bağlanılıyor...")}>
+                        <button type="button" onClick={() => alert("Destek hattına bağlanılıyor...")}>
                             <Headset size={16} /> Teknik Destek Talebi
                         </button>
                     </SupportFooter>
@@ -196,10 +226,13 @@ export default function Login({ onLoginSuccess }) {
     );
 }
 
-// STYLED COMPONENTS (Koyu Tema)
+/* ═══════════════════════════════════════════════════
+   STYLED COMPONENTS
+═══════════════════════════════════════════════════ */
+
 const Screen = styled.main`
     min-height: 100vh;
-    background-color: #020617; // Slate 950
+    background-color: #020617;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -225,7 +258,7 @@ const LoginCard = styled(motion.div)`
     width: 100%;
     max-width: 900px;
     min-height: 580px;
-    background: #0f172a; // Slate 900
+    background: #0f172a;
     border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -238,7 +271,7 @@ const LoginCard = styled(motion.div)`
 
 const SideDecor = styled.div`
     flex: 1;
-    background: rgba(30, 41, 59, 0.5); // Slate 800
+    background: rgba(30, 41, 59, 0.5);
     padding: 40px;
     display: flex;
     flex-direction: column;
@@ -334,7 +367,7 @@ const InputWrapper = styled.div`
         border-radius: 12px;
         transition: all 0.3s;
 
-        svg { margin-left: 15px; color: #64748b; }
+        svg { margin-left: 15px; color: #64748b; flex-shrink: 0; }
 
         input {
             width: 100%;
@@ -352,6 +385,8 @@ const InputWrapper = styled.div`
             color: #64748b;
             padding-right: 15px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
             &:hover { color: #3b82f6; }
         }
 
@@ -437,11 +472,12 @@ const Copyright = styled.div`
     font-size: 12px;
 `;
 
-const spin = keyframes` to { transform: rotate(360deg); } `;
+const spin = keyframes`to { transform: rotate(360deg); }`;
+
 const Loader = styled.div`
     width: 20px;
     height: 20px;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
     border-radius: 50%;
     animation: ${spin} 0.8s linear infinite;

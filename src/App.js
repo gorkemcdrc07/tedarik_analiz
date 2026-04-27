@@ -1,16 +1,19 @@
-﻿// src/App.js
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+﻿import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Login from "./Login";
 import Dashboard from "./Dashboard";
 import Layout from "./Layout";
+import Gorsel from "./gorsel";
+import Yetkisiz from "./Yetkisiz";
 
 // Sipariş
 import SiparisOlustur from "./SiparisIslemleri/SiparisOlustur";
+import ParsiyelSiparisOlustur from "./SiparisIslemleri/ParsiyelSiparisOlustur";
 import SiparisAcanlar from "./SiparisIslemleri/siparisAcanlar";
 import Arkas from "./SiparisIslemleri/Arkas";
 import Fasdat from "./SiparisIslemleri/Fasdat";
+import TeslimNoktalari from "./SiparisIslemleri/TeslimNoktalari";
 
 // Gelir / Gider
 import GelirEkleme from "./GelirGider/GelirEkleme";
@@ -24,101 +27,112 @@ import SeferFiyatlandirma from "./fiyatlandirma/seferFiyatlandirma";
 // Analiz
 import OzetTablo from "./analiz/ozetTablo";
 
+function getLoginUser() {
+    try {
+        return JSON.parse(localStorage.getItem("loginUser") || "null");
+    } catch {
+        return null;
+    }
+}
+
+function getFirstAllowedPath() {
+    const user = getLoginUser();
+
+    if (!user) return "/";
+
+    if (user.rol === "admin") {
+        return "/dashboard";
+    }
+
+    const allowedScreens = Array.isArray(user.allowedScreens)
+        ? user.allowedScreens
+        : [];
+
+    return allowedScreens.length > 0 ? allowedScreens[0] : "/yetkisiz";
+}
+
+function ProtectedPage({ children }) {
+    const location = useLocation();
+    const user = getLoginUser();
+
+    if (!user) {
+        return <Navigate to="/" replace />;
+    }
+
+    const currentPath = location.pathname;
+
+    const allowedScreens = Array.isArray(user.allowedScreens)
+        ? user.allowedScreens
+        : [];
+
+    if (user.rol === "admin") {
+        return <Layout>{children}</Layout>;
+    }
+
+    if (!allowedScreens.includes(currentPath)) {
+        return (
+            <Layout>
+                <Yetkisiz />
+            </Layout>
+        );
+    }
+
+    return <Layout>{children}</Layout>;
+}
+
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        const user = localStorage.getItem("kullanici");
-        if (user) setIsAuthenticated(true);
+        const user = getLoginUser();
+        setIsAuthenticated(!!user);
     }, []);
+
+    const handleLoginSuccess = () => {
+        setIsAuthenticated(true);
+    };
 
     return (
         <Router>
             <Routes>
-
-                {/* LOGIN */}
                 <Route
                     path="/"
                     element={
                         isAuthenticated ? (
-                            <Navigate to="/dashboard" />
+                            <Navigate to={getFirstAllowedPath()} replace />
                         ) : (
-                            <Login onLoginSuccess={() => setIsAuthenticated(true)} />
+                            <Login onLoginSuccess={handleLoginSuccess} />
                         )
                     }
                 />
 
-                {/* DASHBOARD */}
                 <Route
-                    path="/dashboard"
+                    path="/yetkisiz"
                     element={
-                        isAuthenticated ? (
-                            <Layout>
-                                <Dashboard />
-                            </Layout>
-                        ) : (
-                            <Navigate to="/" />
-                        )
+                        <Layout>
+                            <Yetkisiz />
+                        </Layout>
                     }
                 />
 
-                {/* SİPARİŞ */}
-                <Route
-                    path="/SiparisIslemleri/SiparisOlustur"
-                    element={isAuthenticated ? <Layout><SiparisOlustur /></Layout> : <Navigate to="/" />}
-                />
+                <Route path="/dashboard" element={<ProtectedPage><Dashboard /></ProtectedPage>} />
+                <Route path="/SiparisIslemleri/SiparisOlustur" element={<ProtectedPage><SiparisOlustur /></ProtectedPage>} />
+                <Route path="/SiparisIslemleri/ParsiyelSiparisOlustur" element={<ProtectedPage><ParsiyelSiparisOlustur /></ProtectedPage>} />
+                <Route path="/SiparisIslemleri/SiparisAcanlar" element={<ProtectedPage><SiparisAcanlar /></ProtectedPage>} />
+                <Route path="/SiparisIslemleri/Arkas" element={<ProtectedPage><Arkas /></ProtectedPage>} />
+                <Route path="/SiparisIslemleri/Fasdat" element={<ProtectedPage><Fasdat /></ProtectedPage>} />
+                <Route path="/SiparisIslemleri/TeslimNoktalari" element={<ProtectedPage><TeslimNoktalari /></ProtectedPage>} />
 
-                <Route
-                    path="/SiparisIslemleri/SiparisAcanlar"
-                    element={isAuthenticated ? <Layout><SiparisAcanlar /></Layout> : <Navigate to="/" />}
-                />
+                <Route path="/GelirGider/GelirEkleme" element={<ProtectedPage><GelirEkleme /></ProtectedPage>} />
+                <Route path="/GelirGider/GiderEkleme" element={<ProtectedPage><GiderEkleme /></ProtectedPage>} />
+                <Route path="/GelirGider/TestGelir" element={<ProtectedPage><TestGelir /></ProtectedPage>} />
+                <Route path="/GelirGider/TestGider" element={<ProtectedPage><TestGider /></ProtectedPage>} />
 
-                <Route
-                    path="/SiparisIslemleri/Arkas"
-                    element={isAuthenticated ? <Layout><Arkas /></Layout> : <Navigate to="/" />}
-                />
+                <Route path="/fiyatlandirma/seferFiyatlandirma" element={<ProtectedPage><SeferFiyatlandirma /></ProtectedPage>} />
+                <Route path="/analiz/ozet" element={<ProtectedPage><OzetTablo /></ProtectedPage>} />
+                <Route path="/gorsel" element={<ProtectedPage><Gorsel /></ProtectedPage>} />
 
-                <Route
-                    path="/SiparisIslemleri/Fasdat"
-                    element={isAuthenticated ? <Layout><Fasdat /></Layout> : <Navigate to="/" />}
-                />
-
-                {/* GELİR / GİDER */}
-                <Route
-                    path="/GelirGider/GelirEkleme"
-                    element={isAuthenticated ? <Layout><GelirEkleme /></Layout> : <Navigate to="/" />}
-                />
-
-                <Route
-                    path="/GelirGider/GiderEkleme"
-                    element={isAuthenticated ? <Layout><GiderEkleme /></Layout> : <Navigate to="/" />}
-                />
-
-                <Route
-                    path="/GelirGider/TestGelir"
-                    element={isAuthenticated ? <Layout><TestGelir /></Layout> : <Navigate to="/" />}
-                />
-
-                <Route
-                    path="/GelirGider/TestGider"
-                    element={isAuthenticated ? <Layout><TestGider /></Layout> : <Navigate to="/" />}
-                />
-
-                {/* FİYATLANDIRMA */}
-                <Route
-                    path="/fiyatlandirma/seferFiyatlandirma"
-                    element={isAuthenticated ? <Layout><SeferFiyatlandirma /></Layout> : <Navigate to="/" />}
-                />
-
-                {/* ANALİZ */}
-                <Route
-                    path="/analiz/ozet"
-                    element={isAuthenticated ? <Layout><OzetTablo /></Layout> : <Navigate to="/" />}
-                />
-
-                {/* FALLBACK */}
-                <Route path="*" element={<Navigate to="/" />} />
-
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </Router>
     );

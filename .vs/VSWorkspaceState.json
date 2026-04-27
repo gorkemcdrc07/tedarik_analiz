@@ -1,11 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\public",
-    "\\server",
     "\\src",
-    "\\src\\components"
+    "\\src\\SiparisIslemleri"
   ],
-  "SelectedNode": "\\package.json",
+  "SelectedNode": "\\src\\SiparisIslemleri\\tmsService.js",
   "PreviewInSolutionExplorer": false
 }

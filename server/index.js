@@ -58,9 +58,31 @@ app.post("/api/reel-api/tmsdespatchincomeexpenses/addincome", async (req, res) =
 });
 
 // ===============================
-// 3) TMS AUTH LOGIN (PROD)
-// Frontend çağıracağı URL:  /reel-auth/api/auth/login
-// Backend bunu TMS'e forward eder.
+// 3) TMS PROD / ADD ORDER  ✅ YENİ
+// ===============================
+app.post("/api/reel-api/tmsorders/add", async (req, res) => {
+    try {
+        const upstream = await fetch(
+            "https://tms.odaklojistik.com.tr/api/tmsorders/add",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: req.headers.authorization || "",
+                },
+                body: JSON.stringify(req.body),
+            }
+        );
+
+        const text = await upstream.text();
+        res.status(upstream.status).send(text);
+    } catch (err) {
+        res.status(500).json({ error: "Order proxy error", detail: err.message });
+    }
+});
+
+// ===============================
+// 4) TMS AUTH LOGIN (PROD)
 // ===============================
 app.post("/reel-auth/api/auth/login", async (req, res) => {
     try {
