@@ -969,7 +969,13 @@ export default function ParsiyelSiparisOlustur() {
     useEffect(() => {
         let interval;
         const fetch = async () => {
-            try { const t = await getTmsToken(); setTmsToken(t); } catch { }
+            try {
+                const t = await getTmsToken();
+                console.log("TOKEN GELDİ:", t);
+                setTmsToken(t);
+            } catch (err) {
+                console.error("TOKEN HATASI:", err);
+            }
         };
         fetch();
         interval = setInterval(fetch, 300000);
