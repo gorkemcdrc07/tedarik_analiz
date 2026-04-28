@@ -1081,15 +1081,14 @@ export default function ParsiyelSiparisOlustur() {
                         waybillNumbers: []
                     }]
                 };
-                const res = await fetch("http://localhost:5000/api/reel-api/tmsorders/add", {
+                const res = await fetch(process.env.REACT_APP_TMS_ORDER_ADD_URL, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${tmsToken}`
+                        Authorization: `Bearer ${tmsToken}`,
                     },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify(body),
                 });
-
                 const text = await res.text();
 
                 if (!res.ok) {

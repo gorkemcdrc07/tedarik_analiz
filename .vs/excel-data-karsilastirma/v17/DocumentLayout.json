@@ -3,8 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\supabaseClient.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\supabaseClient.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\SiparisIslemleri\\ParsiyelSiparisOlustur.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\SiparisIslemleri\\ParsiyelSiparisOlustur.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\server\\index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:server\\index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\SiparisIslemleri\\ParsiyelSiparisOlustur.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
@@ -22,7 +30,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -38,20 +46,46 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "supabaseClient.js",
+              "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\supabaseClient.js",
+              "RelativeDocumentMoniker": "src\\supabaseClient.js",
+              "ToolTip": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\supabaseClient.js",
+              "RelativeToolTip": "src\\supabaseClient.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-04-28T07:55:59.696Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "index.js",
+              "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\server\\index.js",
+              "RelativeDocumentMoniker": "server\\index.js",
+              "ToolTip": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\server\\index.js",
+              "RelativeToolTip": "server\\index.js",
+              "ViewState": "AgIAADYAAAAAAAAAAAAcwEAAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2026-04-28T07:06:59.615Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "tmsService.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\SiparisIslemleri\\tmsService.js",
               "RelativeDocumentMoniker": "src\\SiparisIslemleri\\tmsService.js",
               "ToolTip": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\SiparisIslemleri\\tmsService.js",
               "RelativeToolTip": "src\\SiparisIslemleri\\tmsService.js",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAhAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2026-04-27T08:54:00.874Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "ParsiyelSiparisOlustur.css",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\SiparisIslemleri\\ParsiyelSiparisOlustur.css",
               "RelativeDocumentMoniker": "src\\SiparisIslemleri\\ParsiyelSiparisOlustur.css",
@@ -64,13 +98,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "ParsiyelSiparisOlustur.js",
               "DocumentMoniker": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\SiparisIslemleri\\ParsiyelSiparisOlustur.js",
               "RelativeDocumentMoniker": "src\\SiparisIslemleri\\ParsiyelSiparisOlustur.js",
               "ToolTip": "C:\\Users\\Gorkem.Cadirci\\excel-data-karsilastirma\\src\\SiparisIslemleri\\ParsiyelSiparisOlustur.js",
               "RelativeToolTip": "src\\SiparisIslemleri\\ParsiyelSiparisOlustur.js",
-              "ViewState": "AgIAAIMFAAAAAAAAAAAWwJ4FAAApAAAAAAAAAA==",
+              "ViewState": "AgIAACIEAAAAAAAAAAAowC0EAAA8AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2026-04-27T06:22:54.011Z",
               "EditorCaption": ""

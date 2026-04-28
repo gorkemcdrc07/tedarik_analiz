@@ -1,9 +1,11 @@
 {
   "ExpandedNodes": [
     "",
+    "\\api",
+    "\\server",
     "\\src",
     "\\src\\SiparisIslemleri"
   ],
-  "SelectedNode": "\\src\\SiparisIslemleri\\tmsService.js",
+  "SelectedNode": "\\server\\index.js",
   "PreviewInSolutionExplorer": false
 }
