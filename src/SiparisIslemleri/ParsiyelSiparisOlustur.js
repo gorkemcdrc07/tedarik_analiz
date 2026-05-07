@@ -987,6 +987,46 @@ export default function ParsiyelSiparisOlustur() {
         return projectOptions.filter((i) => i.FirmaUnvani === name).map((i) => ({ value: i.ProjeAdi, label: i.ProjeAdi, raw: i }));
     };
 
+    const getNextCustomerCounter = async (customerName) => {
+        const today = getTodayNumber();
+
+        const { data, error } = await supabase
+            .from("siparis_sayaclari")
+            .select("id, son_sayac")
+            .eq("musteri_adi", customerName)
+            .eq("tarih", today)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        if (!data) {
+            const { data: inserted, error: insertError } = await supabase
+                .from("siparis_sayaclari")
+                .insert({
+                    musteri_adi: customerName,
+                    tarih: today,
+                    son_sayac: 1,
+                })
+                .select("son_sayac")
+                .single();
+
+            if (insertError) throw insertError;
+
+            return inserted.son_sayac;
+        }
+
+        const nextCounter = data.son_sayac + 1;
+
+        const { error: updateError } = await supabase
+            .from("siparis_sayaclari")
+            .update({ son_sayac: nextCounter })
+            .eq("id", data.id);
+
+        if (updateError) throw updateError;
+
+        return nextCounter;
+    };
+
     const generateAutoNumbers = (list) => {
         const sc = {}, rc = {};
         return list.map((row) => {
@@ -1062,15 +1102,23 @@ export default function ParsiyelSiparisOlustur() {
                     continue;
                 }
 
+                const counter = await getNextCustomerCounter(row.musteriAdi);
+
+                const musteriSiparisNo = buildCustomerOrderNo(row.musteriAdi, counter);
+
+                const musteriReferansNo = row.plaka
+                    ? buildCustomerReferenceNo(row.musteriAdi, row.plaka, counter)
+                    : buildCustomerOrderNo(row.musteriAdi, counter);
+
                 const body = {
-                    referenceId: row.musteriSiparisNo,
+                    referenceId: musteriSiparisNo,
                     version: 0,
                     projectId: 605,
                     vehicleTypeId: getVehicleTypeId(row.istenilenAracTipi) || 1,
                     orderDate: row.siparisTarihi,
                     pickupDate: row.yuklemeTarihi,
                     deliveryDate: row.teslimTarihi,
-                    customerOrderNumber: row.musteriReferansNo,
+                    customerOrderNumber: musteriReferansNo,
                     lines: [{
                         pickupAddressId: 20607,
                         deliveryAddressReferenceId: "20607",
@@ -1118,7 +1166,7 @@ export default function ParsiyelSiparisOlustur() {
                     continue;
                 }
                 sent.push({
-                    title: row.musteriSiparisNo,
+                    title: musteriSiparisNo,
                     plate: row.plaka,
                     customer: row.musteriAdi,
                     project: row.proje
