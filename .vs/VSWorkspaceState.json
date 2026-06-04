@@ -2,9 +2,12 @@
   "ExpandedNodes": [
     "",
     "\\api",
+    "\\public",
     "\\server",
     "\\src",
+    "\\src\\GelirGider",
     "\\src\\SiparisIslemleri"
   ],
+  "SelectedNode": "\\public\\gider_sablon.xlsx",
   "PreviewInSolutionExplorer": false
 }
