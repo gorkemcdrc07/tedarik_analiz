@@ -85,10 +85,20 @@ const tryParseDate = (val) => {
     const d1 = excelSerialToDate(val);
     if (d1) return d1;
 
-    const d2 = new Date(val);
+    const raw = String(val).trim();
+
+    // 16.06.2026 / 16/06/2026 / 16-06-2026 formatlarını okur
+    const trMatch = raw.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+
+    if (trMatch) {
+        const [, day, month, year] = trMatch;
+        const d = new Date(Number(year), Number(month) - 1, Number(day));
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    const d2 = new Date(raw);
     return isNaN(d2.getTime()) ? null : d2;
 };
-
 const toShortTR = (date) => (date ? date.toLocaleDateString("tr-TR") : "");
 const addDays = (date, days) => new Date(date.getTime() + days * 86400000);
 

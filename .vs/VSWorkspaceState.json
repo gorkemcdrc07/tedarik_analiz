@@ -5,9 +5,8 @@
     "\\public",
     "\\server",
     "\\src",
-    "\\src\\GelirGider",
     "\\src\\SiparisIslemleri"
   ],
-  "SelectedNode": "\\public\\gider_sablon.xlsx",
+  "SelectedNode": "\\src\\SiparisIslemleri\\SiparisOlustur.js",
   "PreviewInSolutionExplorer": false
 }
