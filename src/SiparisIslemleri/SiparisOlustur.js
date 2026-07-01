@@ -67,10 +67,14 @@ const FIELD_OVERLAY_MAP = {
 
 const SELECT_COLS = Object.keys(FIELD_OVERLAY_MAP).join(", ");
 const BALLOG_CARI_ID = "63625";
+const BALLOG_TABLE = "ballog_teslim_noktalari";
+const BALLOG_CARI_COLUMN = "cari_hesap_id";
 
 const emptyRow = () => HEADERS.reduce((acc, key) => ({ ...acc, [key]: "" }), {});
 const sortTr = (a, b) => String(a).localeCompare(String(b), "tr", { sensitivity: "base" });
 const normalize = (s) => String(s ?? "").replace(/\s+/g, " ").trim();
+const normalizeHeader = (s) => normalize(s).toLocaleLowerCase("tr");
+const normalizeKey = (s) => normalize(s).toLocaleUpperCase("tr");
 
 const excelSerialToDate = (val) => {
     const n = Number(val);
@@ -231,7 +235,7 @@ function BallogBanner() {
                         BALLOG
                     </span>
                     <span className="so-ballog-banner__text">
-                        Özel mod aktif — Cari ID <strong>{BALLOG_CARI_ID}</strong> otomatik atanıyor, adresler filtrelenmiş havuzdan eşleşiyor.
+                        Özel mod aktif — Cari ID <strong>{BALLOG_CARI_ID}</strong> otomatik atanıyor, adresler BALLOG teslim noktası tablosundan eşleşiyor.
                     </span>
                 </div>
                 <Shield size={16} className="so-ballog-banner__icon" />
@@ -247,11 +251,14 @@ export default function SiparisOlustur() {
     const [error, setError] = useState("");
     const [lastFile, setLastFile] = useState(null);
     const fileInputRef = useRef(null);
+    const ballogFileInputRef = useRef(null);
 
     const [projects, setProjects] = useState([]);
     const [projectsLoading, setProjectsLoading] = useState(false);
     const [projectsError, setProjectsError] = useState("");
     const [overlayLoading, setOverlayLoading] = useState(false);
+    const [ballogImporting, setBallogImporting] = useState(false);
+    const [ballogImportResult, setBallogImportResult] = useState(null);
 
     // Download progress state
     const [dlPhase, setDlPhase] = useState(null); // null | "template"|"fetch"|"build"|"done"
@@ -487,9 +494,180 @@ export default function SiparisOlustur() {
             total: workingRows.length,
             matchedCount: matched.length,
             unmatchedCount: unmatched.length,
-            matchedSamples: matched.slice(0, 20).map((r) => ({ rowIndex: r.rowIndex, before: r.before, matchedAdresAdi: r.matchedAdresAdi, matchedAdresId: r.matchedAdresId, matchedCariId: r.matchedCariId })),
-            unmatchedSamples: unmatched.slice(0, 20).map((r) => ({ rowIndex: r.rowIndex, before: r.before || "—", suggestions: r.suggestions || [] })),
+            matchedSamples: matched.slice(0, 20).map((r) => ({
+                rowIndex: r.rowIndex,
+                before: r.before,
+                matchedAdresAdi: r.matchedAdresAdi,
+                matchedAdresId: r.matchedAdresId,
+                matchedCariId: r.matchedCariId,
+                manual: !!r.manual,
+            })),
+            unmatchedSamples: unmatched.slice(0, 20).map((r) => ({
+                rowIndex: r.rowIndex,
+                before: r.before || "—",
+                suggestions: r.suggestions || [],
+            })),
         };
+    };
+
+    const handleSuggestionSelect = (label, rowIndex, suggestion) => {
+        const applySelection = (results) => results.map((r) => {
+            if (r.rowIndex !== rowIndex) return r;
+            return {
+                ...r,
+                ok: true,
+                manual: true,
+                matchedAdresAdi: suggestion.adres_adi,
+                matchedAdresId: suggestion.adres_id,
+                matchedCariId: suggestion.cari_hesap_id,
+                score: suggestion.score,
+                suggestions: [],
+            };
+        });
+
+        if (label === "yukleme") {
+            setMatchResultsYukleme((prev) => {
+                const updated = applySelection(prev);
+                setMatchPreviewYukleme(buildPreview(updated, rows));
+                return updated;
+            });
+            return;
+        }
+
+        setMatchResults((prev) => {
+            const updated = applySelection(prev);
+            setMatchPreview(buildPreview(updated, rows));
+            return updated;
+        });
+    };
+
+    const getAdresSelectCols = () => {
+        if (!isBallog) return "adres_id, adres_adi, cari_hesap_id";
+        return BALLOG_CARI_COLUMN === "cari_hesap_id"
+            ? "adres_id, adres_adi, cari_hesap_id"
+            : `adres_id, adres_adi, ${BALLOG_CARI_COLUMN}`;
+    };
+
+    const pickBallogFile = () => {
+        if (!isBallog) {
+            setError("Teslim noktası eklemek için BALLOG projesini seçmelisiniz.");
+            return;
+        }
+        ballogFileInputRef.current?.click();
+    };
+
+    const parseBallogDeliveryFile = async (file) => {
+        if (!isExcelFile(file)) throw new Error("Lütfen .xlsx / .xls dosyası yükleyin.");
+
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+        if (!aoa || aoa.length === 0) throw new Error("Yüklenen dosya boş görünüyor.");
+
+        const [rawHeaders, ...body] = aoa;
+        const headerMap = {};
+        rawHeaders.forEach((h, index) => {
+            const key = normalizeHeader(h);
+            if (key) headerMap[key] = index;
+        });
+
+        const adresIdx = headerMap["adres adı"];
+        const cariIdx = headerMap["cari hesap id"];
+        const idIdx = headerMap["id"];
+
+        const missing = [];
+        if (adresIdx === undefined) missing.push("Adres Adı");
+        if (cariIdx === undefined) missing.push("Cari Hesap ID");
+        if (idIdx === undefined) missing.push("Id");
+        if (missing.length) throw new Error(`Eksik başlık: ${missing.join(", ")}. Lütfen doğru BALLOG teslim noktası dosyasını yükleyin.`);
+
+        const unique = new Map();
+        body.forEach((row) => {
+            const adresId = normalize(row[idIdx]);
+            const adresAdi = normalize(row[adresIdx]);
+            const cariHesap = normalize(row[cariIdx]) || BALLOG_CARI_ID;
+            if (!adresId || !adresAdi) return;
+
+            const key = normalizeKey(adresId);
+            if (!unique.has(key)) {
+                unique.set(key, {
+                    adres_id: adresId,
+                    adres_adi: adresAdi,
+                    [BALLOG_CARI_COLUMN]: cariHesap,
+                });
+            }
+        });
+
+        const parsed = Array.from(unique.values());
+        if (!parsed.length) throw new Error("Dosyada eklenecek teslim noktası bulunamadı.");
+        return parsed;
+    };
+
+    const handleBallogTeslimNoktasiImport = async (file) => {
+        setError("");
+        setBallogImportResult(null);
+        setBallogImporting(true);
+
+        try {
+            const parsedRows = await parseBallogDeliveryFile(file);
+            const pageSize = 1000;
+
+            const { count, error: countError } = await supabase
+                .from(BALLOG_TABLE)
+                .select("adres_id, adres_adi", { count: "exact", head: true });
+            if (countError) throw countError;
+
+            const totalPages = Math.ceil((count || 0) / pageSize);
+            let existingRows = [];
+
+            for (let page = 0; page < totalPages; page++) {
+                const from = page * pageSize;
+                const { data, error } = await supabase
+                    .from(BALLOG_TABLE)
+                    .select("adres_id, adres_adi")
+                    .range(from, from + pageSize - 1);
+                if (error) throw error;
+                existingRows = existingRows.concat(data || []);
+            }
+
+            const existingIds = new Set(existingRows.map((r) => normalizeKey(r?.adres_id)));
+            const existingNames = new Set(existingRows.map((r) => normalizeKey(r?.adres_adi)));
+
+            const rowsToInsert = parsedRows.filter((r) => {
+                const idKey = normalizeKey(r.adres_id);
+                const nameKey = normalizeKey(r.adres_adi);
+                return !existingIds.has(idKey) && !existingNames.has(nameKey);
+            });
+
+            if (!rowsToInsert.length) {
+                setBallogImportResult({ total: parsedRows.length, inserted: 0, skipped: parsedRows.length });
+                return;
+            }
+
+            const insertChunkSize = 500;
+            for (let i = 0; i < rowsToInsert.length; i += insertChunkSize) {
+                const chunk = rowsToInsert.slice(i, i + insertChunkSize);
+                const { error } = await supabase.from(BALLOG_TABLE).insert(chunk);
+                if (error) throw error;
+            }
+
+            setBallogImportResult({
+                total: parsedRows.length,
+                inserted: rowsToInsert.length,
+                skipped: parsedRows.length - rowsToInsert.length,
+            });
+        } catch (e) {
+            setError(e.message || "BALLOG teslim noktaları eklenirken hata oluştu.");
+        } finally {
+            setBallogImporting(false);
+        }
+    };
+
+    const onBallogFileChange = (e) => {
+        const f = e.target.files?.[0];
+        if (f) handleBallogTeslimNoktasiImport(f);
+        e.target.value = "";
     };
 
     const handleEslesmeYap = async () => {
@@ -509,26 +687,34 @@ export default function SiparisOlustur() {
             } catch (_) { }
 
             const pageSize = 1000;
-            let countQuery = supabase.from("Teslim_Noktalari").select("*", { count: "exact", head: true });
-            if (isBallog) countQuery = countQuery.eq("cari_hesap_id", BALLOG_CARI_ID);
-            const { count, error: countError } = await countQuery;
+            const adresTableName = isBallog ? BALLOG_TABLE : "Teslim_Noktalari";
+
+            const { count, error: countError } = await supabase
+                .from(adresTableName)
+                .select("*", { count: "exact", head: true });
+
             if (countError) throw countError;
 
             const totalPages = Math.ceil((count || 0) / pageSize);
             let allAdresler = [];
+
             for (let page = 0; page < totalPages; page++) {
                 const from = page * pageSize;
-                let q = supabase.from("Teslim_Noktalari").select("adres_id, adres_adi, cari_hesap_id").range(from, from + pageSize - 1);
-                if (isBallog) q = q.eq("cari_hesap_id", BALLOG_CARI_ID);
-                const { data, error } = await q;
+
+                const { data, error } = await supabase
+                    .from(adresTableName)
+                    .select(getAdresSelectCols())
+                    .range(from, from + pageSize - 1);
+
                 if (error) throw error;
+
                 allAdresler = allAdresler.concat(data || []);
             }
 
             const keyFn = (s) => String(s ?? "").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim().toLocaleUpperCase("tr");
             const byAdresAdi = new Map();
             const candidateList = allAdresler.map((a) => {
-                const item = { adres_id: a?.adres_id ?? "", adres_adi: a?.adres_adi ?? "", cari_hesap_id: a?.cari_hesap_id ?? "" };
+                const item = { adres_id: a?.adres_id ?? "", adres_adi: a?.adres_adi ?? "", cari_hesap_id: a?.cari_hesap_id ?? a?.[BALLOG_CARI_COLUMN] ?? "" };
                 byAdresAdi.set(keyFn(item.adres_adi), item);
                 return { ...item, _clean: cleanAddr(item.adres_adi) };
             });
@@ -582,6 +768,7 @@ export default function SiparisOlustur() {
         setRows([]); setLastFile(null); setError("");
         setMatchResults([]);
         setMatchPreview({ total: 0, matchedCount: 0, unmatchedCount: 0, matchedSamples: [], unmatchedSamples: [] });
+        setBallogImportResult(null);
         setMatchModalOpen(false);
     };
 
@@ -614,6 +801,7 @@ export default function SiparisOlustur() {
                                 <div className="so-match-meta">
                                     <span className="so-tag">adres_id: {s.matchedAdresId}</span>
                                     <span className="so-tag">cari_id: {s.matchedCariId}</span>
+                                    {s.manual && <span className="so-tag">manuel seçildi</span>}
                                 </div>
                             </li>
                         ))}
@@ -647,9 +835,18 @@ export default function SiparisOlustur() {
                                 {!!s.suggestions?.length && (
                                     <div className="so-suggestions">
                                         {s.suggestions.map((sg, i) => (
-                                            <span key={i} className="so-suggestion">
-                                                {sg.adres_adi} · %{Math.round(sg.score * 100)}
-                                            </span>
+                                            <button
+                                                key={`${s.rowIndex}-${label}-${sg.adres_id}-${i}`}
+                                                type="button"
+                                                className="so-suggestion so-suggestion--button"
+                                                onClick={() => handleSuggestionSelect(label, s.rowIndex, sg)}
+                                                title={`${sg.adres_adi} seç ve tabloya adres_id olarak uygula`}
+                                            >
+                                                <CheckCircle2 size={13} />
+                                                <span>{sg.adres_adi}</span>
+                                                <strong>%{Math.round(sg.score * 100)}</strong>
+                                                <small>adres_id: {sg.adres_id}</small>
+                                            </button>
                                         ))}
                                     </div>
                                 )}
@@ -740,6 +937,26 @@ export default function SiparisOlustur() {
                             <Download size={15} />
                             Şablon İndir
                         </button>
+                        {isBallog && (
+                            <>
+                                <button
+                                    className="so-btn so-btn--ballog"
+                                    onClick={pickBallogFile}
+                                    disabled={ballogImporting}
+                                    title="BALLOG teslim noktası ekle"
+                                >
+                                    <UploadCloud size={15} />
+                                    {ballogImporting ? "Ekleniyor..." : "Teslim Noktası Ekle"}
+                                </button>
+                                <input
+                                    ref={ballogFileInputRef}
+                                    type="file"
+                                    accept=".xlsx,.xls,.xlsm"
+                                    onChange={onBallogFileChange}
+                                    hidden
+                                />
+                            </>
+                        )}
                         <button
                             className={`so-btn${isBallog ? " so-btn--ballog" : ""}`}
                             onClick={handleEslesmeYap}
@@ -770,7 +987,7 @@ export default function SiparisOlustur() {
                 </div>
 
                 {/* ── Alerts ── */}
-                {(error || lastFile) && (
+                {(error || lastFile || ballogImportResult) && (
                     <div className="so-alerts">
                         {error && (
                             <div className="so-alert so-alert--error">
@@ -781,6 +998,12 @@ export default function SiparisOlustur() {
                             <div className="so-alert so-alert--success">
                                 <CheckCircle2 size={15} />
                                 Yüklü dosya: <strong>{lastFile.name}</strong>
+                            </div>
+                        )}
+                        {ballogImportResult && (
+                            <div className="so-alert so-alert--success">
+                                <CheckCircle2 size={15} />
+                                BALLOG teslim noktası aktarımı: <strong>{ballogImportResult.inserted}</strong> yeni kayıt eklendi, <strong>{ballogImportResult.skipped}</strong> kayıt zaten vardı.
                             </div>
                         )}
                     </div>

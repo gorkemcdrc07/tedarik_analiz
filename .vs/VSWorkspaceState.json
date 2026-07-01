@@ -2,11 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\api",
-    "\\public",
     "\\server",
     "\\src",
     "\\src\\SiparisIslemleri"
   ],
-  "SelectedNode": "\\src\\SiparisIslemleri\\SiparisOlustur.css",
+  "SelectedNode": "\\src\\SiparisIslemleri\\SiparisOlustur.js",
   "PreviewInSolutionExplorer": false
 }
