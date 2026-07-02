@@ -127,15 +127,39 @@ const enrichRow = (row) => ({
     ["İstenilen Araç Tipi"]: mapVehicleTypeToCode(row["İstenilen Araç Tipi"]),
 });
 
-const cleanAddr = (s) =>
+const foldTr = (s) =>
     String(s ?? "")
-        .toLocaleLowerCase("tr")
-        .replace(/[\(\)\[\]\{\}\-_.]/g, " ")
+        .replace(/İ/g, "i")
+        .replace(/I/g, "i")
+        .replace(/ı/g, "i")
+        .replace(/Ğ/g, "g")
+        .replace(/ğ/g, "g")
+        .replace(/Ü/g, "u")
+        .replace(/ü/g, "u")
+        .replace(/Ş/g, "s")
+        .replace(/ş/g, "s")
+        .replace(/Ö/g, "o")
+        .replace(/ö/g, "o")
+        .replace(/Ç/g, "c")
+        .replace(/ç/g, "c")
+        .toLowerCase();
+
+const cleanAddr = (s) =>
+    foldTr(s)
+        .replace(/[^a-z0-9]+/g, " ")
         .replace(/\s+/g, " ")
         .trim();
 
+const compactAddr = (s) => cleanAddr(s).replace(/\s+/g, "");
+
+const addrTokens = (s) =>
+    cleanAddr(s)
+        .split(" ")
+        .map((x) => x.trim())
+        .filter(Boolean);
+
 const bigrams = (str) => {
-    const s = str.replace(/\s+/g, "");
+    const s = compactAddr(str);
     const arr = [];
     for (let i = 0; i < Math.max(0, s.length - 1); i++) arr.push(s.slice(i, i + 2));
     return arr;
@@ -157,11 +181,29 @@ const diceCoefficient = (a, b) => {
     return (2 * inter) / (A.length + B.length);
 };
 
+const tokenSimilarity = (a, b) => {
+    const A = new Set(addrTokens(a));
+    const B = new Set(addrTokens(b));
+    if (!A.size || !B.size) return 0;
+    let inter = 0;
+    A.forEach((t) => { if (B.has(t)) inter++; });
+    return inter / Math.max(A.size, B.size);
+};
+
 const scoreSimilarity = (q, cand) => {
-    if (!q || !cand) return 0;
-    if (q === cand) return 1;
-    if (q.includes(cand) || cand.includes(q)) return 0.95;
-    return diceCoefficient(q, cand);
+    const a = cleanAddr(q);
+    const b = cleanAddr(cand);
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+
+    const ac = compactAddr(a);
+    const bc = compactAddr(b);
+    if (ac === bc) return 0.99;
+    if (ac.includes(bc) || bc.includes(ac)) return 0.96;
+
+    const dice = diceCoefficient(a, b);
+    const token = tokenSimilarity(a, b);
+    return Math.max(dice, token);
 };
 
 /* ── Template Download Progress Modal ── */
@@ -470,8 +512,8 @@ export default function SiparisOlustur() {
     };
 
     const runMatch = (workingRows, sourceCol, candidateList, byAdresAdi) => {
-        const key = (s) => String(s ?? "").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim().toLocaleUpperCase("tr");
-        const SIM_THRESHOLD = 0.78;
+        const key = (s) => compactAddr(String(s ?? "").replace(/\u00A0/g, " "));
+        const SIM_THRESHOLD = 0.55;
         return workingRows.map((row, idx) => {
             const qRaw = row[sourceCol];
             const exact = byAdresAdi.get(key(qRaw));
@@ -481,7 +523,7 @@ export default function SiparisOlustur() {
                 .map((c) => ({ ...c, _score: scoreSimilarity(qClean, c._clean) }))
                 .filter((x) => x._score >= SIM_THRESHOLD)
                 .sort((a, b) => b._score - a._score)
-                .slice(0, 3)
+                .slice(0, 5)
                 .map((s) => ({ adres_adi: s.adres_adi, adres_id: s.adres_id, cari_hesap_id: s.cari_hesap_id, score: Number(s._score.toFixed(2)) }));
             return { rowIndex: idx, ok: false, before: qRaw, score: 0, suggestions };
         });
@@ -711,7 +753,7 @@ export default function SiparisOlustur() {
                 allAdresler = allAdresler.concat(data || []);
             }
 
-            const keyFn = (s) => String(s ?? "").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim().toLocaleUpperCase("tr");
+            const keyFn = (s) => compactAddr(String(s ?? "").replace(/\u00A0/g, " "));
             const byAdresAdi = new Map();
             const candidateList = allAdresler.map((a) => {
                 const item = { adres_id: a?.adres_id ?? "", adres_adi: a?.adres_adi ?? "", cari_hesap_id: a?.cari_hesap_id ?? a?.[BALLOG_CARI_COLUMN] ?? "" };

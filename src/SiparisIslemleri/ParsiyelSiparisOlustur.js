@@ -96,6 +96,12 @@ function normalizeText(value) {
     return String(value || "").trim().replace(/\s+/g, " ").toUpperCase();
 }
 
+function normalizeSearch(value) {
+    return String(value || "")
+        .toLocaleLowerCase("tr-TR")
+        .trim();
+}
+
 function isNumericWord(word) {
     return /^\d+$/.test(String(word || "").trim());
 }
@@ -856,9 +862,9 @@ function SearchableSelect({ value, onSelect, options = [], placeholder = "Seçin
     const [dropStyle, setDropStyle] = useState({});
 
     const filtered = useMemo(() => {
-        const q = query.toLowerCase().trim();
+        const q = normalizeSearch(query);
         if (!q) return options;
-        return options.filter((item) => String(item[labelKey] || "").toLowerCase().includes(q));
+        return options.filter((item) => normalizeSearch(item[labelKey]).includes(q));
     }, [options, query, labelKey]);
 
     useEffect(() => {
@@ -1070,8 +1076,8 @@ export default function ParsiyelSiparisOlustur() {
 
     const filteredRows = useMemo(() => {
         if (!search.trim()) return rows;
-        const q = search.toLowerCase();
-        return rows.filter((row) => Object.values(row).some((v) => String(v).toLowerCase().includes(q)));
+        const q = normalizeSearch(search);
+        return rows.filter((row) => Object.values(row).some((v) => normalizeSearch(v).includes(q)));
     }, [rows, search]);
 
     const handleSave = async () => {
