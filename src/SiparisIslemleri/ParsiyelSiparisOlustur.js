@@ -124,6 +124,22 @@ function buildCustomerReferenceNo(customerName, plate, count) {
     return `${firstWord}-${cleanPlate}-${count}`;
 }
 
+// ✅ Giriş yapan kullanıcının admin olup olmadığını localStorage'dan okur.
+// Login.jsx içinde "loginUser" (obje, .rol alanı) ve "userRole" (string) olarak saklanıyor.
+function getCurrentUserRole() {
+    try {
+        const loginUserRaw = localStorage.getItem("loginUser");
+        if (loginUserRaw) {
+            const parsed = JSON.parse(loginUserRaw);
+            if (parsed?.rol) return String(parsed.rol).trim().toLowerCase();
+        }
+    } catch {
+        // loginUser bozuksa userRole fallback'ine düş
+    }
+    const fallback = localStorage.getItem("userRole");
+    return fallback ? String(fallback).trim().toLowerCase() : "";
+}
+
 /* ═══════════════════════ STYLES ═══════════════════════ */
 const styles = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -321,6 +337,18 @@ button, input, select, textarea {
 .ps-btn--ghost:hover {
     background: var(--surface-hover);
     color: var(--text-1);
+}
+
+.ps-btn--admin {
+    background: var(--violet, #7c5cf7);
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(124,92,247,0.24);
+}
+
+.ps-btn:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none !important;
 }
 
 /* kaldırıldı ama kalsın hata vermez */
@@ -819,6 +847,22 @@ button, input, select, textarea {
     font-weight: 600;
 }
 
+/* FORM ROW (modallar için) */
+.ps-form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.ps-form-row label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-3);
+}
+
 /* RESPONSIVE */
 @media (max-width: 1300px) {
     .ps-metrics {
@@ -919,10 +963,28 @@ export default function ParsiyelSiparisOlustur() {
     const [loadError, setLoadError] = useState("");
     const [tmsToken, setTmsToken] = useState("");
     const [resultModal, setResultModal] = useState(null);
+
+    // ✅ Rol bazlı görünürlük — sadece "admin" rolündeki kullanıcılar "Proje Ekle" butonunu görür
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    // ✅ Proje Ekle modalı state'leri
+    const [showAddProject, setShowAddProject] = useState(false);
+    const [newProject, setNewProject] = useState({
+        ID: "",
+        FirmaUnvani: "",
+        ProjeAdi: "",
+    });
+    const [addingProject, setAddingProject] = useState(false);
+    const [addProjectError, setAddProjectError] = useState("");
+
     // ✅ Sütun genişlik state
     const [columnWidths, setColumnWidths] = useState(
         Object.fromEntries(columns.map((c) => [c.key, c.minWidth]))
     );
+
+    useEffect(() => {
+        setIsAdmin(getCurrentUserRole() === "admin");
+    }, []);
 
     const startResizeColumn = (key, startX) => {
         const startWidth = columnWidths[key] || 120;
@@ -949,27 +1011,30 @@ export default function ParsiyelSiparisOlustur() {
         document.addEventListener("mousemove", onMouseMove);
         document.addEventListener("mouseup", onMouseUp);
     };
+
+    // ✅ Fonksiyona çıkarıldı: hem ilk yüklemede hem yeni proje eklendikten sonra tekrar çağrılabiliyor
+    const fetchProjectsAndCustomers = async () => {
+        setLoadingProjects(true);
+        setLoadError("");
+        const { data, error } = await supabase
+            .from("Proje_Tanitim_Karti")
+            .select("ID, FirmaUnvani, ProjeAdi")
+            .order("FirmaUnvani", { ascending: true })
+            .order("ProjeAdi", { ascending: true });
+        if (error) {
+            setProjectOptions([]); setCustomerOptions([]);
+            setLoadError("Müşteri ve proje listesi alınamadı.");
+        } else {
+            const fetched = data || [];
+            setProjectOptions(fetched);
+            const uniq = Array.from(new Map(fetched.filter((i) => i.FirmaUnvani).map((i) => [i.FirmaUnvani, { value: i.FirmaUnvani, label: i.FirmaUnvani }])).values());
+            setCustomerOptions(uniq);
+        }
+        setLoadingProjects(false);
+    };
+
     useEffect(() => {
-        const fetchProjects = async () => {
-            setLoadingProjects(true);
-            setLoadError("");
-            const { data, error } = await supabase
-                .from("Proje_Tanitim_Karti")
-                .select("ID, FirmaUnvani, ProjeAdi")
-                .order("FirmaUnvani", { ascending: true })
-                .order("ProjeAdi", { ascending: true });
-            if (error) {
-                setProjectOptions([]); setCustomerOptions([]);
-                setLoadError("Müşteri ve proje listesi alınamadı.");
-            } else {
-                const fetched = data || [];
-                setProjectOptions(fetched);
-                const uniq = Array.from(new Map(fetched.filter((i) => i.FirmaUnvani).map((i) => [i.FirmaUnvani, { value: i.FirmaUnvani, label: i.FirmaUnvani }])).values());
-                setCustomerOptions(uniq);
-            }
-            setLoadingProjects(false);
-        };
-        fetchProjects();
+        fetchProjectsAndCustomers();
     }, []);
 
     useEffect(() => {
@@ -1073,6 +1138,77 @@ export default function ParsiyelSiparisOlustur() {
     const duplicateRow = (index) => setRows((prev) => { const next = [...prev]; next.splice(index + 1, 0, { ...prev[index] }); return generateAutoNumbers(next); });
     const removeRow = (index) => setRows((prev) => { if (prev.length === 1) return [emptyRow()]; return generateAutoNumbers(prev.filter((_, i) => i !== index)); });
     const resetTable = () => setRows([emptyRow()]);
+
+    // ✅ Yeni proje/firma kaydı ekleme (sadece admin butonundan tetiklenir)
+    // ✅ Aynı ID varsa uyarı verir ve kayıt atmaz.
+    const handleAddProject = async () => {
+        const rawId = String(newProject.ID || "").trim();
+        const id = Number(rawId);
+        const firma = newProject.FirmaUnvani.trim();
+        const proje = newProject.ProjeAdi.trim();
+
+        if (!rawId || Number.isNaN(id) || id <= 0 || !firma || !proje) {
+            setAddProjectError("Geçerli bir ID, firma unvanı ve proje adı zorunludur.");
+            return;
+        }
+
+        setAddingProject(true);
+        setAddProjectError("");
+
+        try {
+            // Önce mevcut kayıt kontrol edilir.
+            const { data: existingProjects, error: checkError } = await supabase
+                .from("Proje_Tanitim_Karti")
+                .select("ID, FirmaUnvani, ProjeAdi")
+                .eq("ID", id)
+                .limit(1);
+
+            if (checkError) {
+                setAddProjectError(`ID kontrolü yapılamadı: ${checkError.message}`);
+                return;
+            }
+
+            const existingProject = Array.isArray(existingProjects) ? existingProjects[0] : null;
+
+            if (existingProject) {
+                setAddProjectError(
+                    `Bu ID zaten kayıtlı. ID: ${existingProject.ID} | Firma: ${existingProject.FirmaUnvani || "-"} | Proje: ${existingProject.ProjeAdi || "-"}`
+                );
+                return;
+            }
+
+            const { error } = await supabase
+                .from("Proje_Tanitim_Karti")
+                .insert({
+                    ID: id,
+                    FirmaUnvani: firma,
+                    ProjeAdi: proje,
+                });
+
+            if (error) {
+                // Veritabanında unique constraint varsa, eş zamanlı denemelerde de aynı ID engellenir.
+                if (error.code === "23505") {
+                    setAddProjectError("Bu ID zaten kayıtlı. Aynı ID ile ikinci kayıt oluşturulamaz.");
+                    return;
+                }
+
+                setAddProjectError(`Proje eklenemedi: ${error.message}`);
+                return;
+            }
+
+            await fetchProjectsAndCustomers();
+            setNewProject({
+                ID: "",
+                FirmaUnvani: "",
+                ProjeAdi: "",
+            });
+            setShowAddProject(false);
+        } catch (err) {
+            setAddProjectError(`Beklenmeyen hata oluştu: ${err?.message || err}`);
+        } finally {
+            setAddingProject(false);
+        }
+    };
 
     const filteredRows = useMemo(() => {
         if (!search.trim()) return rows;
@@ -1404,6 +1540,115 @@ export default function ParsiyelSiparisOlustur() {
                         </div>
                     </div>
                 )}
+
+                {/* ✅ PROJE EKLE MODALI — sadece admin bu modalı açabilir */}
+                {showAddProject && (
+                    <div style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.65)",
+                        backdropFilter: "blur(8px)",
+                        zIndex: 999999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: 20
+                    }}>
+                        <div style={{
+                            width: "min(460px, 100%)",
+                            background: "var(--surface)",
+                            border: "1px solid var(--border-md)",
+                            borderRadius: "var(--r-2xl)",
+                            boxShadow: "var(--shadow-xl)",
+                            overflow: "hidden"
+                        }}>
+                            <div style={{
+                                padding: 22,
+                                borderBottom: "1px solid var(--border)",
+                                background: "linear-gradient(135deg, var(--accent-dim), transparent)"
+                            }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 18, fontWeight: 800, color: "var(--text-1)" }}>
+                                    <FolderKanban size={18} />
+                                    Yeni Proje / Firma Ekle
+                                </div>
+                                <div style={{ marginTop: 6, color: "var(--text-3)", fontSize: 12.5 }}>
+                                    Sadece yöneticiler yeni firma ve proje kaydı oluşturabilir.
+                                </div>
+                            </div>
+
+                            <div style={{ padding: "18px 22px" }}>
+                                <div className="ps-form-row">
+                                    <label>ID</label>
+                                    <input
+                                        type="number"
+                                        className="ps-field"
+                                        placeholder="Örn. 2068"
+                                        value={newProject.ID}
+                                        onChange={(e) =>
+                                            setNewProject((p) => ({
+                                                ...p,
+                                                ID: e.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+                                <div className="ps-form-row">
+                                    <label>Firma Unvanı</label>
+                                    <input
+                                        type="text"
+                                        className="ps-field"
+                                        placeholder="Örn. ACME LOJİSTİK A.Ş."
+                                        value={newProject.FirmaUnvani}
+                                        onChange={(e) => setNewProject((p) => ({ ...p, FirmaUnvani: e.target.value }))}
+                                    />
+                                </div>
+                                <div className="ps-form-row" style={{ marginBottom: 4 }}>
+                                    <label>Proje Adı</label>
+                                    <input
+                                        type="text"
+                                        className="ps-field"
+                                        placeholder="Örn. İSTANBUL DEPO PROJESİ"
+                                        value={newProject.ProjeAdi}
+                                        onChange={(e) => setNewProject((p) => ({ ...p, ProjeAdi: e.target.value }))}
+                                    />
+                                </div>
+
+                                {addProjectError && (
+                                    <div className="ps-banner is-error" style={{ marginTop: 12 }}>
+                                        ⚠ {addProjectError}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{
+                                padding: "0 22px 20px",
+                                display: "flex",
+                                justifyContent: "flex-end",
+                                gap: 8
+                            }}>
+                                <button
+                                    className="ps-btn ps-btn--ghost"
+                                    onClick={() => {
+                                        setShowAddProject(false);
+                                        setAddProjectError("");
+                                        setNewProject({ ID: "", FirmaUnvani: "", ProjeAdi: "" });
+                                    }}
+                                    disabled={addingProject}
+                                >
+                                    İptal
+                                </button>
+                                <button
+                                    className="ps-btn ps-btn--add"
+                                    onClick={handleAddProject}
+                                    disabled={addingProject}
+                                >
+                                    {addingProject ? "Kaydediliyor..." : "Kaydet"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="ps-container">
 
                     {/* ── HEADER ── */}
@@ -1415,6 +1660,11 @@ export default function ParsiyelSiparisOlustur() {
                                 <p className="ps-subtitle">Yeni lojistik taleplerinizi hızlıca oluşturun, müşteri bazlı proje seçin ve sipariş akışını yönetin.</p>
                             </div>
                             <div className="ps-actions">
+                                {isAdmin && (
+                                    <button className="ps-btn ps-btn--admin" onClick={() => setShowAddProject(true)}>
+                                        <FolderKanban size={16} />Proje Ekle
+                                    </button>
+                                )}
                                 <button className="ps-btn ps-btn--add" onClick={addRow}><Plus size={16} />Yeni Satır</button>
                                 <button className="ps-btn ps-btn--ghost" onClick={resetTable}><RotateCcw size={16} />Temizle</button>
                                 <button className="ps-btn ps-btn--export" onClick={handleSave}><Zap size={16} />REEL'e Aktar</button>
