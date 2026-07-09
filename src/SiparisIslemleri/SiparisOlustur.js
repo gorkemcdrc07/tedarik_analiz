@@ -70,10 +70,61 @@ const BALLOG_CARI_ID = "63625";
 const BALLOG_TABLE = "ballog_teslim_noktalari";
 const BALLOG_CARI_COLUMN = "cari_hesap_id";
 
+const DETAIL_FIELD_KEYS = {
+    cariUnvani: ["cari_unvani", "cari_unvan", "Cari_Unvani", "Cari_Unvan", "CariUnvani", "Cari Adı", "cari_adi", "unvan", "firma_unvani"],
+    vkn: ["vkn", "Vkn", "VKN", "vergi_no", "vergi_numarasi", "Vergi_No", "Vergi Numarası"],
+    il: ["il", "Il", "İl", "sehir", "şehir", "Sehir", "Şehir"],
+    ilce: ["ilce", "ilçe", "Ilce", "İlçe"],
+    mahalle: ["mahalle", "Mahalle", "mah"],
+    adres: ["adres", "Adres", "tam_adres", "Tam_Adres", "adres_detay", "Adres_Detay", "acik_adres"],
+    telefon: ["telefon", "Telefon", "tel", "gsm", "GSM"],
+    email: ["email", "e_mail", "Eposta", "E-Posta", "mail"],
+};
+
+const pickFirst = (obj, keys, fallback = "") => {
+    for (const key of keys) {
+        const val = obj?.[key];
+        if (val !== undefined && val !== null && String(val).trim() !== "") return normalize(val);
+    }
+    return fallback;
+};
+
+const buildCandidateDetails = (raw = {}) => ({
+    adres_id: normalize(raw?.adres_id ?? raw?.id ?? ""),
+    adres_adi: normalize(raw?.adres_adi ?? raw?.["Adres Adı"] ?? raw?.["adres adı"] ?? ""),
+    cari_hesap_id: normalize(raw?.cari_hesap_id ?? raw?.[BALLOG_CARI_COLUMN] ?? raw?.["cari hesap id"] ?? ""),
+    cari_unvani: pickFirst(raw, DETAIL_FIELD_KEYS.cariUnvani),
+    vkn: pickFirst(raw, DETAIL_FIELD_KEYS.vkn),
+    il: pickFirst(raw, DETAIL_FIELD_KEYS.il),
+    ilce: pickFirst(raw, DETAIL_FIELD_KEYS.ilce),
+    mahalle: pickFirst(raw, DETAIL_FIELD_KEYS.mahalle),
+    adres: pickFirst(raw, DETAIL_FIELD_KEYS.adres),
+    telefon: pickFirst(raw, DETAIL_FIELD_KEYS.telefon),
+    email: pickFirst(raw, DETAIL_FIELD_KEYS.email),
+});
+
+const detailRows = (item = {}) => [
+    ["Adres ID", item.adres_id],
+    ["Cari Hesap ID", item.cari_hesap_id],
+    ["Cari Ünvan", item.cari_unvani],
+    ["VKN", item.vkn],
+    ["İl", item.il],
+    ["İlçe", item.ilce],
+    ["Mahalle", item.mahalle],
+    ["Tam Adres", item.adres],
+    ["Telefon", item.telefon],
+    ["E-posta", item.email],
+].filter(([, value]) => normalize(value) !== "");
+
 const emptyRow = () => HEADERS.reduce((acc, key) => ({ ...acc, [key]: "" }), {});
 const sortTr = (a, b) => String(a).localeCompare(String(b), "tr", { sensitivity: "base" });
 const normalize = (s) => String(s ?? "").replace(/\s+/g, " ").trim();
-const normalizeHeader = (s) => normalize(s).toLocaleLowerCase("tr");
+const normalizeHeader = (s) =>
+    String(s ?? "")
+        .replace(/\u00A0/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLocaleLowerCase("tr");
 const normalizeKey = (s) => normalize(s).toLocaleUpperCase("tr");
 
 const excelSerialToDate = (val) => {
@@ -320,6 +371,7 @@ export default function SiparisOlustur() {
         matchedSamples: [], unmatchedSamples: [],
     });
     const [matchResultsYukleme, setMatchResultsYukleme] = useState([]);
+    const [editingMatchedKey, setEditingMatchedKey] = useState(null);
 
     const selectedProject = useMemo(
         () => projects.find((p) => p.name === projeAdi),
@@ -512,20 +564,78 @@ export default function SiparisOlustur() {
     };
 
     const runMatch = (workingRows, sourceCol, candidateList, byAdresAdi) => {
-        const key = (s) => compactAddr(String(s ?? "").replace(/\u00A0/g, " "));
-        const SIM_THRESHOLD = 0.55;
+        const key = (x) => compactAddr(String(x ?? "").replace(/ /g, " "));
+        const SIM_THRESHOLD = 0.45;
+        const MAX_SUGGESTIONS = 10;
+
+        const mapSuggestion = (s) => ({
+            adres_adi: s.adres_adi,
+            adres_id: s.adres_id,
+            cari_hesap_id: s.cari_hesap_id,
+            cari_unvani: s.cari_unvani,
+            vkn: s.vkn,
+            il: s.il,
+            ilce: s.ilce,
+            mahalle: s.mahalle,
+            adres: s.adres,
+            telefon: s.telefon,
+            email: s.email,
+            score: Number((s._score ?? s.score ?? 0).toFixed(2)),
+        });
+
+        const getSuggestions = (qClean, excludeAdresId = "") => {
+            const allSuggestions = candidateList
+                .map((c) => {
+                    const adresScore = scoreSimilarity(qClean, c._clean);
+                    const cariScore = scoreSimilarity(qClean, c._cariClean);
+                    const ilScore = scoreSimilarity(qClean, c._ilClean);
+                    const ilceScore = scoreSimilarity(qClean, c._ilceClean);
+                    const fullScore = Math.max(
+                        adresScore,
+                        (adresScore * 0.7) + (cariScore * 0.2) + (ilScore * 0.05) + (ilceScore * 0.05)
+                    );
+                    return { ...c, _score: fullScore };
+                })
+                .filter((x) => x._score >= SIM_THRESHOLD)
+                .filter((x) => String(x.adres_id ?? "") !== String(excludeAdresId ?? ""))
+                .sort((a, b) => b._score - a._score);
+
+            return {
+                total: allSuggestions.length,
+                items: allSuggestions.slice(0, MAX_SUGGESTIONS).map(mapSuggestion),
+            };
+        };
+
         return workingRows.map((row, idx) => {
             const qRaw = row[sourceCol];
-            const exact = byAdresAdi.get(key(qRaw));
-            if (exact) return { rowIndex: idx, ok: true, before: qRaw, matchedAdresAdi: exact.adres_adi, matchedAdresId: exact.adres_id, matchedCariId: exact.cari_hesap_id, score: 1, suggestions: [] };
             const qClean = cleanAddr(qRaw);
-            const suggestions = candidateList
-                .map((c) => ({ ...c, _score: scoreSimilarity(qClean, c._clean) }))
-                .filter((x) => x._score >= SIM_THRESHOLD)
-                .sort((a, b) => b._score - a._score)
-                .slice(0, 5)
-                .map((s) => ({ adres_adi: s.adres_adi, adres_id: s.adres_id, cari_hesap_id: s.cari_hesap_id, score: Number(s._score.toFixed(2)) }));
-            return { rowIndex: idx, ok: false, before: qRaw, score: 0, suggestions };
+            const exact = byAdresAdi.get(key(qRaw));
+
+            if (exact) {
+                const suggestionPack = getSuggestions(qClean, exact.adres_id);
+                return {
+                    rowIndex: idx,
+                    ok: true,
+                    before: qRaw,
+                    matchedAdresAdi: exact.adres_adi,
+                    matchedAdresId: exact.adres_id,
+                    matchedCariId: exact.cari_hesap_id,
+                    matchedDetail: exact,
+                    score: 1,
+                    suggestionTotal: suggestionPack.total,
+                    suggestions: suggestionPack.items,
+                };
+            }
+
+            const suggestionPack = getSuggestions(qClean);
+            return {
+                rowIndex: idx,
+                ok: false,
+                before: qRaw,
+                score: 0,
+                suggestionTotal: suggestionPack.total,
+                suggestions: suggestionPack.items,
+            };
         });
     };
 
@@ -542,11 +652,15 @@ export default function SiparisOlustur() {
                 matchedAdresAdi: r.matchedAdresAdi,
                 matchedAdresId: r.matchedAdresId,
                 matchedCariId: r.matchedCariId,
+                matchedDetail: r.matchedDetail,
                 manual: !!r.manual,
+                suggestionTotal: r.suggestionTotal || 0,
+                suggestions: r.suggestions || [],
             })),
             unmatchedSamples: unmatched.slice(0, 20).map((r) => ({
                 rowIndex: r.rowIndex,
                 before: r.before || "—",
+                suggestionTotal: r.suggestionTotal || 0,
                 suggestions: r.suggestions || [],
             })),
         };
@@ -562,10 +676,13 @@ export default function SiparisOlustur() {
                 matchedAdresAdi: suggestion.adres_adi,
                 matchedAdresId: suggestion.adres_id,
                 matchedCariId: suggestion.cari_hesap_id,
+                matchedDetail: suggestion,
                 score: suggestion.score,
-                suggestions: [],
+                suggestions: r.suggestions || [],
             };
         });
+
+        setEditingMatchedKey(null);
 
         if (label === "yukleme") {
             setMatchResultsYukleme((prev) => {
@@ -583,12 +700,7 @@ export default function SiparisOlustur() {
         });
     };
 
-    const getAdresSelectCols = () => {
-        if (!isBallog) return "adres_id, adres_adi, cari_hesap_id";
-        return BALLOG_CARI_COLUMN === "cari_hesap_id"
-            ? "adres_id, adres_adi, cari_hesap_id"
-            : `adres_id, adres_adi, ${BALLOG_CARI_COLUMN}`;
-    };
+    const getAdresSelectCols = () => "*";
 
     const pickBallogFile = () => {
         if (!isBallog) {
@@ -601,37 +713,99 @@ export default function SiparisOlustur() {
     const parseBallogDeliveryFile = async (file) => {
         if (!isExcelFile(file)) throw new Error("Lütfen .xlsx / .xls dosyası yükleyin.");
 
+        const normalizeExcelHeader = (s) =>
+            String(s ?? "")
+                .replace(/\u00A0/g, " ")
+                .replace(/\ufeff/g, "")
+                .replace(/\s+/g, " ")
+                .trim()
+                .toLowerCase()
+                .replace(/ı/g, "i")
+                .replace(/İ/g, "i");
+
         const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-        if (!aoa || aoa.length === 0) throw new Error("Yüklenen dosya boş görünüyor.");
+        const wb = XLSX.read(buf, { type: "array", cellDates: false });
 
-        const [rawHeaders, ...body] = aoa;
-        const headerMap = {};
-        rawHeaders.forEach((h, index) => {
-            const key = normalizeHeader(h);
-            if (key) headerMap[key] = index;
-        });
+        let aoa = [];
+        let usedSheetName = "";
 
-        const adresIdx = headerMap["adres adı"];
+        for (const sheetName of wb.SheetNames) {
+            const ws = wb.Sheets[sheetName];
+            const rows = XLSX.utils.sheet_to_json(ws, {
+                header: 1,
+                defval: "",
+                blankrows: false,
+                raw: false,
+            });
+
+            if (rows?.length) {
+                aoa = rows;
+                usedSheetName = sheetName;
+                break;
+            }
+        }
+
+        if (!aoa || aoa.length === 0) {
+            throw new Error("Yüklenen dosya boş görünüyor.");
+        }
+
+        let headerRowIndex = -1;
+        let headerMap = {};
+
+        for (let i = 0; i < Math.min(20, aoa.length); i++) {
+            const map = {};
+            aoa[i].forEach((h, index) => {
+                const key = normalizeExcelHeader(h);
+                if (key) map[key] = index;
+            });
+
+            console.log("HEADER MAP =>", map);
+
+            const hasAdres = map["adres adı"] !== undefined || map["adres adi"] !== undefined;
+            const hasCari = map["cari hesap id"] !== undefined;
+            const hasId = map["id"] !== undefined;
+
+            console.log({
+                hasAdres,
+                hasCari,
+                hasId
+            });
+
+            if (hasAdres && hasCari && hasId) {
+                headerRowIndex = i;
+                headerMap = map;
+                break;
+            }
+        }
+
+        if (headerRowIndex === -1) {
+            const detectedHeaders = aoa[0].map((x) => `"${String(x ?? "").trim()}"`).join(", ");
+
+            throw new Error(
+                `BALLOG başlık satırı bulunamadı. Okunan ilk satır: ${detectedHeaders}`
+            );
+        }
+
+        const adresIdx =
+            headerMap["adres adı"] ??
+            headerMap["adres adi"];
+
         const cariIdx = headerMap["cari hesap id"];
-        const idIdx = headerMap["id"];
 
-        const missing = [];
-        if (adresIdx === undefined) missing.push("Adres Adı");
-        if (cariIdx === undefined) missing.push("Cari Hesap ID");
-        if (idIdx === undefined) missing.push("Id");
-        if (missing.length) throw new Error(`Eksik başlık: ${missing.join(", ")}. Lütfen doğru BALLOG teslim noktası dosyasını yükleyin.`);
+        const idIdx = headerMap["id"];
+        const body = aoa.slice(headerRowIndex + 1);
 
         const unique = new Map();
+
         body.forEach((row) => {
             const adresId = normalize(row[idIdx]);
             const adresAdi = normalize(row[adresIdx]);
             const cariHesap = normalize(row[cariIdx]) || BALLOG_CARI_ID;
+
             if (!adresId || !adresAdi) return;
 
             const key = normalizeKey(adresId);
+
             if (!unique.has(key)) {
                 unique.set(key, {
                     adres_id: adresId,
@@ -642,7 +816,16 @@ export default function SiparisOlustur() {
         });
 
         const parsed = Array.from(unique.values());
-        if (!parsed.length) throw new Error("Dosyada eklenecek teslim noktası bulunamadı.");
+
+        if (!parsed.length) {
+            throw new Error("Dosyada eklenecek teslim noktası bulunamadı.");
+        }
+
+        console.log("BALLOG kullanılan sayfa:", usedSheetName);
+        console.log("BALLOG başlık satırı:", headerRowIndex + 1);
+        console.log("BALLOG okunan başlıklar:", headerMap);
+        console.log("BALLOG parsed:", parsed);
+
         return parsed;
     };
 
@@ -756,9 +939,15 @@ export default function SiparisOlustur() {
             const keyFn = (s) => compactAddr(String(s ?? "").replace(/\u00A0/g, " "));
             const byAdresAdi = new Map();
             const candidateList = allAdresler.map((a) => {
-                const item = { adres_id: a?.adres_id ?? "", adres_adi: a?.adres_adi ?? "", cari_hesap_id: a?.cari_hesap_id ?? a?.[BALLOG_CARI_COLUMN] ?? "" };
+                const item = buildCandidateDetails(a);
                 byAdresAdi.set(keyFn(item.adres_adi), item);
-                return { ...item, _clean: cleanAddr(item.adres_adi) };
+                return {
+                    ...item,
+                    _clean: cleanAddr(item.adres_adi),
+                    _cariClean: cleanAddr(item.cari_unvani),
+                    _ilClean: cleanAddr(item.il),
+                    _ilceClean: cleanAddr(item.ilce),
+                };
             });
 
             const teslimResults = runMatch(workingRows, "Teslim Firma Adres Adı", candidateList, byAdresAdi);
@@ -775,6 +964,7 @@ export default function SiparisOlustur() {
                 setMatchPreviewYukleme({ total: 0, matchedCount: 0, unmatchedCount: 0, matchedSamples: [], unmatchedSamples: [] });
             }
 
+            setEditingMatchedKey(null);
             setMatchModalOpen(true);
         } catch (e) {
             setError(e.message || "Eşleşme sırasında hata oluştu.");
@@ -804,6 +994,7 @@ export default function SiparisOlustur() {
             });
         });
         setMatchModalOpen(false);
+        setEditingMatchedKey(null);
     };
 
     const handleTemizle = () => {
@@ -812,12 +1003,47 @@ export default function SiparisOlustur() {
         setMatchPreview({ total: 0, matchedCount: 0, unmatchedCount: 0, matchedSamples: [], unmatchedSamples: [] });
         setBallogImportResult(null);
         setMatchModalOpen(false);
+        setEditingMatchedKey(null);
     };
 
     /* ── Match panel renderer ── */
+    const renderDetailGrid = (item) => {
+        const rows = detailRows(item);
+        if (!rows.length) return null;
+        return (
+            <div className="so-detail-grid">
+                {rows.map(([label, value]) => (
+                    <div className="so-detail" key={`${label}-${value}`}>
+                        <span>{label}</span>
+                        <strong title={value}>{value}</strong>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    const renderSuggestionCard = (s, rowIndex, label, i) => (
+        <button
+            key={`${rowIndex}-${label}-${s.adres_id}-${i}`}
+            type="button"
+            className="so-suggestion-card"
+            onClick={() => handleSuggestionSelect(label, rowIndex, s)}
+            title={`${s.adres_adi} seç ve tabloya adres_id olarak uygula`}
+        >
+            <div className="so-suggestion-card__top">
+                <div>
+                    <div className="so-score-pill">%{Math.round((s.score || 0) * 100)} eşleşme</div>
+                    <div className="so-suggestion-title">{s.adres_adi || "Adres adı yok"}</div>
+                </div>
+                <span className="so-use-badge"><CheckCircle2 size={13} /> Kullan</span>
+            </div>
+            {renderDetailGrid(s)}
+        </button>
+    );
+
     const renderMatchPanel = (preview, label) => (
-        <div className="so-modal__grid">
-            <div className="so-match-panel">
+        <div className="so-modal__grid so-modal__grid--modern">
+            <div className="so-match-panel so-match-panel--success">
                 <div className="so-match-panel__head">
                     <span className="so-match-panel__label">
                         <CheckCircle2 size={15} color="var(--c-green)" />
@@ -826,70 +1052,86 @@ export default function SiparisOlustur() {
                     <span className="so-badge so-badge--good">{preview.matchedCount}</span>
                 </div>
                 {preview.matchedSamples?.length ? (
-                    <ul className="so-match-list">
-                        {preview.matchedSamples.map((s) => (
-                            <li key={`m-${s.rowIndex}-${label}`} className="so-match-item">
-                                <div className="so-match-row">
-                                    <div className="so-match-col">
-                                        <span className="so-match-col__label">Bizim Adres</span>
-                                        <div className="so-addr">{s.before}</div>
+                    <ul className="so-match-list so-match-list--cards">
+                        {preview.matchedSamples.map((s) => {
+                            const editKey = `${label}-${s.rowIndex}`;
+                            const isEditing = editingMatchedKey === editKey;
+
+                            return (
+                                <li key={`m-${s.rowIndex}-${label}`} className="so-match-item so-match-item--modern">
+                                    <div className="so-match-row">
+                                        <div className="so-match-col">
+                                            <span className="so-match-col__label">Exceldeki Adres</span>
+                                            <div className="so-addr">{s.before}</div>
+                                        </div>
+                                        <div className="so-arrow">→</div>
+                                        <div className="so-match-col">
+                                            <span className="so-match-col__label">Sistemdeki Kayıt</span>
+                                            <div className="so-addr so-addr--good">{s.matchedAdresAdi}</div>
+                                        </div>
                                     </div>
-                                    <div className="so-arrow">→</div>
-                                    <div className="so-match-col">
-                                        <span className="so-match-col__label">Sistemdeki</span>
-                                        <div className="so-addr so-addr--good">{s.matchedAdresAdi}</div>
+                                    {renderDetailGrid(s.matchedDetail || {
+                                        adres_id: s.matchedAdresId,
+                                        cari_hesap_id: s.matchedCariId,
+                                    })}
+                                    <div className="so-match-actions">
+                                        {s.manual && <div className="so-manual-note">Manuel seçim uygulandı</div>}
+                                        <button
+                                            type="button"
+                                            className="so-change-match-btn"
+                                            onClick={() => setEditingMatchedKey(isEditing ? null : editKey)}
+                                            disabled={!s.suggestions?.length}
+                                            title={s.suggestions?.length ? "Bu eşleşmeyi başka bir sistem kaydıyla değiştir" : "Bu kayıt için alternatif öneri bulunamadı"}
+                                        >
+                                            {isEditing ? "Vazgeç" : "Değiştir"}
+                                        </button>
                                     </div>
-                                </div>
-                                <div className="so-match-meta">
-                                    <span className="so-tag">adres_id: {s.matchedAdresId}</span>
-                                    <span className="so-tag">cari_id: {s.matchedCariId}</span>
-                                    {s.manual && <span className="so-tag">manuel seçildi</span>}
-                                </div>
-                            </li>
-                        ))}
+                                    {isEditing && (
+                                        !!s.suggestions?.length ? (
+                                            <div className="so-suggestions so-suggestions--grid so-suggestions--matched">
+                                                {s.suggestions.map((sg, i) => renderSuggestionCard(sg, s.rowIndex, label, i))}
+                                            </div>
+                                        ) : (
+                                            <div className="so-no-suggestion">
+                                                <AlertTriangle size={14} /> Alternatif yakın eşleşme bulunamadı.
+                                            </div>
+                                        )
+                                    )}
+                                </li>
+                            );
+                        })}
                     </ul>
                 ) : <div className="so-empty-state">Eşleşen kayıt yok.</div>}
             </div>
 
-            <div className="so-match-panel">
+            <div className="so-match-panel so-match-panel--warning">
                 <div className="so-match-panel__head">
                     <span className="so-match-panel__label">
                         <XCircle size={15} color="var(--c-red)" />
-                        Eşleşmeyenler
+                        Eşleşmeyenler ve Öneriler
                     </span>
                     <span className="so-badge so-badge--bad">{preview.unmatchedCount}</span>
                 </div>
                 {preview.unmatchedSamples?.length ? (
-                    <ul className="so-match-list">
+                    <ul className="so-match-list so-match-list--cards">
                         {preview.unmatchedSamples.map((s) => (
-                            <li key={`u-${s.rowIndex}-${label}`} className="so-match-item">
-                                <div className="so-match-row">
-                                    <div className="so-match-col">
-                                        <span className="so-match-col__label">Bizim Adres</span>
+                            <li key={`u-${s.rowIndex}-${label}`} className="so-match-item so-match-item--modern">
+                                <div className="so-unmatched-head">
+                                    <div>
+                                        <span className="so-match-col__label">Exceldeki Adres</span>
                                         <div className="so-addr">{s.before}</div>
                                     </div>
-                                    <div className="so-arrow">→</div>
-                                    <div className="so-match-col">
-                                        <span className="so-match-col__label">Sistemde</span>
-                                        <div className="so-addr so-addr--bad">Bulunamadı</div>
-                                    </div>
+                                    <span className="so-badge so-badge--soft">
+                                        {s.suggestionTotal || s.suggestions?.length || 0} benzer kayıt
+                                    </span>
                                 </div>
-                                {!!s.suggestions?.length && (
-                                    <div className="so-suggestions">
-                                        {s.suggestions.map((sg, i) => (
-                                            <button
-                                                key={`${s.rowIndex}-${label}-${sg.adres_id}-${i}`}
-                                                type="button"
-                                                className="so-suggestion so-suggestion--button"
-                                                onClick={() => handleSuggestionSelect(label, s.rowIndex, sg)}
-                                                title={`${sg.adres_adi} seç ve tabloya adres_id olarak uygula`}
-                                            >
-                                                <CheckCircle2 size={13} />
-                                                <span>{sg.adres_adi}</span>
-                                                <strong>%{Math.round(sg.score * 100)}</strong>
-                                                <small>adres_id: {sg.adres_id}</small>
-                                            </button>
-                                        ))}
+                                {!!s.suggestions?.length ? (
+                                    <div className="so-suggestions so-suggestions--grid">
+                                        {s.suggestions.map((sg, i) => renderSuggestionCard(sg, s.rowIndex, label, i))}
+                                    </div>
+                                ) : (
+                                    <div className="so-no-suggestion">
+                                        <AlertTriangle size={14} /> Yakın eşleşme bulunamadı.
                                     </div>
                                 )}
                             </li>
