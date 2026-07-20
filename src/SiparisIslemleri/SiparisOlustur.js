@@ -565,8 +565,8 @@ export default function SiparisOlustur() {
 
     const runMatch = (workingRows, sourceCol, candidateList, byAdresAdi) => {
         const key = (x) => compactAddr(String(x ?? "").replace(/ /g, " "));
-        const SIM_THRESHOLD = 0.45;
-        const MAX_SUGGESTIONS = 10;
+        const SIM_THRESHOLD = 0.32;
+        const MAX_SUGGESTIONS = 50;
 
         const mapSuggestion = (s) => ({
             adres_adi: s.adres_adi,
@@ -646,7 +646,7 @@ export default function SiparisOlustur() {
             total: workingRows.length,
             matchedCount: matched.length,
             unmatchedCount: unmatched.length,
-            matchedSamples: matched.slice(0, 20).map((r) => ({
+            matchedSamples: matched.map((r) => ({
                 rowIndex: r.rowIndex,
                 before: r.before,
                 matchedAdresAdi: r.matchedAdresAdi,
@@ -657,7 +657,7 @@ export default function SiparisOlustur() {
                 suggestionTotal: r.suggestionTotal || 0,
                 suggestions: r.suggestions || [],
             })),
-            unmatchedSamples: unmatched.slice(0, 20).map((r) => ({
+            unmatchedSamples: unmatched.map((r) => ({
                 rowIndex: r.rowIndex,
                 before: r.before || "—",
                 suggestionTotal: r.suggestionTotal || 0,
@@ -1022,125 +1022,274 @@ export default function SiparisOlustur() {
         );
     };
 
-    const renderSuggestionCard = (s, rowIndex, label, i) => (
-        <button
-            key={`${rowIndex}-${label}-${s.adres_id}-${i}`}
-            type="button"
-            className="so-suggestion-card"
-            onClick={() => handleSuggestionSelect(label, rowIndex, s)}
-            title={`${s.adres_adi} seç ve tabloya adres_id olarak uygula`}
-        >
-            <div className="so-suggestion-card__top">
-                <div>
-                    <div className="so-score-pill">%{Math.round((s.score || 0) * 100)} eşleşme</div>
-                    <div className="so-suggestion-title">{s.adres_adi || "Adres adı yok"}</div>
-                </div>
-                <span className="so-use-badge"><CheckCircle2 size={13} /> Kullan</span>
-            </div>
-            {renderDetailGrid(s)}
-        </button>
+    const getMatchContext = (label) => (
+        label === "yukleme"
+            ? {
+                title: "Yükleme Firması Eşleştirmesi",
+                sourceLabel: "Excel'deki Yükleme Firması",
+                targetLabel: "Sistemdeki Yükleme Noktası",
+                sourceField: "Yükleme Firması Adı",
+                targetField: "adres_id",
+            }
+            : {
+                title: "Teslim Firması Eşleştirmesi",
+                sourceLabel: "Excel'deki Teslim Firması",
+                targetLabel: "Sistemdeki Teslim Noktası",
+                sourceField: "Teslim Firma Adres Adı",
+                targetField: "adres_id / cari_hesap_id",
+            }
     );
 
-    const renderMatchPanel = (preview, label) => (
-        <div className="so-modal__grid so-modal__grid--modern">
-            <div className="so-match-panel so-match-panel--success">
-                <div className="so-match-panel__head">
-                    <span className="so-match-panel__label">
-                        <CheckCircle2 size={15} color="var(--c-green)" />
-                        Eşleşenler
-                    </span>
-                    <span className="so-badge so-badge--good">{preview.matchedCount}</span>
-                </div>
-                {preview.matchedSamples?.length ? (
-                    <ul className="so-match-list so-match-list--cards">
-                        {preview.matchedSamples.map((s) => {
-                            const editKey = `${label}-${s.rowIndex}`;
-                            const isEditing = editingMatchedKey === editKey;
+    const renderSuggestionCard = (s, rowIndex, label, i) => {
+        const context = getMatchContext(label);
+        const scorePercent = Math.round((s.score || 0) * 100);
 
-                            return (
-                                <li key={`m-${s.rowIndex}-${label}`} className="so-match-item so-match-item--modern">
-                                    <div className="so-match-row">
-                                        <div className="so-match-col">
-                                            <span className="so-match-col__label">Exceldeki Adres</span>
-                                            <div className="so-addr">{s.before}</div>
+        return (
+            <button
+                key={`${rowIndex}-${label}-${s.adres_id}-${i}`}
+                type="button"
+                className="so-suggestion-card"
+                onClick={() => handleSuggestionSelect(label, rowIndex, s)}
+                title={`${s.adres_adi} kaydını seç`}
+            >
+                <div className="so-suggestion-card__top">
+                    <div className="so-suggestion-card__heading">
+                        <div className={`so-score-pill ${scorePercent >= 75
+                                ? "so-score-pill--high"
+                                : scorePercent >= 50
+                                    ? "so-score-pill--medium"
+                                    : "so-score-pill--low"
+                            }`}>
+                            %{scorePercent} benzerlik
+                        </div>
+
+                        <div className="so-suggestion-caption">
+                            {context.targetLabel}
+                        </div>
+
+                        <div className="so-suggestion-title">
+                            {s.adres_adi || "Adres adı bulunamadı"}
+                        </div>
+                    </div>
+
+                    <span className="so-use-badge">
+                        <CheckCircle2 size={13} />
+                        Bu kaydı kullan
+                    </span>
+                </div>
+
+                <div className="so-suggestion-primary-info">
+                    <div>
+                        <span>Adres ID</span>
+                        <strong>{s.adres_id || "—"}</strong>
+                    </div>
+                    <div>
+                        <span>Cari Hesap ID</span>
+                        <strong>{s.cari_hesap_id || "—"}</strong>
+                    </div>
+                </div>
+
+                {renderDetailGrid(s)}
+            </button>
+        );
+    };
+
+    const renderMatchPanel = (preview, label) => {
+        const context = getMatchContext(label);
+
+        return (
+            <div className="so-match-workspace">
+                <div className="so-match-context-banner">
+                    <div>
+                        <span className="so-match-context-banner__eyebrow">Aktif eşleştirme alanı</span>
+                        <strong>{context.title}</strong>
+                        <p>
+                            Excel sütunu: <b>{context.sourceField}</b> · Sisteme yazılacak alan:
+                            <b> {context.targetField}</b>
+                        </p>
+                    </div>
+                    <div className="so-match-context-banner__count">
+                        <span>İncelenen satır</span>
+                        <strong>{preview.total}</strong>
+                    </div>
+                </div>
+
+                <div className="so-modal__grid so-modal__grid--modern">
+                    <div className="so-match-panel so-match-panel--success">
+                        <div className="so-match-panel__head">
+                            <div>
+                                <span className="so-match-panel__label">
+                                    <CheckCircle2 size={16} color="var(--c-green)" />
+                                    Doğrudan Eşleşen Kayıtlar
+                                </span>
+                                <small>Excel değeri sistemde birebir bulundu.</small>
+                            </div>
+                            <span className="so-badge so-badge--good">{preview.matchedCount}</span>
+                        </div>
+
+                        {preview.matchedSamples?.length ? (
+                            <ul className="so-match-list so-match-list--cards">
+                                {preview.matchedSamples.map((s) => {
+                                    const editKey = `${label}-${s.rowIndex}`;
+                                    const isEditing = editingMatchedKey === editKey;
+
+                                    return (
+                                        <li key={`m-${s.rowIndex}-${label}`} className="so-match-item so-match-item--modern">
+                                            <div className="so-record-index">Excel satırı #{s.rowIndex + 2}</div>
+
+                                            <div className="so-match-row">
+                                                <div className="so-match-col so-match-col--source">
+                                                    <span className="so-match-col__label">{context.sourceLabel}</span>
+                                                    <div className="so-addr so-addr--source">{s.before}</div>
+                                                </div>
+
+                                                <div className="so-arrow" aria-hidden="true">→</div>
+
+                                                <div className="so-match-col so-match-col--target">
+                                                    <span className="so-match-col__label">{context.targetLabel}</span>
+                                                    <div className="so-addr so-addr--good">{s.matchedAdresAdi}</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="so-selected-record-title">
+                                                <span>Seçilen sistem kaydının detayları</span>
+                                                <strong>{s.manual ? "Manuel seçim" : "Birebir eşleşme"}</strong>
+                                            </div>
+
+                                            {renderDetailGrid(s.matchedDetail || {
+                                                adres_id: s.matchedAdresId,
+                                                cari_hesap_id: s.matchedCariId,
+                                            })}
+
+                                            <div className="so-match-actions">
+                                                {s.manual && (
+                                                    <div className="so-manual-note">
+                                                        <CheckCircle2 size={14} />
+                                                        Manuel seçim uygulandı
+                                                    </div>
+                                                )}
+
+                                                <button
+                                                    type="button"
+                                                    className="so-change-match-btn"
+                                                    onClick={() => setEditingMatchedKey(isEditing ? null : editKey)}
+                                                    disabled={!s.suggestions?.length}
+                                                    title={
+                                                        s.suggestions?.length
+                                                            ? "Alternatif yakın kayıtları göster"
+                                                            : "Alternatif yakın eşleşme bulunamadı"
+                                                    }
+                                                >
+                                                    {isEditing
+                                                        ? "Alternatifleri kapat"
+                                                        : `Alternatifleri göster (${s.suggestionTotal || s.suggestions?.length || 0})`}
+                                                </button>
+                                            </div>
+
+                                            {isEditing && (
+                                                !!s.suggestions?.length ? (
+                                                    <div className="so-alternative-area">
+                                                        <div className="so-alternative-area__head">
+                                                            <div>
+                                                                <strong>Yakın sistem kayıtları</strong>
+                                                                <span>
+                                                                    Benzerliğe göre sıralandı. En fazla {s.suggestions.length} kayıt gösteriliyor.
+                                                                </span>
+                                                            </div>
+                                                            <span>{s.suggestionTotal || s.suggestions.length} sonuç</span>
+                                                        </div>
+
+                                                        <div className="so-suggestions so-suggestions--grid so-suggestions--matched">
+                                                            {s.suggestions.map((sg, i) =>
+                                                                renderSuggestionCard(sg, s.rowIndex, label, i)
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="so-no-suggestion">
+                                                        <AlertTriangle size={14} />
+                                                        Alternatif yakın eşleşme bulunamadı.
+                                                    </div>
+                                                )
+                                            )}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        ) : (
+                            <div className="so-empty-state">Doğrudan eşleşen kayıt bulunamadı.</div>
+                        )}
+                    </div>
+
+                    <div className="so-match-panel so-match-panel--warning">
+                        <div className="so-match-panel__head">
+                            <div>
+                                <span className="so-match-panel__label">
+                                    <XCircle size={16} color="var(--c-red)" />
+                                    Manuel Seçim Bekleyen Kayıtlar
+                                </span>
+                                <small>Excel değeri birebir bulunamadı; yakın kayıtlar listelendi.</small>
+                            </div>
+                            <span className="so-badge so-badge--bad">{preview.unmatchedCount}</span>
+                        </div>
+
+                        {preview.unmatchedSamples?.length ? (
+                            <ul className="so-match-list so-match-list--cards">
+                                {preview.unmatchedSamples.map((s) => (
+                                    <li key={`u-${s.rowIndex}-${label}`} className="so-match-item so-match-item--modern">
+                                        <div className="so-record-index">Excel satırı #{s.rowIndex + 2}</div>
+
+                                        <div className="so-unmatched-head">
+                                            <div className="so-unmatched-source">
+                                                <span className="so-match-col__label">{context.sourceLabel}</span>
+                                                <div className="so-addr so-addr--bad">{s.before}</div>
+                                            </div>
+
+                                            <span className="so-badge so-badge--soft">
+                                                {s.suggestionTotal || s.suggestions?.length || 0} yakın kayıt
+                                            </span>
                                         </div>
-                                        <div className="so-arrow">→</div>
-                                        <div className="so-match-col">
-                                            <span className="so-match-col__label">Sistemdeki Kayıt</span>
-                                            <div className="so-addr so-addr--good">{s.matchedAdresAdi}</div>
-                                        </div>
-                                    </div>
-                                    {renderDetailGrid(s.matchedDetail || {
-                                        adres_id: s.matchedAdresId,
-                                        cari_hesap_id: s.matchedCariId,
-                                    })}
-                                    <div className="so-match-actions">
-                                        {s.manual && <div className="so-manual-note">Manuel seçim uygulandı</div>}
-                                        <button
-                                            type="button"
-                                            className="so-change-match-btn"
-                                            onClick={() => setEditingMatchedKey(isEditing ? null : editKey)}
-                                            disabled={!s.suggestions?.length}
-                                            title={s.suggestions?.length ? "Bu eşleşmeyi başka bir sistem kaydıyla değiştir" : "Bu kayıt için alternatif öneri bulunamadı"}
-                                        >
-                                            {isEditing ? "Vazgeç" : "Değiştir"}
-                                        </button>
-                                    </div>
-                                    {isEditing && (
-                                        !!s.suggestions?.length ? (
-                                            <div className="so-suggestions so-suggestions--grid so-suggestions--matched">
-                                                {s.suggestions.map((sg, i) => renderSuggestionCard(sg, s.rowIndex, label, i))}
+
+                                        {!!s.suggestions?.length ? (
+                                            <div className="so-alternative-area">
+                                                <div className="so-alternative-area__head">
+                                                    <div>
+                                                        <strong>{context.targetLabel} önerileri</strong>
+                                                        <span>
+                                                            Sonuçlar benzerlik oranına göre yüksekten düşüğe sıralanmıştır.
+                                                        </span>
+                                                    </div>
+                                                    <span>
+                                                        {s.suggestions.length}
+                                                        {s.suggestionTotal > s.suggestions.length
+                                                            ? ` / ${s.suggestionTotal}`
+                                                            : ""} gösteriliyor
+                                                    </span>
+                                                </div>
+
+                                                <div className="so-suggestions so-suggestions--grid">
+                                                    {s.suggestions.map((sg, i) =>
+                                                        renderSuggestionCard(sg, s.rowIndex, label, i)
+                                                    )}
+                                                </div>
                                             </div>
                                         ) : (
                                             <div className="so-no-suggestion">
-                                                <AlertTriangle size={14} /> Alternatif yakın eşleşme bulunamadı.
+                                                <AlertTriangle size={14} />
+                                                Benzer sistem kaydı bulunamadı. Excel değerini veya sistem kayıtlarını kontrol edin.
                                             </div>
-                                        )
-                                    )}
-                                </li>
-                            );
-                        })}
-                    </ul>
-                ) : <div className="so-empty-state">Eşleşen kayıt yok.</div>}
-            </div>
-
-            <div className="so-match-panel so-match-panel--warning">
-                <div className="so-match-panel__head">
-                    <span className="so-match-panel__label">
-                        <XCircle size={15} color="var(--c-red)" />
-                        Eşleşmeyenler ve Öneriler
-                    </span>
-                    <span className="so-badge so-badge--bad">{preview.unmatchedCount}</span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="so-empty-state">Tüm kayıtlar eşleşti.</div>
+                        )}
+                    </div>
                 </div>
-                {preview.unmatchedSamples?.length ? (
-                    <ul className="so-match-list so-match-list--cards">
-                        {preview.unmatchedSamples.map((s) => (
-                            <li key={`u-${s.rowIndex}-${label}`} className="so-match-item so-match-item--modern">
-                                <div className="so-unmatched-head">
-                                    <div>
-                                        <span className="so-match-col__label">Exceldeki Adres</span>
-                                        <div className="so-addr">{s.before}</div>
-                                    </div>
-                                    <span className="so-badge so-badge--soft">
-                                        {s.suggestionTotal || s.suggestions?.length || 0} benzer kayıt
-                                    </span>
-                                </div>
-                                {!!s.suggestions?.length ? (
-                                    <div className="so-suggestions so-suggestions--grid">
-                                        {s.suggestions.map((sg, i) => renderSuggestionCard(sg, s.rowIndex, label, i))}
-                                    </div>
-                                ) : (
-                                    <div className="so-no-suggestion">
-                                        <AlertTriangle size={14} /> Yakın eşleşme bulunamadı.
-                                    </div>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                ) : <div className="so-empty-state">Hepsi eşleşti 🎉</div>}
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className={`so-page${isBallog ? " so-page--ballog" : ""}`}>
@@ -1378,14 +1527,36 @@ export default function SiparisOlustur() {
                     <div className={`so-modal${isBallog ? " so-modal--ballog" : ""}`}>
                         <div className="so-modal__head">
                             <div>
-                                <div className="so-modal__title">Adres Eşleşme Özeti</div>
-                                <div className="so-modal__desc">Eşleşen kayıtlar onay sonrası tabloya uygulanır.</div>
+                                <div className="so-modal__eyebrow">Excel → Sistem kayıt eşleştirmesi</div>
+                                <div className="so-modal__title">Adres ve Firma Eşleştirme Merkezi</div>
+                                <div className="so-modal__desc">
+                                    Her Excel satırının hangi sistem kaydıyla eşleştiğini inceleyin.
+                                    Birebir bulunamayan kayıtlar için yakın sonuçlardan doğru kaydı seçin.
+                                </div>
                             </div>
-                            <div className="so-kpis">
-                                <span className="so-kpi so-kpi--neutral">Toplam <strong>{matchPreview.total}</strong></span>
-                                <span className="so-kpi so-kpi--good"><CheckCircle2 size={13} /> <strong>{matchPreview.matchedCount}</strong> eşleşti</span>
-                                <span className="so-kpi so-kpi--bad"><XCircle size={13} /> <strong>{matchPreview.unmatchedCount}</strong> eşleşmedi</span>
-                            </div>
+
+                            {(() => {
+                                const activePreview =
+                                    isBallog && matchModalTab === "yukleme"
+                                        ? matchPreviewYukleme
+                                        : matchPreview;
+
+                                return (
+                                    <div className="so-kpis">
+                                        <span className="so-kpi so-kpi--neutral">
+                                            Toplam satır <strong>{activePreview.total}</strong>
+                                        </span>
+                                        <span className="so-kpi so-kpi--good">
+                                            <CheckCircle2 size={13} />
+                                            <strong>{activePreview.matchedCount}</strong> eşleşti
+                                        </span>
+                                        <span className="so-kpi so-kpi--bad">
+                                            <XCircle size={13} />
+                                            <strong>{activePreview.unmatchedCount}</strong> seçim bekliyor
+                                        </span>
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         {isBallog && (
