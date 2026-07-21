@@ -24,38 +24,120 @@ import './AdminPanel.css';
 
 const screens = [
     { label: "Dashboard", path: "/dashboard", group: "Genel" },
+
     { label: "Sipariş Oluştur", path: "/SiparisIslemleri/SiparisOlustur", group: "Sipariş" },
     { label: "Parsiyel Sipariş Oluştur", path: "/SiparisIslemleri/ParsiyelSiparisOlustur", group: "Sipariş" },
     { label: "Sipariş Açanlar", path: "/SiparisIslemleri/SiparisAcanlar", group: "Sipariş" },
     { label: "Arkas", path: "/SiparisIslemleri/Arkas", group: "Sipariş" },
     { label: "Fasdat", path: "/SiparisIslemleri/Fasdat", group: "Sipariş" },
     { label: "Teslim Noktaları", path: "/SiparisIslemleri/TeslimNoktalari", group: "Sipariş" },
+
+    { label: "Proje Ekle", path: "/Tanimlamalar/ProjeEkle", group: "Tanımlamalar" },
+
     { label: "Gelir Ekleme", path: "/GelirGider/GelirEkleme", group: "Gelir / Gider" },
     { label: "Gider Ekleme", path: "/GelirGider/GiderEkleme", group: "Gelir / Gider" },
     { label: "Test Gelir", path: "/GelirGider/TestGelir", group: "Gelir / Gider" },
     { label: "Test Gider", path: "/GelirGider/TestGider", group: "Gelir / Gider" },
+
     { label: "Sefer Fiyatlandırma", path: "/fiyatlandirma/seferFiyatlandirma", group: "Fiyatlandırma" },
     { label: "Özet Tablo", path: "/analiz/ozet", group: "Analiz" },
     { label: "Görsel", path: "/gorsel", group: "Görsel" }
 ];
 
 const screenButtons = {
-    "/dashboard": ["Görüntüle", "Kullanıcı Ekle", "Kullanıcı Sil", "Yetki Düzenle"],
-    "/SiparisIslemleri/SiparisOlustur": ["Görüntüle", "Kaydet", "Sil", "Güncelle"],
-    "/SiparisIslemleri/ParsiyelSiparisOlustur": ["Görüntüle", "Kaydet", "Sil", "Güncelle"],
-    "/SiparisIslemleri/SiparisAcanlar": ["Görüntüle", "Filtrele", "Dışa Aktar"],
-    "/SiparisIslemleri/Arkas": ["Görüntüle", "Kaydet", "Dışa Aktar"],
-    "/SiparisIslemleri/Fasdat": ["Görüntüle", "Kaydet", "Dışa Aktar"],
-    "/SiparisIslemleri/TeslimNoktalari": ["Görüntüle", "Ekle", "Sil", "Güncelle"],
-    "/GelirGider/GelirEkleme": ["Görüntüle", "Ekle", "Sil", "Güncelle"],
-    "/GelirGider/GiderEkleme": ["Görüntüle", "Ekle", "Sil", "Güncelle"],
-    "/GelirGider/TestGelir": ["Görüntüle", "Dışa Aktar"],
-    "/GelirGider/TestGider": ["Görüntüle", "Dışa Aktar"],
-    "/fiyatlandirma/seferFiyatlandirma": ["Görüntüle", "Hesapla", "Kaydet"],
-    "/analiz/ozet": ["Görüntüle", "Filtrele", "Dışa Aktar"],
-    "/gorsel": ["Görüntüle"]
-};
+    "/dashboard": [
+        "Görüntüle",
+        "Kullanıcı Ekle",
+        "Kullanıcı Sil",
+        "Yetki Düzenle"
+    ],
 
+    "/SiparisIslemleri/SiparisOlustur": [
+        "Görüntüle",
+        "Kaydet",
+        "Sil",
+        "Güncelle"
+    ],
+
+    "/SiparisIslemleri/ParsiyelSiparisOlustur": [
+        "Görüntüle",
+        "Kaydet",
+        "Sil",
+        "Güncelle"
+    ],
+
+    "/SiparisIslemleri/SiparisAcanlar": [
+        "Görüntüle",
+        "Filtrele",
+        "Dışa Aktar"
+    ],
+
+    "/SiparisIslemleri/Arkas": [
+        "Görüntüle",
+        "Kaydet",
+        "Dışa Aktar"
+    ],
+
+    "/SiparisIslemleri/Fasdat": [
+        "Görüntüle",
+        "Kaydet",
+        "Dışa Aktar"
+    ],
+
+    "/SiparisIslemleri/TeslimNoktalari": [
+        "Görüntüle",
+        "Ekle",
+        "Sil",
+        "Güncelle"
+    ],
+
+    "/Tanimlamalar/ProjeEkle": [
+        "Görüntüle",
+        "Ekle",
+        "Güncelle",
+        "Sil"
+    ],
+
+    "/GelirGider/GelirEkleme": [
+        "Görüntüle",
+        "Ekle",
+        "Sil",
+        "Güncelle"
+    ],
+
+    "/GelirGider/GiderEkleme": [
+        "Görüntüle",
+        "Ekle",
+        "Sil",
+        "Güncelle"
+    ],
+
+    "/GelirGider/TestGelir": [
+        "Görüntüle",
+        "Dışa Aktar"
+    ],
+
+    "/GelirGider/TestGider": [
+        "Görüntüle",
+        "Dışa Aktar"
+    ],
+
+    "/fiyatlandirma/seferFiyatlandirma": [
+        "Görüntüle",
+        "Hesapla",
+        "Kaydet"
+    ],
+
+    "/analiz/ozet": [
+        "Görüntüle",
+        "Filtrele",
+        "Dışa Aktar"
+    ],
+
+    "/gorsel": [
+        "Görüntüle"
+    ]
+};
 export default function AdminPanel() {
     const [users, setUsers] = useState([]);
     const [open, setOpen] = useState(false);

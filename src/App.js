@@ -1,5 +1,11 @@
-﻿import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+﻿import React, { useEffect, useState } from "react";
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Navigate,
+    useLocation
+} from "react-router-dom";
 
 import Login from "./Login";
 import Dashboard from "./Dashboard";
@@ -14,6 +20,9 @@ import SiparisAcanlar from "./SiparisIslemleri/siparisAcanlar";
 import Arkas from "./SiparisIslemleri/Arkas";
 import Fasdat from "./SiparisIslemleri/Fasdat";
 import TeslimNoktalari from "./SiparisIslemleri/TeslimNoktalari";
+
+// Tanımlamalar
+import ProjeEkle from "./Tanimlamalar/ProjeEkle";
 
 // Gelir / Gider
 import GelirEkleme from "./GelirGider/GelirEkleme";
@@ -38,7 +47,9 @@ function getLoginUser() {
 function getFirstAllowedPath() {
     const user = getLoginUser();
 
-    if (!user) return "/";
+    if (!user) {
+        return "/";
+    }
 
     if (user.rol === "admin") {
         return "/dashboard";
@@ -48,7 +59,9 @@ function getFirstAllowedPath() {
         ? user.allowedScreens
         : [];
 
-    return allowedScreens.length > 0 ? allowedScreens[0] : "/yetkisiz";
+    return allowedScreens.length > 0
+        ? allowedScreens[0]
+        : "/yetkisiz";
 }
 
 function ProtectedPage({ children }) {
@@ -85,7 +98,7 @@ export default function App() {
 
     useEffect(() => {
         const user = getLoginUser();
-        setIsAuthenticated(!!user);
+        setIsAuthenticated(Boolean(user));
     }, []);
 
     const handleLoginSuccess = () => {
@@ -99,9 +112,14 @@ export default function App() {
                     path="/"
                     element={
                         isAuthenticated ? (
-                            <Navigate to={getFirstAllowedPath()} replace />
+                            <Navigate
+                                to={getFirstAllowedPath()}
+                                replace
+                            />
                         ) : (
-                            <Login onLoginSuccess={handleLoginSuccess} />
+                            <Login
+                                onLoginSuccess={handleLoginSuccess}
+                            />
                         )
                     }
                 />
@@ -115,24 +133,151 @@ export default function App() {
                     }
                 />
 
-                <Route path="/dashboard" element={<ProtectedPage><Dashboard /></ProtectedPage>} />
-                <Route path="/SiparisIslemleri/SiparisOlustur" element={<ProtectedPage><SiparisOlustur /></ProtectedPage>} />
-                <Route path="/SiparisIslemleri/ParsiyelSiparisOlustur" element={<ProtectedPage><ParsiyelSiparisOlustur /></ProtectedPage>} />
-                <Route path="/SiparisIslemleri/SiparisAcanlar" element={<ProtectedPage><SiparisAcanlar /></ProtectedPage>} />
-                <Route path="/SiparisIslemleri/Arkas" element={<ProtectedPage><Arkas /></ProtectedPage>} />
-                <Route path="/SiparisIslemleri/Fasdat" element={<ProtectedPage><Fasdat /></ProtectedPage>} />
-                <Route path="/SiparisIslemleri/TeslimNoktalari" element={<ProtectedPage><TeslimNoktalari /></ProtectedPage>} />
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedPage>
+                            <Dashboard />
+                        </ProtectedPage>
+                    }
+                />
 
-                <Route path="/GelirGider/GelirEkleme" element={<ProtectedPage><GelirEkleme /></ProtectedPage>} />
-                <Route path="/GelirGider/GiderEkleme" element={<ProtectedPage><GiderEkleme /></ProtectedPage>} />
-                <Route path="/GelirGider/TestGelir" element={<ProtectedPage><TestGelir /></ProtectedPage>} />
-                <Route path="/GelirGider/TestGider" element={<ProtectedPage><TestGider /></ProtectedPage>} />
+                {/* Sipariş */}
+                <Route
+                    path="/SiparisIslemleri/SiparisOlustur"
+                    element={
+                        <ProtectedPage>
+                            <SiparisOlustur />
+                        </ProtectedPage>
+                    }
+                />
 
-                <Route path="/fiyatlandirma/seferFiyatlandirma" element={<ProtectedPage><SeferFiyatlandirma /></ProtectedPage>} />
-                <Route path="/analiz/ozet" element={<ProtectedPage><OzetTablo /></ProtectedPage>} />
-                <Route path="/gorsel" element={<ProtectedPage><Gorsel /></ProtectedPage>} />
+                <Route
+                    path="/SiparisIslemleri/ParsiyelSiparisOlustur"
+                    element={
+                        <ProtectedPage>
+                            <ParsiyelSiparisOlustur />
+                        </ProtectedPage>
+                    }
+                />
 
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route
+                    path="/SiparisIslemleri/SiparisAcanlar"
+                    element={
+                        <ProtectedPage>
+                            <SiparisAcanlar />
+                        </ProtectedPage>
+                    }
+                />
+
+                <Route
+                    path="/SiparisIslemleri/Arkas"
+                    element={
+                        <ProtectedPage>
+                            <Arkas />
+                        </ProtectedPage>
+                    }
+                />
+
+                <Route
+                    path="/SiparisIslemleri/Fasdat"
+                    element={
+                        <ProtectedPage>
+                            <Fasdat />
+                        </ProtectedPage>
+                    }
+                />
+
+                <Route
+                    path="/SiparisIslemleri/TeslimNoktalari"
+                    element={
+                        <ProtectedPage>
+                            <TeslimNoktalari />
+                        </ProtectedPage>
+                    }
+                />
+
+                {/* Tanımlamalar */}
+                <Route
+                    path="/Tanimlamalar/ProjeEkle"
+                    element={
+                        <ProtectedPage>
+                            <ProjeEkle />
+                        </ProtectedPage>
+                    }
+                />
+
+                {/* Gelir / Gider */}
+                <Route
+                    path="/GelirGider/GelirEkleme"
+                    element={
+                        <ProtectedPage>
+                            <GelirEkleme />
+                        </ProtectedPage>
+                    }
+                />
+
+                <Route
+                    path="/GelirGider/GiderEkleme"
+                    element={
+                        <ProtectedPage>
+                            <GiderEkleme />
+                        </ProtectedPage>
+                    }
+                />
+
+                <Route
+                    path="/GelirGider/TestGelir"
+                    element={
+                        <ProtectedPage>
+                            <TestGelir />
+                        </ProtectedPage>
+                    }
+                />
+
+                <Route
+                    path="/GelirGider/TestGider"
+                    element={
+                        <ProtectedPage>
+                            <TestGider />
+                        </ProtectedPage>
+                    }
+                />
+
+                {/* Fiyatlandırma */}
+                <Route
+                    path="/fiyatlandirma/seferFiyatlandirma"
+                    element={
+                        <ProtectedPage>
+                            <SeferFiyatlandirma />
+                        </ProtectedPage>
+                    }
+                />
+
+                {/* Analiz */}
+                <Route
+                    path="/analiz/ozet"
+                    element={
+                        <ProtectedPage>
+                            <OzetTablo />
+                        </ProtectedPage>
+                    }
+                />
+
+                {/* Görsel */}
+                <Route
+                    path="/gorsel"
+                    element={
+                        <ProtectedPage>
+                            <Gorsel />
+                        </ProtectedPage>
+                    }
+                />
+
+                <Route
+                    path="*"
+                    element={<Navigate to="/" replace />}
+                />
             </Routes>
         </Router>
     );
