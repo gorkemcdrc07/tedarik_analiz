@@ -1,10 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\api",
     "\\server",
     "\\src",
-    "\\src\\SiparisIslemleri"
+    "\\src\\components",
+    "\\src\\Tanimlamalar"
   ],
   "PreviewInSolutionExplorer": false
 }

@@ -140,6 +140,7 @@ function mapYuklemeFirmasiToId(val) {
         "ADİLCEVAZ GÖZDÜZÜ KÖYÜ": "36857",
         "PATATES TARLA ERBAA": "34735",
         "PATATES TARLA NİKSAR": "34736",
+        "SOĞAN TARLA": "34733",
         "ATAKEY AFYON": AFYON_RULES.YUKLEME_FIRMASI_ID,
     };
 
