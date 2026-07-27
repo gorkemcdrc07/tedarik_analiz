@@ -141,6 +141,7 @@ function mapYuklemeFirmasiToId(val) {
         "PATATES TARLA ERBAA": "34735",
         "PATATES TARLA NİKSAR": "34736",
         "SOĞAN TARLA": "34733",
+        "PATATES TARLA": "34734",
         "ATAKEY AFYON": AFYON_RULES.YUKLEME_FIRMASI_ID,
     };
 
