@@ -1,10 +1,9 @@
 
 import React,{useState} from "react";
-import {createClient} from "@supabase/supabase-js";
+import supabase from "./supabaseClient";
 import {AnimatePresence,motion} from "framer-motion";
 import {ArrowRight,BarChart3,CheckCircle2,Eye,EyeOff,Headphones,LockKeyhole,PackageCheck,ShieldCheck,Truck,UserRound} from "lucide-react";
 import "./Login.css";
-const supabase=createClient(process.env.REACT_APP_SUPABASE_URL,process.env.REACT_APP_SUPABASE_KEY);
 export default function Login({onLoginSuccess}){
  const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[loading,setLoading]=useState(false),[error,setError]=useState(""),[showPassword,setShowPassword]=useState(false),[remember,setRemember]=useState(true);
  const safeParse=v=>{if(!v)return[];if(Array.isArray(v))return v;try{const p=JSON.parse(v);return Array.isArray(p)?p:[]}catch{return[]}};

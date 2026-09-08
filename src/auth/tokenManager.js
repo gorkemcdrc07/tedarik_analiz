@@ -17,7 +17,6 @@ const TOKEN_URLS = [
     "/reel-auth/api/auth/login",
     "/api/reel-auth/login",
 ];
-console.log("[TMS] TOKEN_URLS:", TOKEN_URLS);
 
 // Yardımcı
 const safeParse = (s, fallback = null) => {
@@ -47,7 +46,6 @@ function loadFromStorage() {
     const obj = safeParse(raw);
     if (obj?.token && obj?.exp > Date.now()) {
         current = obj;
-        console.log("%c[TMS] Geçerli token storage'dan kullanılıyor.", "color:#ef3539");
         scheduleRefresh();
     } else {
         sessionStorage.removeItem(STORAGE_KEY);
@@ -139,7 +137,6 @@ async function requestNewToken() {
     saveToStorage(current);
     scheduleRefresh();
 
-    console.log("%c[TMS] Yeni token alındı.", "color:#10b981");
     return token;
 }
 
@@ -175,8 +172,6 @@ export async function authorizedFetch(url, init = {}) {
 
     // Token süresi dolarsa yeniden dene
     if (res.status === 401) {
-        console.warn("%c[TMS] 401 → Token yenileniyor…", "color:#f59e0b");
-
         await refreshToken();
         const token2 = await getToken();
 

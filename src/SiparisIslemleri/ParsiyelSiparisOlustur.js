@@ -1855,7 +1855,6 @@ export default function ParsiyelSiparisOlustur() {
         const fetch = async () => {
             try {
                 const t = await getTmsToken();
-                console.log("TOKEN GELDİ:", t);
                 setTmsToken(t);
             } catch (err) {
                 console.error("TOKEN HATASI:", err);

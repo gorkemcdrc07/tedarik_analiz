@@ -1,6 +1,4 @@
-﻿export async function getTmsToken() {
-    console.log("AUTH URL:", process.env.REACT_APP_TMS_AUTH_URL);
-
+export async function getTmsToken() {
     const res = await fetch(process.env.REACT_APP_TMS_AUTH_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -11,9 +9,6 @@
     });
 
     const text = await res.text();
-
-    console.log("AUTH STATUS:", res.status);
-    console.log("AUTH RESPONSE:", text);
 
     if (!res.ok) {
         throw new Error(`Token hatası: ${res.status} - ${text}`);
