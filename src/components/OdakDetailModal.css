@@ -1,11 +1,11 @@
-﻿:root {
+:root {
     --bg-overlay: rgba(8,12,20,.55);
     --panel: rgba(16,22,36,.72);
     --panel-strong: rgba(16,22,36,.88);
     --border: rgba(255,255,255,.10);
     --fg: #e9eef8;
     --muted: #96a4bf;
-    --accent: #8b5cf6;
+    --accent: #e5252a;
     --accent2: #22d3ee;
     --ring: rgba(139,92,246,.45);
     --shadow: 0 20px 60px rgba(0,0,0,.45);

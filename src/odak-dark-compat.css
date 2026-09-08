@@ -1,0 +1,228 @@
+/* =========================================================
+   ODAK LOJISTIK — DARK MODE COMPATIBILITY LAYER
+   Keeps legacy/light-scoped pages visually consistent with
+   the global data-odak-theme="dark" application theme.
+   ========================================================= */
+
+html[data-odak-theme="dark"] {
+  color-scheme: dark;
+  --od-dark-bg: #07111d;
+  --od-dark-page: #091725;
+  --od-dark-surface: #0d1b2a;
+  --od-dark-surface-2: #102235;
+  --od-dark-surface-3: #142a40;
+  --od-dark-border: #20364a;
+  --od-dark-border-2: #294158;
+  --od-dark-text: #edf4fb;
+  --od-dark-text-2: #c1cedb;
+  --od-dark-muted: #8498ab;
+  --od-dark-red-soft: rgba(229, 37, 42, .14);
+}
+
+html[data-odak-theme="dark"] .ots-layout-content,
+html[data-odak-theme="dark"] .ots-content-container {
+  color: var(--od-dark-text);
+}
+
+/* ---------- generic legacy surfaces ---------- */
+html[data-odak-theme="dark"] .ots-layout-content :where(
+  .card,
+  .panel,
+  .toolbar,
+  .content-card,
+  .table-wrapper,
+  .MuiPaper-root,
+  .MuiTableContainer-root
+) {
+  border-color: var(--od-dark-border) !important;
+}
+
+html[data-odak-theme="dark"] .ots-layout-content :where(input, select, textarea) {
+  color: var(--od-dark-text) !important;
+  background-color: #0a1724 !important;
+  border-color: var(--od-dark-border-2) !important;
+}
+html[data-odak-theme="dark"] .ots-layout-content :where(input, textarea)::placeholder { color:#6f8599 !important; }
+html[data-odak-theme="dark"] .ots-layout-content :where(select) option { color:var(--od-dark-text); background:#0d1b2a; }
+
+/* ---------- Siparis Olustur ---------- */
+html[data-odak-theme="dark"] .so-page {
+  --c-bg: var(--od-dark-page);
+  --c-surface: var(--od-dark-surface);
+  --c-surface-2: var(--od-dark-surface-2);
+  --c-surface-3: var(--od-dark-surface-3);
+  --c-border: rgba(129, 156, 181, .20);
+  --c-border-md: rgba(129, 156, 181, .30);
+  --c-text: var(--od-dark-text);
+  --c-muted: var(--od-dark-muted);
+  --c-muted-2: #6f8599;
+  background: radial-gradient(circle at 12% -8%,rgba(229,37,42,.08),transparent 26%),var(--od-dark-page) !important;
+  color: var(--od-dark-text) !important;
+}
+html[data-odak-theme="dark"] .so-page :where(.so-header,.so-controls,.so-table-card,.so-dl-modal,.so-modal,.so-match-panel,.so-match-item,.so-suggestion-card,.so-detail,.so-match-context-banner,.so-alternative-area) {
+  color: var(--od-dark-text) !important;
+  background: var(--od-dark-surface) !important;
+  border-color: var(--od-dark-border) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.16) !important;
+}
+html[data-odak-theme="dark"] .so-page :where(.so-header__title,.so-stat-pill strong,.so-drop-title,.so-modal__title,.so-match-panel__label,.so-suggestion-title,.so-detail strong,.so-match-context-banner strong,.so-selected-record-title,.so-suggestion-card__heading) { color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .so-page :where(.so-header__sub,.so-drop-sub,.so-modal__desc,.so-dl-modal__sub,.so-match-meta,.so-match-panel__head small,.so-match-context-banner p,.so-suggestion-caption) { color:var(--od-dark-muted) !important; }
+html[data-odak-theme="dark"] .so-page :where(.so-select,.so-input,.so-search-input,.so-match-input) { color:var(--od-dark-text) !important;background:#0a1724 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .so-page .so-table thead th { color:#aebed0 !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .so-page .so-table tbody td { color:#dce7f2 !important;background:#0d1b2a !important;border-color:#183047 !important; }
+html[data-odak-theme="dark"] .so-page .so-table tbody tr:nth-child(2n) td { background:#0c1927 !important; }
+html[data-odak-theme="dark"] .so-page .so-table tbody tr:hover td { background:#11263a !important; }
+html[data-odak-theme="dark"] .so-page :where(.so-drop-zone,.so-drop-row td) { background:#0a1928 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .so-page :where(.so-tab,.so-kpi,.so-tag,.so-badge,.so-stat-pill) { border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .so-page :where(.so-tab:not(.so-tab--active),.so-kpi--neutral,.so-tag) { color:var(--od-dark-text-2) !important;background:#102235 !important; }
+html[data-odak-theme="dark"] .so-page .so-table-footer { color:var(--od-dark-muted) !important;background:#0a1724 !important;border-color:var(--od-dark-border) !important; }
+
+/* ---------- Yeni Siparis ---------- */
+html[data-odak-theme="dark"] .ys-page {
+  --ys-bg: var(--od-dark-page);
+  --ys-card: var(--od-dark-surface);
+  --ys-card-2: var(--od-dark-surface-2);
+  --ys-border: rgba(129,156,181,.20);
+  --ys-border-strong: rgba(129,156,181,.30);
+  --ys-text: var(--od-dark-text);
+  --ys-muted: var(--od-dark-muted);
+  background:radial-gradient(circle at 15% 0%,rgba(229,37,42,.09),transparent 30%),var(--od-dark-page) !important;
+}
+html[data-odak-theme="dark"] .ys-page :where(.ys-customer-card,.ys-action-card,.ys-table-card,.ys-summary,.ys-mapping-head,.ys-tabs) { background:var(--od-dark-surface) !important;border-color:var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .ys-page :where(.ys-inline-input,.ys-search input,.ys-customer-fields input,.ys-customer-fields select) { color:var(--od-dark-text) !important;background:#0a1724 !important;border-color:var(--od-dark-border-2) !important; }
+
+/* ---------- Parsiyel Siparis ---------- */
+html[data-odak-theme="dark"] .ps-root { background:var(--od-dark-page) !important;color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .ps-root :where(.ps-header,.ps-search,.ps-metric,.ps-table-card,.ps-panel,.ps-modal) { background:var(--od-dark-surface) !important;border-color:var(--od-dark-border) !important; }
+
+/* ---------- Fasdat ---------- */
+html[data-odak-theme="dark"] .fasdat-page :where(.fasdat-hero,.fasdat-card,.fasdat-table-card,.fasdat-file-card,.fasdat-summary-card,.fasdat-modal) { color:var(--od-dark-text) !important;background:var(--od-dark-surface) !important;border-color:var(--od-dark-border) !important;box-shadow:0 12px 28px rgba(0,0,0,.14) !important; }
+html[data-odak-theme="dark"] .fasdat-page :where(.fasdat-hero h2,.fasdat-card h3,.fasdat-file-name,.fasdat-stat-value) { color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .fasdat-page :where(.fasdat-hero p,.fasdat-eyebrow + p,.fasdat-file-meta,.fasdat-stat-label) { color:var(--od-dark-muted) !important; }
+html[data-odak-theme="dark"] .fasdat-page :where(.fasdat-input,.fasdat-select) { color:var(--od-dark-text) !important;background:#0a1724 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .fasdat-page :where(.fasdat-dropzone,.fasdat-upload-zone) { background:#0a1928 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .fasdat-page table thead th { color:#aebed0 !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .fasdat-page table tbody td { color:#dce7f2 !important;background:#0d1b2a !important;border-color:#183047 !important; }
+
+/* ---------- Arkas ---------- */
+html[data-odak-theme="dark"] .arkas-page :where(.arkas-hero,.arkas-card,.arkas-modal,.arkas-selector-modal,.arkas-filter-grid,.arkas-selector-table-wrap) { color:var(--od-dark-text) !important;background:var(--od-dark-surface) !important;border-color:var(--od-dark-border) !important;box-shadow:0 12px 28px rgba(0,0,0,.14) !important; }
+html[data-odak-theme="dark"] .arkas-page :where(.arkas-card-header,.arkas-modal-header,.arkas-modal-footer) { background:#0a1724 !important;border-color:var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .arkas-page :where(.arkas-hero h2,.arkas-modal-header h3,.arkas-card-title strong,.arkas-file-name) { color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .arkas-page :where(.arkas-hero p,.arkas-file-meta,.arkas-empty-small) { color:var(--od-dark-muted) !important; }
+html[data-odak-theme="dark"] .arkas-page :where(.arkas-input,.arkas-select) { color:var(--od-dark-text) !important;background:#0a1724 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .arkas-page .arkas-btn-secondary { color:var(--od-dark-text-2) !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .arkas-page table thead th { color:#aebed0 !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .arkas-page table tbody td { color:#dce7f2 !important;background:#0d1b2a !important;border-color:#183047 !important; }
+
+/* ---------- Teslim Noktalari ---------- */
+html[data-odak-theme="dark"] .import-page { background:radial-gradient(circle at 15% 15%,rgba(229,37,42,.10),transparent 34%),linear-gradient(145deg,#07111d,#091725) !important; }
+html[data-odak-theme="dark"] .import-page .import-card { background:linear-gradient(145deg,rgba(255,255,255,.025),rgba(255,255,255,.008)),var(--od-dark-surface) !important;border-color:var(--od-dark-border) !important; }
+
+/* ---------- Gelir / Gider legacy inline-style pages ---------- */
+html[data-odak-theme="dark"] .ge-inline-page { color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .ge-inline-page > div[style*="background: rgb(255"],
+html[data-odak-theme="dark"] .ge-inline-page > div[style*="background: #ffffff"],
+html[data-odak-theme="dark"] .ge-inline-page > div[style*="background-color: rgb(255"],
+html[data-odak-theme="dark"] .ge-inline-page > div[style*="backgroundColor"] { background:var(--od-dark-surface) !important; }
+html[data-odak-theme="dark"] .ge-inline-page > div[style] { border-color:var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .ge-inline-page h2[style],
+html[data-odak-theme="dark"] .ge-inline-page strong[style] { color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .ge-inline-page div[style*="linear-gradient(180deg"] { background:#0a1928 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .ge-inline-page div[style*="background-color: rgb(233"],
+html[data-odak-theme="dark"] .ge-inline-page div[style*="backgroundColor: '#e9ecef'"] { background:#102235 !important; }
+html[data-odak-theme="dark"] .ge-inline-page table { color:var(--od-dark-text) !important;background:var(--od-dark-surface) !important; }
+html[data-odak-theme="dark"] .ge-inline-page table thead th { color:#aebed0 !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .ge-inline-page table tbody td { color:#dce7f2 !important;background:#0d1b2a !important;border-color:#183047 !important; }
+
+/* Test gelir / gider */
+html[data-odak-theme="dark"] .ge-page { color:var(--od-dark-text) !important;background:var(--od-dark-page) !important; }
+html[data-odak-theme="dark"] .ge-page :where(.ge-card,.ge-panel,.ge-toolbar,.ge-drop,.ge-table-card,.ge-summary-item) { background:var(--od-dark-surface) !important;border-color:var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .ge-page table thead th { background:#102235 !important;color:#aebed0 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .ge-page table tbody td { background:#0d1b2a !important;color:#dce7f2 !important;border-color:#183047 !important; }
+
+/* ---------- Sefer Fiyatlandirma ---------- */
+html[data-odak-theme="dark"] .fx-content { --text:var(--od-dark-text);--muted:var(--od-dark-muted);--border:var(--od-dark-border);--border-soft:#183047;color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .fx-content :where(.fx-toolbar,.fx-card,.pill,.switch) { color:var(--od-dark-text-2) !important;background:var(--od-dark-surface) !important;border-color:var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .fx-content :where(.fx-title) { color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .fx-content :where(.fx-input,.pill input,.th-filter input[type="text"],.th-filter input[type="number"]) { color:var(--od-dark-text) !important;background:#0a1724 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .fx-content .fx-btn-ghost { color:var(--od-dark-text-2) !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .fx-content .fx-table thead th { color:#aebed0 !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .fx-content .fx-table tbody td { color:#dce7f2 !important;background:#0d1b2a !important;border-color:#183047 !important; }
+html[data-odak-theme="dark"] .fx-content .fx-table tbody tr:nth-child(2n) td { background:#0c1927 !important; }
+html[data-odak-theme="dark"] .fx-content .fx-table tbody tr:hover td { background:#11263a !important; }
+
+/* ---------- Proje Tanimlari ---------- */
+html[data-odak-theme="dark"] .proje-ekle-page {
+  --bg:var(--od-dark-page);--surface:var(--od-dark-surface);--surface-soft:var(--od-dark-surface-2);
+  --border:var(--od-dark-border);--border-soft:#183047;--text-primary:var(--od-dark-text);--text-secondary:var(--od-dark-muted);--text-tertiary:#6f8599;
+  color:var(--od-dark-text) !important;
+}
+html[data-odak-theme="dark"] .proje-ekle-page :where(.project-stat-card,.project-list-card,.project-toolbar,.project-table-container) { background:var(--od-dark-surface) !important;border-color:var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .proje-ekle-page .project-table-container .MuiTableHead-root .MuiTableCell-root { color:#aebed0 !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .proje-ekle-page .project-table-container .MuiTableCell-root { color:#dce7f2 !important;border-color:#183047 !important; }
+html[data-odak-theme="dark"] .proje-ekle-page .project-table-container .MuiTableRow-root:hover .MuiTableCell-root { background:#11263a !important; }
+
+/* ---------- Admin / Yonetim ---------- */
+html[data-odak-theme="dark"] .admin-container :where(.topbar,.stat-card,.content-card,.table-wrapper,.permission-sidebar,.permission-block,.modern-screen-card,.empty-permission-box) { color:var(--od-dark-text) !important;background:var(--od-dark-surface) !important;border-color:var(--od-dark-border) !important;box-shadow:0 12px 28px rgba(0,0,0,.14) !important; }
+html[data-odak-theme="dark"] .admin-container :where(.topbar-title,.toolbar-title,.stat-value,.user-name,.permission-title,.permission-block-title,.modern-screen-title) { color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .admin-container :where(.topbar-subtitle,.stat-label,.user-email,.permission-count,.modern-screen-group,.mini-stat small) { color:var(--od-dark-muted) !important; }
+html[data-odak-theme="dark"] .admin-container .table-head th { color:#aebed0 !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .admin-container .MuiTableCell-root { color:#dce7f2 !important;border-color:#183047 !important; }
+html[data-odak-theme="dark"] .admin-container .MuiTableRow-hover:hover { background:#11263a !important; }
+html[data-odak-theme="dark"] .admin-container :where(.refresh-button,.modern-button-card,.modern-check) { color:var(--od-dark-text-2) !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .admin-container :where(.mini-stat) { background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .admin-container .mini-stat span { color:var(--od-dark-text) !important; }
+
+/* ---------- MUI — force true dark surfaces on all screens ---------- */
+html[data-odak-theme="dark"] .MuiPaper-root { background-color:var(--od-dark-surface) !important;color:var(--od-dark-text) !important;background-image:none !important; }
+html[data-odak-theme="dark"] .MuiDialog-paper { background:var(--od-dark-surface) !important;color:var(--od-dark-text) !important;border-color:var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .MuiDialogTitle-root,
+html[data-odak-theme="dark"] .MuiDialogContentText-root { color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .MuiDialogContent-root,
+html[data-odak-theme="dark"] .MuiDialogActions-root { border-color:var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .MuiOutlinedInput-root { color:var(--od-dark-text) !important;background:#0a1724 !important; }
+html[data-odak-theme="dark"] .MuiOutlinedInput-notchedOutline { border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .MuiInputLabel-root,
+html[data-odak-theme="dark"] .MuiFormHelperText-root,
+html[data-odak-theme="dark"] .MuiSelect-icon,
+html[data-odak-theme="dark"] .MuiInputAdornment-root .MuiSvgIcon-root { color:var(--od-dark-muted) !important; }
+html[data-odak-theme="dark"] .MuiTableCell-head { color:#aebed0 !important;background:#102235 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .MuiTableCell-body { color:#dce7f2 !important;background:#0d1b2a !important;border-color:#183047 !important; }
+html[data-odak-theme="dark"] .MuiMenu-paper,
+html[data-odak-theme="dark"] .MuiPopover-paper { background:var(--od-dark-surface) !important;color:var(--od-dark-text) !important;border:1px solid var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .MuiMenuItem-root:hover { background:#102235 !important; }
+
+/* ---------- Ozet Analiz / Tailwind utility compatibility ---------- */
+html[data-odak-theme="dark"] .ots-layout-content .bg-white { background-color:var(--od-dark-surface) !important; }
+html[data-odak-theme="dark"] .ots-layout-content .bg-slate-50 { background-color:#102235 !important; }
+html[data-odak-theme="dark"] .ots-layout-content .bg-slate-100 { background-color:#142a40 !important; }
+html[data-odak-theme="dark"] .ots-layout-content .text-slate-800,
+html[data-odak-theme="dark"] .ots-layout-content .text-slate-900 { color:var(--od-dark-text) !important; }
+html[data-odak-theme="dark"] .ots-layout-content .text-slate-700 { color:var(--od-dark-text-2) !important; }
+html[data-odak-theme="dark"] .ots-layout-content .text-slate-500,
+html[data-odak-theme="dark"] .ots-layout-content .text-slate-400 { color:var(--od-dark-muted) !important; }
+html[data-odak-theme="dark"] .ots-layout-content .border-slate-200 { border-color:var(--od-dark-border) !important; }
+html[data-odak-theme="dark"] .ots-layout-content .border-slate-100 { border-color:#183047 !important; }
+html[data-odak-theme="dark"] .ots-layout-content .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color:#183047 !important; }
+html[data-odak-theme="dark"] .ots-layout-content .hover\:bg-slate-50:hover { background-color:#11263a !important; }
+html[data-odak-theme="dark"] .ots-layout-content .placeholder\:text-slate-400::placeholder { color:#6f8599 !important; }
+
+/* ---------- scrollbars ---------- */
+html[data-odak-theme="dark"] .ots-layout-content * { scrollbar-color:#35526b #0a1724; }
+html[data-odak-theme="dark"] .ots-layout-content *::-webkit-scrollbar-track { background:#0a1724; }
+html[data-odak-theme="dark"] .ots-layout-content *::-webkit-scrollbar-thumb { background:#35526b;border:2px solid #0a1724;border-radius:999px; }
+html[data-odak-theme="dark"] .ots-layout-content *::-webkit-scrollbar-thumb:hover { background:#466782; }
+html[data-odak-theme="dark"] .ge-inline-page :where(.ge-inline-header,.ge-inline-card,.ge-inline-file,.ge-inline-summary,.ge-inline-preview) {
+  color:var(--od-dark-text) !important;
+  background:var(--od-dark-surface) !important;
+  border-color:var(--od-dark-border) !important;
+  box-shadow:0 12px 28px rgba(0,0,0,.14) !important;
+}
+html[data-odak-theme="dark"] .ge-inline-page .ge-inline-summary { background:#102235 !important; }
+html[data-odak-theme="dark"] .ge-inline-page .ge-inline-card > div[role="button"] { background:#0a1928 !important;border-color:var(--od-dark-border-2) !important; }
+html[data-odak-theme="dark"] .ge-inline-page .ge-inline-file div[style*="color: rgb(73"] { color:#aebed0 !important; }
+
+/* 6.2 hardening: generic legacy surfaces that still carry light colors */
+html[data-odak-theme="dark"] .ots-layout-content :is(.card,.panel,.toolbar,.table-card,.table-wrap,.content-card,.filter-card,.upload-card,.MuiPaper-root) { background-color:#0d1b2a!important; border-color:#20364a!important; color:#edf4fb!important; }
+html[data-odak-theme="dark"] .ots-layout-content :is(table) thead th { background-color:#102235!important; color:#b9cad8!important; border-color:#29445e!important; }
+html[data-odak-theme="dark"] .ots-layout-content :is(table) tbody td { color:#dfeaf3; border-color:#183047; }

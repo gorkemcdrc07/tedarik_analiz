@@ -1,7 +1,8 @@
-﻿import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import * as XLSX from "xlsx";
 import supabase from "../supabaseClient";
 import { getToken } from "../auth/tokenManager";
+import { Download, FileSpreadsheet, LoaderCircle, Search, Send, Trash2, UploadCloud } from "lucide-react";
 import "./GelirEkleme.css";
 
 export default function TestGelir() {
@@ -439,7 +440,7 @@ export default function TestGelir() {
                 <div className="ge-topbar">
                     <div className="ge-top-actions">
                         <button className="btn ghost" onClick={downloadTemplate} disabled={downloading}>
-                            {downloading ? "İndiriliyor…" : "Şablonu İndir (.xlsx)"}
+                            {downloading ? <><LoaderCircle className="ge-spin" size={15} />İndiriliyor…</> : <><Download size={15} />Şablonu İndir (.xlsx)</>}
                         </button>
 
                         <input
@@ -467,7 +468,7 @@ export default function TestGelir() {
                     tabIndex={0}
                 >
                     <div className="ge-drop-inner">
-                        <div className="ge-icon">⬆️</div>
+                        <div className="ge-icon"><UploadCloud size={30} strokeWidth={1.7} /></div>
                         <div className="ge-title">Dosyanı buraya sürükle & bırak</div>
                         <div className="ge-muted">veya <span className="ge-link">bilgisayardan seç</span> (.xlsx, .xls)</div>
                     </div>
@@ -476,7 +477,7 @@ export default function TestGelir() {
                 {file && (
                     <div className="ge-file">
                         <div className="ge-file-main">
-                            <div className="ge-file-icon">📄</div>
+                            <div className="ge-file-icon"><FileSpreadsheet size={23} /></div>
                             <div>
                                 <div className="ge-file-name">{file.name}</div>
                                 <div className="ge-file-meta">{formatSize(file.size)}</div>
@@ -485,12 +486,13 @@ export default function TestGelir() {
 
                         <div className="ge-actions">
                             <button className="btn" onClick={startScan} disabled={scanning}>
-                                {scanning ? "Taranıyor…" : "Taramayı Başlat"}
+                                {scanning ? <><LoaderCircle className="ge-spin" size={15} />Taranıyor…</> : <><Search size={15} />Taramayı Başlat</>}
                             </button>
                             <button className="btn" onClick={sendToReel} disabled={sending}>
-                                {sending ? "Bağlanıyor…" : "TEST'e Gönder"}
+                                {sending ? <><LoaderCircle className="ge-spin" size={15} />Bağlanıyor…</> : <><Send size={15} />TEST'e Gönder</>}
                             </button>
                             <button className="btn ghost danger" onClick={reset}>
+                                <Trash2 size={15} />
                                 Kaldır
                             </button>
                         </div>

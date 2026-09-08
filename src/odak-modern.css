@@ -1,0 +1,721 @@
+/* =========================================================
+   ODAK LOJISTIK — UNIFIED APPLICATION THEME
+   Loaded after page styles so every operational screen shares
+   the same red / navy / white visual language without changing
+   business logic or adding decorative empty UI.
+   ========================================================= */
+
+/* ---------- Layout safety ---------- */
+.ots-layout-content,
+.ots-content-container,
+.ots-content-container > * {
+    min-width: 0;
+}
+
+.ots-layout-content :where(.so-page,.ys-page,.ps-root,.import-page,.arkas-page,.fasdat-page,.proje-ekle-page,.ge-page,.fx-content,.admin-container) {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* ---------- Shared interaction language ---------- */
+.ots-layout-content :where(button,[role="button"],input,select,textarea) {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ots-layout-content :where(button,[role="button"]):focus-visible,
+.ots-layout-content :where(input,select,textarea):focus-visible {
+    outline: 2px solid rgba(229,37,42,.35);
+    outline-offset: 2px;
+}
+
+.ots-layout-content :where(input,select,textarea) {
+    accent-color: var(--ots-primary);
+}
+
+/* ---------- Siparis Olustur ---------- */
+.so-page {
+    --c-bg: transparent !important;
+    --c-surface: #fff !important;
+    --c-surface-2: #f8fafc !important;
+    --c-surface-3: #f1f5f9 !important;
+    --c-border: #dfe6ee !important;
+    --c-border-md: #cfd9e5 !important;
+    --c-text: #152238 !important;
+    --c-muted: #64748b !important;
+    --c-muted-2: #94a3b8 !important;
+    --c-primary: #e5252a !important;
+    --c-primary-hover: #c9181e !important;
+    --c-primary-tint: #fff1f2 !important;
+    --c-primary-tint-strong: #ffe4e6 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+.so-header,
+.so-controls,
+.so-table-card {
+    border-color: var(--ots-border) !important;
+    border-radius: 16px !important;
+    background: rgba(255,255,255,.98) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+.so-logo-box {
+    color: #fff !important;
+    background: linear-gradient(145deg,#e5252a,#c9181e) !important;
+    box-shadow: 0 8px 20px rgba(229,37,42,.18) !important;
+}
+
+.so-select:focus,
+.so-input:focus,
+.so-field:focus {
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 0 0 3px var(--ots-primary-ring) !important;
+}
+
+.so-btn {
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+}
+
+.so-btn--primary {
+    color: #fff !important;
+    background: var(--ots-primary) !important;
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 6px 16px rgba(229,37,42,.16) !important;
+}
+
+.so-btn--primary:hover:not(:disabled) {
+    background: var(--ots-primary-hover) !important;
+    border-color: var(--ots-primary-hover) !important;
+}
+
+.so-drop-zone:hover,
+.so-drop-zone.active {
+    background: #fff7f7 !important;
+    border-color: #f4979a !important;
+}
+
+.so-drop-icon,
+.so-tab--active {
+    color: var(--ots-primary) !important;
+    background: var(--ots-primary-light) !important;
+    border-color: #fecaca !important;
+}
+
+/* ---------- Yeni Siparis ---------- */
+.ys-page {
+    --ys-bg: transparent !important;
+    --ys-card: #fff !important;
+    --ys-card-2: #f8fafc !important;
+    --ys-border: #dfe6ee !important;
+    --ys-border-strong: #cbd5e1 !important;
+    --ys-text: #152238 !important;
+    --ys-muted: #64748b !important;
+    --ys-dim: #94a3b8 !important;
+    --ys-blue: #e5252a !important;
+    --ys-blue-soft: rgba(229,37,42,.09) !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    color: var(--ots-text) !important;
+    background: transparent !important;
+}
+
+.ys-header {
+    align-items: center !important;
+    margin-bottom: 16px !important;
+}
+
+.ys-eyebrow { color: var(--ots-primary) !important; }
+.ys-header h1 { color: var(--ots-text) !important; }
+.ys-header p { color: var(--ots-muted) !important; }
+
+.ys-tabs,
+.ys-action-card,
+.ys-table-card,
+.ys-mapping-head,
+.ys-summary,
+.ys-customer-card {
+    background: #fff !important;
+    border-color: var(--ots-border) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+.ys-tabs button.is-active {
+    color: var(--ots-primary) !important;
+    background: var(--ots-primary-light) !important;
+    border-color: #fecaca !important;
+}
+
+.ys-btn--primary {
+    color: #fff !important;
+    background: var(--ots-primary) !important;
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 6px 16px rgba(229,37,42,.15) !important;
+}
+
+.ys-btn--primary:hover:not(:disabled) {
+    background: var(--ots-primary-hover) !important;
+    border-color: var(--ots-primary-hover) !important;
+}
+
+.ys-search:focus-within,
+.ys-inline-input:focus,
+.ys-customer-fields select:focus {
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 0 0 3px var(--ots-primary-ring) !important;
+}
+
+.ys-dropzone:hover {
+    background: #fff7f7 !important;
+    border-color: #f4979a !important;
+}
+
+/* ---------- Parsiyel Siparis ---------- */
+.ps-root.ps-light,
+.ps-root.ps-dark,
+.ps-root {
+    --bg: transparent !important;
+    --surface: #fff !important;
+    --surface-2: #f8fafc !important;
+    --surface-3: #f1f5f9 !important;
+    --surface-hover: #f8fafc !important;
+    --border: #dfe6ee !important;
+    --border-md: #cfd9e5 !important;
+    --border-hi: #bdcad8 !important;
+    --text-1: #152238 !important;
+    --text-2: #475569 !important;
+    --text-3: #64748b !important;
+    --accent: #e5252a !important;
+    --accent-dim: #fff1f2 !important;
+    --accent-glow: #fecaca !important;
+    --field-bg: #fff !important;
+    --field-bg-hover: #fbfcfe !important;
+    --field-border: #d8e1ec !important;
+    --field-text: #152238 !important;
+    --field-ph: #94a3b8 !important;
+    --auto-col-bg: #fff8f8 !important;
+    --auto-col-border: #ffe0e1 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    color: var(--ots-text) !important;
+    background: transparent !important;
+}
+
+.ps-header,
+.ps-search,
+.ps-metric,
+.ps-table-card {
+    background: #fff !important;
+    border-color: var(--ots-border) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+.ps-header::before {
+    background: linear-gradient(135deg,rgba(229,37,42,.055),transparent 42%) !important;
+}
+
+.ps-eyebrow,
+.ps-metric__icon {
+    color: var(--ots-primary) !important;
+    background: var(--ots-primary-light) !important;
+    border-color: #fecaca !important;
+}
+
+.ps-btn--add,
+.ps-btn--export {
+    color: #fff !important;
+    background: var(--ots-primary) !important;
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 6px 16px rgba(229,37,42,.15) !important;
+}
+
+.ps-btn--add:hover,
+.ps-btn--export:hover {
+    background: var(--ots-primary-hover) !important;
+}
+
+.ps-btn--admin {
+    color: #fff !important;
+    background: var(--ots-navy-soft) !important;
+    border-color: var(--ots-navy-soft) !important;
+    box-shadow: none !important;
+}
+
+.ps-theme-btn { display: none !important; }
+
+.ss-trigger:hover,
+.ss-trigger.is-open,
+.ps-field-input:focus,
+.ps-field-select:focus {
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 0 0 3px var(--ots-primary-ring) !important;
+}
+
+.ss-option:hover {
+    color: var(--ots-primary) !important;
+    background: var(--ots-primary-light) !important;
+}
+
+/* ---------- Teslim Noktalari ---------- */
+.import-page {
+    --bg: transparent !important;
+    --card: #fff !important;
+    --card-2: #f8fafc !important;
+    --card-3: #f1f5f9 !important;
+    --line: #dfe6ee !important;
+    --line-2: #cbd5e1 !important;
+    --text: #152238 !important;
+    --muted: #64748b !important;
+    --accent: #e5252a !important;
+    --accent-2: #ef3539 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    background: transparent !important;
+}
+
+.import-card,
+.result-card,
+.mapping-card {
+    background: #fff !important;
+    border-color: var(--ots-border) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+.mini-label,
+.result-card.main strong,
+.mapping-head b,
+.mapping-row em,
+.upload-mark {
+    color: var(--ots-primary) !important;
+}
+
+.result-card.main,
+.mapping-head b,
+.mapping-row em,
+.upload-mark {
+    background: var(--ots-primary-light) !important;
+    border-color: #fecaca !important;
+}
+
+.drop-area:hover,
+.drop-area.active {
+    background: #fff7f7 !important;
+    border-color: #f4979a !important;
+}
+
+.drop-area button {
+    color: #fff !important;
+    background: var(--ots-primary) !important;
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 6px 16px rgba(229,37,42,.15) !important;
+}
+
+/* ---------- Arkas ---------- */
+.arkas-page {
+    --arkas-primary: var(--ots-primary);
+}
+
+.arkas-hero,
+.arkas-card,
+.arkas-modal,
+.arkas-selector-table-wrap {
+    border-color: var(--ots-border) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+.arkas-hero-icon {
+    background: linear-gradient(145deg,var(--ots-primary),var(--ots-primary-hover)) !important;
+    box-shadow: 0 8px 20px rgba(229,37,42,.18) !important;
+}
+
+.arkas-btn-primary {
+    background: var(--ots-primary) !important;
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 6px 16px rgba(229,37,42,.15) !important;
+}
+
+.arkas-btn-primary:hover:not(:disabled) {
+    background: var(--ots-primary-hover) !important;
+    border-color: var(--ots-primary-hover) !important;
+}
+
+.arkas-input:focus {
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 0 0 3px var(--ots-primary-ring) !important;
+}
+
+/* ---------- Fasdat ---------- */
+.fasdat-hero,
+.fasdat-mode-card,
+.fasdat-dropzone,
+.fasdat-preview-card,
+.fasdat-info-card {
+    border-color: var(--ots-border) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+.fasdat-hero-icon {
+    background: linear-gradient(145deg,var(--ots-primary),var(--ots-primary-hover)) !important;
+    box-shadow: 0 8px 20px rgba(229,37,42,.18) !important;
+}
+
+.fasdat-btn-primary {
+    background: var(--ots-primary) !important;
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 6px 16px rgba(229,37,42,.15) !important;
+}
+
+.fasdat-mode-card.is-active {
+    background: linear-gradient(135deg,#fff1f2,#fff 82%) !important;
+    border-color: #fecaca !important;
+    box-shadow: 0 8px 22px rgba(229,37,42,.08) !important;
+}
+
+.fasdat-mode-card.is-active::before {
+    background: var(--ots-primary) !important;
+}
+
+.fasdat-mode-card.is-active .fasdat-mode-title-row strong,
+.fasdat-mode-badge {
+    color: var(--ots-primary) !important;
+}
+
+.fasdat-mode-badge,
+.fasdat-mode-card.tone-blue .fasdat-mode-icon,
+.fasdat-mode-card.is-active .fasdat-mode-icon {
+    background: var(--ots-primary-light) !important;
+    border-color: #fecaca !important;
+}
+
+.fasdat-dropzone:hover,
+.fasdat-dropzone.is-dragging {
+    background: #fff7f7 !important;
+    border-color: var(--ots-primary) !important;
+}
+
+/* ---------- Proje Tanimlamalari ---------- */
+.proje-ekle-page {
+    width: 100% !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+.proje-ekle-header,
+.project-stat-card,
+.project-list-card {
+    border-color: var(--ots-border) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+.proje-header-icon,
+.new-project-button,
+.project-dialog-actions .MuiButton-contained {
+    background: var(--ots-primary) !important;
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 6px 16px rgba(229,37,42,.14) !important;
+}
+
+.project-edit-button {
+    color: var(--ots-primary) !important;
+    background: var(--ots-primary-light) !important;
+}
+
+/* ---------- Gelir / Gider ---------- */
+.ge-page {
+    --accent: var(--ots-primary) !important;
+    --accent-2: var(--ots-primary-hover) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    color: var(--ots-text) !important;
+}
+
+.ge-drop,
+.ge-file,
+.ge-summary-item,
+.ge-table-wrap {
+    border-color: var(--ots-border) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+.ge-drop:hover,
+.ge-drop:focus-within,
+.ge-drop.dragging {
+    background: #fff7f7 !important;
+    border-color: #f4979a !important;
+    box-shadow: 0 8px 24px rgba(229,37,42,.08) !important;
+}
+
+/* ---------- Sefer Fiyatlandirma ---------- */
+.fx-content {
+    --primary: var(--ots-primary) !important;
+    --primary-dark: var(--ots-primary-hover) !important;
+    --border: var(--ots-border) !important;
+    --border-soft: var(--ots-border-light) !important;
+}
+
+.fx-toolbar,
+.fx-card {
+    border-color: var(--ots-border) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+.fx-btn:not(.fx-btn-ghost) {
+    color: #fff !important;
+    background: var(--ots-primary) !important;
+    border-color: var(--ots-primary) !important;
+}
+
+.fx-btn-outline {
+    color: var(--ots-primary) !important;
+    background: var(--ots-primary-light) !important;
+    border-color: #fecaca !important;
+}
+
+.fx-btn-outline:hover { color: #fff !important; background: var(--ots-primary) !important; }
+
+.fx-badge {
+    color: var(--ots-primary) !important;
+    background: var(--ots-primary-light) !important;
+    border-color: #fecaca !important;
+}
+
+.fx-input:focus,
+.pill input:focus {
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 0 0 3px var(--ots-primary-ring) !important;
+}
+
+/* ---------- MUI screens / analysis ---------- */
+.ots-layout-content .MuiButton-containedPrimary,
+.ots-layout-content .MuiButton-contained:not(.MuiButton-containedError):not(.MuiButton-containedSuccess) {
+    color: #fff !important;
+    background: var(--ots-primary) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 6px 16px rgba(229,37,42,.14) !important;
+    text-transform: none !important;
+    font-weight: 700 !important;
+}
+
+.ots-layout-content .MuiButton-outlinedPrimary {
+    color: var(--ots-primary) !important;
+    border-color: #f4b2b4 !important;
+    background: #fff !important;
+    text-transform: none !important;
+}
+
+.ots-layout-content .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: var(--ots-primary) !important;
+}
+
+.ots-layout-content .MuiInputLabel-root.Mui-focused,
+.ots-layout-content .MuiSvgIcon-colorPrimary {
+    color: var(--ots-primary) !important;
+}
+
+.ots-layout-content .MuiPaper-root {
+    border-color: var(--ots-border);
+}
+
+/* ---------- Tables ---------- */
+.ots-layout-content :where(.so-table,.ys-table,.ps-table,.arkas-table,.fasdat-table,.fx-table,.ge-table) thead th {
+    color: #536174 !important;
+    background: #f7f9fc !important;
+    border-color: var(--ots-border) !important;
+}
+
+.ots-layout-content :where(.so-table,.ys-table,.ps-table,.arkas-table,.fasdat-table,.fx-table,.ge-table) tbody tr:hover td {
+    background: #fafbfd !important;
+}
+
+/* ---------- Responsive refinements ---------- */
+@media (max-width: 900px) {
+    .so-header,
+    .ys-header,
+    .ps-header__row,
+    .arkas-hero,
+    .fasdat-hero,
+    .proje-ekle-header,
+    .fx-toolbar {
+        gap: 12px !important;
+    }
+}
+
+/* =========================================================
+   ODAK UI V2 — density, hierarchy and cross-screen polish
+   ========================================================= */
+.ots-content-container {
+    animation: otsPageIn .22s ease both;
+}
+@keyframes otsPageIn {
+    from { opacity: .72; transform: translateY(3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Page surfaces: consistent geometry without adding decorative content. */
+.ots-layout-content :where(
+    .so-header,.so-controls,.so-table-card,
+    .ys-tabs,.ys-action-card,.ys-table-card,.ys-customer-card,
+    .ps-header,.ps-table-card,
+    .import-card,.result-card,.mapping-card,
+    .arkas-hero,.arkas-card,
+    .fasdat-hero,.fasdat-mode-card,.fasdat-preview-card,.fasdat-info-card,
+    .proje-ekle-header,.project-stat-card,.project-list-card,
+    .ge-drop,.ge-file,.ge-summary-item,.ge-table-wrap,
+    .fx-toolbar,.fx-card
+) {
+    border-radius: 16px !important;
+    border-color: var(--ots-border) !important;
+    box-shadow: var(--ots-shadow-xs) !important;
+}
+
+/* Buttons across native screens share modern sizing and hierarchy. */
+.ots-layout-content :where(
+    .so-btn,.ys-btn,.ps-btn,.arkas-btn,.fasdat-btn,.fx-btn,.ge-page .btn,.drop-area button
+) {
+    min-height: 40px;
+    border-radius: 10px !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 750 !important;
+    letter-spacing: -.005em;
+    transition: transform .16s ease, box-shadow .16s ease, background .16s ease, border-color .16s ease, color .16s ease !important;
+}
+.ots-layout-content :where(
+    .so-btn,.ys-btn,.ps-btn,.arkas-btn,.fasdat-btn,.fx-btn,.ge-page .btn,.drop-area button
+):not(:disabled):active {
+    transform: translateY(0) scale(.985) !important;
+}
+
+/* Inputs/selects: same height, border, focus and typography everywhere. */
+.ots-layout-content :where(
+    .so-input,.so-select,.so-field,
+    .ys-inline-input,.ys-customer-fields input,.ys-customer-fields select,.ys-search,
+    .ps-field,.ss-trigger,.ps-search,
+    .arkas-input,.fasdat-input,
+    .ge-page input,.ge-page select,.ge-page textarea,
+    .fx-input,.pill input
+) {
+    min-height: 38px;
+    border-radius: 9px !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+}
+
+/* Parsiyel: clearer action priority, more readable table, compact but premium header. */
+.ps-container { max-width: 1920px !important; gap: 14px !important; }
+.ps-header { padding: 20px 22px !important; }
+.ps-header__row { gap: 18px !important; }
+.ps-title {
+    margin-top: 7px !important;
+    color: var(--ots-text) !important;
+    font-size: clamp(20px, 1.55vw, 25px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: -.035em !important;
+}
+.ps-subtitle {
+    max-width: 760px !important;
+    margin-top: 6px !important;
+    color: var(--ots-muted) !important;
+    font-size: 11.5px !important;
+    line-height: 1.55 !important;
+}
+.ps-actions { gap: 8px !important; }
+.ps-btn--export {
+    color: #fff !important;
+    background: var(--ots-primary) !important;
+    border-color: var(--ots-primary) !important;
+    box-shadow: 0 7px 18px rgba(229,37,42,.17) !important;
+}
+.ps-btn--export:hover:not(:disabled) { background: var(--ots-primary-hover) !important; }
+.ps-btn--add {
+    color: #fff !important;
+    background: var(--ots-navy-soft) !important;
+    border-color: var(--ots-navy-soft) !important;
+    box-shadow: 0 6px 15px rgba(7,26,45,.10) !important;
+}
+.ps-btn--add:hover:not(:disabled) { background: #0f3558 !important; }
+.ps-btn--admin {
+    color: #9f181d !important;
+    background: #fff7f7 !important;
+    border-color: #f5c5c7 !important;
+    box-shadow: none !important;
+}
+.ps-btn--admin:hover:not(:disabled) { background: var(--ots-primary-light) !important; }
+.ps-btn--ghost {
+    color: #475569 !important;
+    background: #fff !important;
+    border-color: #d8e1ec !important;
+    box-shadow: none !important;
+}
+.ps-btn--ghost:hover:not(:disabled) { color: #1e293b !important; background: #f8fafc !important; }
+.ps-metrics { gap: 9px !important; margin-top: 15px !important; }
+.ps-search,.ps-metric { height: 46px !important; border-radius: 11px !important; }
+.ps-metric { background: #fbfcfe !important; }
+.ps-metric__label { font-size: 8px !important; letter-spacing: .10em !important; }
+.ps-metric__value { color: #111827 !important; font-family: inherit !important; font-size: 16px !important; }
+.ps-table-bar { min-height: 48px; padding: 11px 15px !important; }
+.ps-table-bar__title { font-size: 12.5px !important; }
+.ps-table thead th {
+    padding: 10px 8px !important;
+    color: #526174 !important;
+    background: #f7f9fc !important;
+    font-size: 8.5px !important;
+    letter-spacing: .085em !important;
+}
+.ps-table tbody td { padding: 7px 5px !important; }
+.ps-field,.ss-trigger { min-height: 37px !important; background: #fff !important; }
+.ps-row-idx { width: 30px !important; height: 30px !important; font-family: inherit !important; }
+.ps-icon-btn { width: 34px !important; height: 34px !important; border-radius: 9px !important; }
+.ps-icon-btn--copy { color: #31516f !important; }
+.ps-icon-btn--copy:hover { color: #fff !important; background: #0b2744 !important; border-color: #0b2744 !important; }
+.ps-icon-btn--del:hover { color: #fff !important; background: #dc2626 !important; border-color: #dc2626 !important; }
+
+/* Sipariş/Yeni Sipariş: consistent primary and secondary controls. */
+.so-btn--primary,.ys-btn--primary {
+    box-shadow: 0 7px 18px rgba(229,37,42,.16) !important;
+}
+.so-btn--secondary,.ys-btn--secondary {
+    color: #334155 !important;
+    background: #fff !important;
+    border-color: #d8e1ec !important;
+    box-shadow: none !important;
+}
+
+/* Table readability and row feedback across operational screens. */
+.ots-layout-content :where(.so-table,.ys-table,.ps-table,.arkas-table,.fasdat-table,.fx-table,.ge-table) {
+    font-size: 11.5px;
+}
+.ots-layout-content :where(.so-table,.ys-table,.ps-table,.arkas-table,.fasdat-table,.fx-table,.ge-table) tbody tr {
+    transition: background .14s ease, box-shadow .14s ease;
+}
+.ots-layout-content :where(.so-table,.ys-table,.ps-table,.arkas-table,.fasdat-table,.fx-table,.ge-table) tbody tr:hover td {
+    background: #fbfcfe !important;
+}
+
+/* MUI pages use the same compact contemporary controls. */
+.ots-layout-content .MuiButton-root {
+    min-height: 40px;
+    border-radius: 10px !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 750 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+.ots-layout-content .MuiOutlinedInput-root { border-radius: 10px !important; }
+.ots-layout-content .MuiTableCell-head {
+    color: #526174 !important;
+    background: #f7f9fc !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    letter-spacing: .035em !important;
+}
+
+@media (max-width: 1180px) {
+    .ps-header__row { align-items: flex-start !important; flex-direction: column !important; }
+    .ps-actions { width: 100%; flex-wrap: wrap !important; }
+}

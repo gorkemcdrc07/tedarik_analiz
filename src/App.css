@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --bg1: #0b1220;
     --bg2: #0d1426;
     --panel: rgba(16, 22, 36, .70);
@@ -216,7 +216,7 @@ body {
         }
 
 .clickable-project {
-    color: #60a5fa;
+    color: #fb6b6f;
     font-weight: 700;
     text-decoration: none;
     position: relative;

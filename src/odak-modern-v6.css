@@ -1,0 +1,158 @@
+/* ========================================================================== 
+   ODAK LOGISTICS UI V6 — premium product layer
+   ========================================================================== */
+:root {
+  --od6-red:#ef2d33;
+  --od6-red-2:#d91f25;
+  --od6-navy:#071a2d;
+  --od6-navy-2:#0c2d4a;
+  --od6-blue:#1677ff;
+  --od6-surface:#ffffff;
+  --od6-bg:#f4f7fb;
+  --od6-soft:#f8fafc;
+  --od6-line:#dfe7ef;
+  --od6-text:#102033;
+  --od6-muted:#718096;
+  --od6-shadow:0 12px 34px rgba(15,23,42,.06);
+  --od6-shadow-hover:0 18px 48px rgba(15,23,42,.10);
+}
+
+/* page motion */
+.ots-page-enter { animation: od6PageIn .22s cubic-bezier(.2,.8,.2,1); }
+@keyframes od6PageIn { from { opacity:0; transform:translateY(6px) scale(.998); } to { opacity:1; transform:none; } }
+
+/* premium interactions */
+.ots-layout-content :where(button,[role="button"],a,input,select,textarea) { transition-duration:160ms; }
+.ots-layout-content :where(button,[role="button"]):active:not(:disabled) { transform:translateY(1px) scale(.99); }
+.ots-layout-content :where(button,[role="button"]):disabled { opacity:.48; cursor:not-allowed; filter:saturate(.6); }
+
+/* card hierarchy */
+.ots-layout-content :where(.so-header,.so-controls,.so-table-card,.ys-tabs,.ys-action-card,.ys-table-card,.ys-summary,.ys-customer-card,.ps-header,.ps-search,.ps-metric,.ps-table-card,.admin-toolbar,.admin-stat-card,.admin-table-card,.MuiPaper-root) {
+  border-color:var(--od6-line)!important;
+}
+.ots-layout-content :where(.so-table-card,.ys-table-card,.ps-table-card,.admin-table-card,.MuiTableContainer-root) {
+  overflow:hidden;
+  box-shadow:var(--od6-shadow)!important;
+}
+
+/* button language */
+.ots-layout-content :where(.so-btn,.ys-btn,.ps-btn,.btn,.MuiButton-root):not(.MuiIconButton-root) {
+  min-height:42px!important;
+  border-radius:12px!important;
+  letter-spacing:-.01em;
+}
+.ots-layout-content :where(.so-btn--primary,.ys-btn--primary,.ps-btn--add,.ps-btn--export,.btn-primary,.MuiButton-containedPrimary) {
+  background:linear-gradient(135deg,#f2383e 0%,#dc2026 100%)!important;
+  border-color:#dc2026!important;
+  color:#fff!important;
+  box-shadow:0 8px 20px rgba(229,37,42,.18)!important;
+}
+.ots-layout-content :where(.so-btn--primary,.ys-btn--primary,.ps-btn--add,.ps-btn--export,.btn-primary,.MuiButton-containedPrimary):hover:not(:disabled) {
+  background:linear-gradient(135deg,#e92e34,#c9181e)!important;
+  box-shadow:0 12px 26px rgba(229,37,42,.24)!important;
+  transform:translateY(-1px);
+}
+
+/* icon buttons */
+.ots-layout-content :where(.ps-icon-btn,.MuiIconButton-root,.icon-button,.action-icon) {
+  border-radius:10px!important;
+  transition:transform .16s ease,background .16s ease,color .16s ease,box-shadow .16s ease!important;
+}
+.ots-layout-content :where(.ps-icon-btn,.MuiIconButton-root,.icon-button,.action-icon):hover { transform:translateY(-1px); }
+
+/* modern forms */
+.ots-layout-content :where(input,select,textarea,.MuiOutlinedInput-root) {
+  border-radius:11px!important;
+}
+.ots-layout-content :where(input,select,textarea):not([type="checkbox"]):not([type="radio"]) {
+  min-height:40px;
+  border-color:#d7e1eb;
+}
+.ots-layout-content :where(input,select,textarea):not([type="checkbox"]):not([type="radio"]):hover { border-color:#c8d4df; }
+.ots-layout-content :where(input,select,textarea):not([type="checkbox"]):not([type="radio"]):focus {
+  border-color:#ef7074!important;
+  box-shadow:0 0 0 4px rgba(229,37,42,.08)!important;
+  outline:none!important;
+}
+
+/* data tables */
+.ots-layout-content :where(.so-table,.ys-table,.ps-table,.MuiTable-root,table) thead th {
+  position:sticky;
+  top:0;
+  z-index:3;
+  height:44px;
+  color:#516174!important;
+  background:linear-gradient(180deg,#fbfcfe 0%,#f4f7fa 100%)!important;
+  border-bottom:1px solid #dbe4ed!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.035em;
+  text-transform:uppercase;
+}
+.ots-layout-content :where(.so-table,.ys-table,.ps-table,.MuiTable-root,table) tbody tr { position:relative; }
+.ots-layout-content :where(.so-table,.ys-table,.ps-table,.MuiTable-root,table) tbody tr:hover td { background:#f8fafc!important; }
+.ots-layout-content :where(.so-table,.ys-table,.ps-table,.MuiTable-root,table) tbody td { border-bottom-color:#edf2f6!important; }
+
+/* status chips */
+.od-status-chip { display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:0 9px;border-radius:999px;font-size:10px;font-weight:800;border:1px solid transparent; }
+.od-status-chip::before { content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 13%,transparent); }
+.od-status-chip.success { color:#0d9f5a;background:#ecfdf5;border-color:#bbf7d0; }
+.od-status-chip.warning { color:#c76b08;background:#fff8eb;border-color:#fde5b5; }
+.od-status-chip.danger { color:#dc2626;background:#fff1f2;border-color:#fecdd3; }
+.od-status-chip.info { color:#1268c7;background:#eef6ff;border-color:#cfe4ff; }
+
+/* upload zones */
+.ots-layout-content :where(.so-drop-zone,.ys-dropzone,.drop-area,.fasdat-dropzone,.ge-drop) {
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(180deg,#fff,#fbfdff)!important;
+  border:1.5px dashed #cad7e3!important;
+  border-radius:16px!important;
+}
+.ots-layout-content :where(.so-drop-zone,.ys-dropzone,.drop-area,.fasdat-dropzone,.ge-drop)::before {
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 20%,rgba(229,37,42,.08),transparent 46%);transition:opacity .18s ease;
+}
+.ots-layout-content :where(.so-drop-zone,.ys-dropzone,.drop-area,.fasdat-dropzone,.ge-drop):hover::before { opacity:1; }
+
+/* Admin */
+.admin-container { gap:16px!important; }
+.admin-container .MuiPaper-root { border-radius:16px!important; box-shadow:var(--od6-shadow)!important; }
+.admin-container .MuiTableContainer-root { max-height:62vh; }
+.admin-container .MuiTableRow-root:hover .MuiTableCell-body { background:#fafcfe!important; }
+.admin-container .MuiDialog-paper { border-radius:22px!important; overflow:hidden; }
+.admin-container .MuiDialogTitle-root { font-weight:900;letter-spacing:-.025em; }
+.admin-container .MuiFormControl-root { background:#fff;border-radius:12px; }
+
+/* hover shimmer on operational cards */
+.ots-layout-content :where(.ps-metric,.ys-action-card,.stat-card,.project-stat-card,.ge-summary-item,.od-quick-card,.od-module-group-card) { position:relative;overflow:hidden; }
+.ots-layout-content :where(.ps-metric,.ys-action-card,.stat-card,.project-stat-card,.ge-summary-item,.od-quick-card,.od-module-group-card)::after {
+  content:"";position:absolute;inset:-100% auto -100% -45%;width:34%;transform:rotate(14deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);opacity:0;transition:left .45s ease,opacity .2s ease;pointer-events:none;
+}
+.ots-layout-content :where(.ps-metric,.ys-action-card,.stat-card,.project-stat-card,.ge-summary-item,.od-quick-card,.od-module-group-card):hover::after { left:125%;opacity:.65; }
+
+/* real dark mode */
+html[data-odak-theme="dark"] {
+  --ots-bg:#07111d;--ots-surface:#0d1b2a;--ots-surface-soft:#102235;--ots-surface-muted:#142a40;
+  --ots-text:#edf4fb;--ots-text-soft:#c1cedb;--ots-muted:#8498ab;--ots-border:#20364a;--ots-border-light:#172c3e;--ots-border-strong:#2c465d;
+  background:#07111d;
+}
+html[data-odak-theme="dark"] body { color:var(--ots-text);background:radial-gradient(circle at 8% -8%,rgba(229,37,42,.08),transparent 24%),linear-gradient(180deg,#081522,#07111d); }
+html[data-odak-theme="dark"] .ots-layout-content { background:linear-gradient(180deg,#091725,#07131f)!important; }
+html[data-odak-theme="dark"] .ots-layout-content :where(.so-header,.so-controls,.so-table-card,.ys-tabs,.ys-action-card,.ys-table-card,.ys-summary,.ys-customer-card,.ps-header,.ps-search,.ps-metric,.ps-table-card,.admin-container .MuiPaper-root,.MuiTableContainer-root,.MuiDialog-paper) {
+  color:#edf4fb!important;background:#0d1b2a!important;border-color:#20364a!important;
+}
+html[data-odak-theme="dark"] .ots-layout-content :where(input,select,textarea,.MuiOutlinedInput-root) { color:#edf4fb!important;background:#0a1724!important;border-color:#294158!important; }
+html[data-odak-theme="dark"] .ots-layout-content :where(.so-table,.ys-table,.ps-table,.MuiTable-root,table) thead th { color:#aebed0!important;background:#102235!important;border-color:#294158!important; }
+html[data-odak-theme="dark"] .ots-layout-content :where(.so-table,.ys-table,.ps-table,.MuiTable-root,table) tbody td { color:#dce7f2!important;background:#0d1b2a!important;border-color:#183047!important; }
+html[data-odak-theme="dark"] .ots-layout-content :where(.so-table,.ys-table,.ps-table,.MuiTable-root,table) tbody tr:hover td { background:#102235!important; }
+html[data-odak-theme="dark"] .ots-layout-content :where(.so-drop-zone,.ys-dropzone,.drop-area,.fasdat-dropzone,.ge-drop) { background:#0b1927!important;border-color:#294158!important; }
+
+/* mobile */
+@media (max-width:720px) {
+  .ots-layout-content :where(.so-btn,.ys-btn,.ps-btn,.btn,.MuiButton-root):not(.MuiIconButton-root){ min-height:44px!important; }
+  .ots-layout-content :where(.so-table,.ys-table,.ps-table,.MuiTable-root,table) thead th { position:static; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ots-page-enter { animation:none!important; }
+}

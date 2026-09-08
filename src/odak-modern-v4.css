@@ -1,0 +1,206 @@
+/* ========================================================================== 
+   ODAK LOGISTICS UI V4 — shared operational polish
+   ========================================================================== */
+
+:root {
+    --odak-red: #e5252a;
+    --odak-red-dark: #c91b21;
+    --odak-navy: #071a2d;
+    --odak-navy-2: #0d3152;
+    --odak-surface: #f4f7fa;
+    --odak-card: #ffffff;
+    --odak-text: #102033;
+    --odak-muted: #708095;
+    --odak-line: #dfe7ef;
+    --odak-soft-red: #fff4f4;
+    --odak-soft-navy: #f0f5f9;
+    --odak-shadow: 0 10px 28px rgba(15,23,42,.045);
+    --odak-shadow-hover: 0 16px 38px rgba(15,23,42,.075);
+}
+
+.ots-layout-content {
+    background:
+        radial-gradient(circle at 95% 0, rgba(229,37,42,.025), transparent 23%),
+        linear-gradient(180deg,#f7f9fb 0,#f4f7fa 100%);
+}
+
+/* Every operational surface should feel like the same product. */
+.ots-layout-content :where(
+    .so-page,.ys-page,.ps-root,.order-screen,.import-page,.arkas-page,.fasdat-page,
+    .proje-ekle-page,.ge-page,.fx-content,.admin-container,.app-container
+) {
+    width: 100%;
+}
+
+/* Section headers */
+.ots-layout-content :where(
+    .so-header,.ys-header,.ps-header,.hero-panel,.top-bar,.arkas-hero,.fasdat-hero,
+    .proje-ekle-header,.ge-header,.fx-toolbar,.topbar
+) {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--odak-line) !important;
+    background: linear-gradient(180deg,#fff 0%,#fbfcfe 100%) !important;
+    box-shadow: var(--odak-shadow) !important;
+}
+
+.ots-layout-content :where(
+    .so-header,.ys-header,.ps-header,.hero-panel,.top-bar,.arkas-hero,.fasdat-hero,
+    .proje-ekle-header,.ge-header,.fx-toolbar,.topbar
+)::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    pointer-events: none;
+    background: linear-gradient(90deg,var(--odak-red),rgba(229,37,42,0) 42%);
+}
+
+/* Content cards */
+.ots-layout-content :where(
+    .so-controls,.so-table-card,.ys-action-card,.ys-table-card,.ys-customer-card,.ys-summary,
+    .table-panel,.stat-card,.import-card,.result-card,.mapping-card,.arkas-card,.fasdat-mode-card,
+    .fasdat-dropzone,.fasdat-preview-card,.fasdat-info-card,.project-stat-card,.project-list-card,
+    .ge-drop,.ge-file,.ge-summary-item,.ge-table-wrap,.fx-card,.content-card,.section
+) {
+    background: var(--odak-card) !important;
+    border-color: var(--odak-line) !important;
+    box-shadow: var(--odak-shadow) !important;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.ots-layout-content :where(
+    .ys-action-card,.stat-card,.fasdat-mode-card,.project-stat-card,.ge-summary-item
+):hover {
+    border-color: #d4dee8 !important;
+    box-shadow: var(--odak-shadow-hover) !important;
+    transform: translateY(-1px);
+}
+
+/* Consistent buttons, including older pages */
+.ots-layout-content :where(button,.MuiButton-root):not(.MuiIconButton-root):not(.odak-home-module) {
+    font-family: inherit;
+}
+
+.ots-layout-content :where(
+    .btn,.so-btn,.ys-btn,.ps-btn,.arkas-btn,.fasdat-btn,.fx-btn,.btn-primary,
+    .add-button,.save-button
+) {
+    min-height: 42px !important;
+    border-radius: 11px !important;
+    font-weight: 780 !important;
+}
+
+/* Toolbars and filter zones */
+.ots-layout-content :where(
+    .so-controls,.ys-actions,.table-toolbar,.filter-bar,.fx-toolbar,.arkas-import-area
+) {
+    gap: 10px;
+}
+
+/* Tables */
+.ots-layout-content :where(
+    table,.styled-table,.order-table,.so-table,.ys-table,.ps-table,.arkas-table,.fasdat-table,.ge-table,.fx-table
+) {
+    color: #27364a;
+}
+
+.ots-layout-content :where(
+    table,.styled-table,.order-table,.so-table,.ys-table,.ps-table,.arkas-table,.fasdat-table,.ge-table,.fx-table
+) thead th {
+    color: #536277 !important;
+    background: linear-gradient(180deg,#fafbfd,#f4f7fa) !important;
+    border-bottom-color: #dbe4ed !important;
+}
+
+.ots-layout-content :where(
+    table,.styled-table,.order-table,.so-table,.ys-table,.ps-table,.arkas-table,.fasdat-table,.ge-table,.fx-table
+) tbody tr {
+    transition: background .14s ease, box-shadow .14s ease;
+}
+
+.ots-layout-content :where(
+    table,.styled-table,.order-table,.so-table,.ys-table,.ps-table,.arkas-table,.fasdat-table,.ge-table,.fx-table
+) tbody tr:hover {
+    background: #f8fafc !important;
+}
+
+/* Inputs */
+.ots-layout-content :where(input,select,textarea):not([type="checkbox"]):not([type="radio"]) {
+    accent-color: var(--odak-red);
+}
+
+/* MUI modernization — admin and analysis screens */
+.ots-layout-content .MuiPaper-root {
+    background-image: none !important;
+}
+.ots-layout-content .MuiButton-root {
+    border-radius: 11px !important;
+    text-transform: none !important;
+    font-weight: 750 !important;
+    box-shadow: none;
+}
+.ots-layout-content .MuiButton-containedPrimary {
+    background: linear-gradient(135deg,#e92d32,#ce1c22) !important;
+    box-shadow: 0 8px 18px rgba(229,37,42,.16) !important;
+}
+.ots-layout-content .MuiButton-containedPrimary:hover {
+    box-shadow: 0 11px 24px rgba(229,37,42,.22) !important;
+}
+.ots-layout-content .MuiOutlinedInput-root {
+    border-radius: 11px !important;
+    background: #fff;
+}
+.ots-layout-content .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #e98f92 !important;
+    box-shadow: 0 0 0 3px rgba(229,37,42,.055);
+}
+.ots-layout-content .MuiTableContainer-root {
+    border: 1px solid var(--odak-line);
+    border-radius: 14px;
+    box-shadow: none !important;
+}
+.ots-layout-content .MuiTableHead-root .MuiTableCell-root {
+    color: #536277;
+    background: #f6f8fa;
+    font-size: 10px;
+    font-weight: 800;
+}
+.ots-layout-content .MuiChip-root {
+    border-radius: 8px !important;
+    font-weight: 700;
+}
+.ots-layout-content .MuiDialog-paper {
+    border: 1px solid #dfe6ee;
+    border-radius: 18px !important;
+    box-shadow: 0 28px 80px rgba(7,26,45,.22) !important;
+}
+
+/* Upload/drop areas — logistics document feel */
+.ots-layout-content :where(.so-drop-zone,.ys-dropzone,.drop-area,.fasdat-dropzone,.ge-drop) {
+    background:
+        linear-gradient(180deg,#fff,#fbfcfe) !important;
+    border-color: #ccd9e5 !important;
+}
+.ots-layout-content :where(.so-drop-zone,.ys-dropzone,.drop-area,.fasdat-dropzone,.ge-drop):hover {
+    background: #fffafa !important;
+    border-color: #e98f92 !important;
+}
+
+/* Modal details */
+.odak-modal {
+    border-color: #dce5ed !important;
+    border-radius: 18px !important;
+    box-shadow: 0 28px 75px rgba(7,26,45,.22) !important;
+}
+
+/* Desktop content uses the freed space from the hover rail. */
+@media (min-width: 1025px) {
+    .ots-layout-content { padding-inline: 26px; }
+}
+
+@media (max-width: 700px) {
+    .ots-layout-content :where(.so-header,.ys-header,.ps-header,.hero-panel,.arkas-hero,.fasdat-hero,.proje-ekle-header,.fx-toolbar) {
+        border-radius: 15px !important;
+    }
+}

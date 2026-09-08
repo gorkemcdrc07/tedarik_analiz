@@ -1,6 +1,10 @@
 import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import supabase from "../supabaseClient";
+import {
+    FileSpreadsheet, LoaderCircle, MapPinned, UploadCloud, X,
+    Rows3, CircleCheckBig, DatabaseZap, CopyCheck, ArrowRight
+} from "lucide-react";
 import "./TeslimNoktalari.css";
 
 const columnMap = [
@@ -294,7 +298,7 @@ export default function TeslimNoktalari() {
                                 className="close-result"
                                 onClick={() => setShowResult(false)}
                             >
-                                ×
+                                <X size={16} />
                             </button>
                         )}
 
@@ -362,15 +366,26 @@ export default function TeslimNoktalari() {
 
             <section className="import-card">
                 <div className="top-bar">
-                    <div>
-                        <span className="mini-label">Teslim Noktaları</span>
-                        <h1>Excel Aktarım</h1>
+                    <div className="import-title-wrap">
+                        <span className="import-title-icon"><MapPinned size={21} strokeWidth={1.8} /></span>
+                        <div>
+                            <span className="mini-label">Teslim Noktaları</span>
+                            <h1>Excel Aktarım</h1>
+                        </div>
                     </div>
 
                     <div className={`status-badge ${status.type}`}>
                         <span />
                         {status.title}
                     </div>
+                </div>
+
+                <div className="import-flow">
+                    <div className="import-flow-step is-active"><span><FileSpreadsheet size={17} /></span><div><b>1. Excel Seç</b><small>.xlsx veya .xls dosyanı yükle</small></div></div>
+                    <ArrowRight className="import-flow-arrow" size={18} />
+                    <div className={`import-flow-step ${importing || summary.total ? "is-active" : ""}`}><span><CopyCheck size={17} /></span><div><b>2. Doğrula</b><small>Kolon ve kayıtları otomatik kontrol et</small></div></div>
+                    <ArrowRight className="import-flow-arrow" size={18} />
+                    <div className={`import-flow-step ${summary.added ? "is-active is-done" : ""}`}><span><DatabaseZap size={17} /></span><div><b>3. Kaydet</b><small>Geçerli teslim noktalarını sisteme ekle</small></div></div>
                 </div>
 
                 <div className="content-grid">
@@ -391,7 +406,7 @@ export default function TeslimNoktalari() {
                         />
 
                         <div className="upload-mark">
-                            {importing ? <i /> : "↥"}
+                            {importing ? <LoaderCircle className="import-spin" size={24} /> : <UploadCloud size={25} strokeWidth={1.8} />}
                         </div>
 
                         <strong>
@@ -401,23 +416,27 @@ export default function TeslimNoktalari() {
                         <p>{fileName || "veya dosya seçmek için tıkla"}</p>
 
                         <button type="button" disabled={importing}>
+                            <FileSpreadsheet size={16} />
                             Dosya Seç
                         </button>
                     </div>
 
                     <aside className="side-panel">
                         <div className="result-card main">
+                            <span className="result-card-icon"><DatabaseZap size={18} /></span>
                             <small>Eklenen Kayıt</small>
                             <strong>{summary.added}</strong>
                         </div>
 
                         <div className="result-grid">
                             <div className="result-card">
+                                <span className="result-card-icon"><Rows3 size={16} /></span>
                                 <small>Excel Satırı</small>
                                 <strong>{summary.total}</strong>
                             </div>
 
                             <div className="result-card">
+                                <span className="result-card-icon"><CircleCheckBig size={16} /></span>
                                 <small>Geçerli Kayıt</small>
                                 <strong>{summary.valid}</strong>
                             </div>

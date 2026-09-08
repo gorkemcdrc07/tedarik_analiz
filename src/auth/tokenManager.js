@@ -1,4 +1,4 @@
-﻿// src/tokenManager.js
+// src/tokenManager.js
 // --------------------------------------------------------------
 // TMS API ile uyumlu token yönetimi
 // Token tamamen /reel-auth/api/auth/login endpoint'inden alınıyor.
@@ -13,8 +13,11 @@ let refreshInFlight = null;
 let timerId = null;
 
 // ✅ Frontend her zaman bunu çağıracak (proxy route)
-const TOKEN_URL = "/api/reel-auth/login";
-console.log("[TMS] TOKEN_URL:", TOKEN_URL);
+const TOKEN_URLS = [
+    "/reel-auth/api/auth/login",
+    "/api/reel-auth/login",
+];
+console.log("[TMS] TOKEN_URLS:", TOKEN_URLS);
 
 // Yardımcı
 const safeParse = (s, fallback = null) => {
@@ -44,7 +47,7 @@ function loadFromStorage() {
     const obj = safeParse(raw);
     if (obj?.token && obj?.exp > Date.now()) {
         current = obj;
-        console.log("%c[TMS] Geçerli token storage'dan kullanılıyor.", "color:#3b82f6");
+        console.log("%c[TMS] Geçerli token storage'dan kullanılıyor.", "color:#ef3539");
         scheduleRefresh();
     } else {
         sessionStorage.removeItem(STORAGE_KEY);
@@ -75,15 +78,37 @@ function scheduleRefresh() {
 async function requestNewToken() {
     const { userName, password } = getUserCredentials();
 
-    let res;
-    try {
-        res = await fetch(TOKEN_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userName, password }),
-        });
-    } catch (e) {
-        throw new Error("TMS login isteği başarısız: " + e);
+    let res = null;
+    let lastNetworkError = null;
+
+    for (const url of TOKEN_URLS) {
+        try {
+            const candidate = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userName, password }),
+            });
+
+            // Local geliştirmede /api/reel-auth/login CRA tarafından karşılanmaz ve 404 döner.
+            // /reel-auth/api/auth/login ise hem setupProxy hem Vercel/Render akışıyla uyumludur.
+            if (candidate.status === 404) {
+                res = candidate;
+                continue;
+            }
+
+            res = candidate;
+            break;
+        } catch (e) {
+            lastNetworkError = e;
+        }
+    }
+
+    if (!res && lastNetworkError) {
+        throw new Error("TMS login isteği başarısız: " + lastNetworkError);
+    }
+
+    if (!res) {
+        throw new Error("TMS login endpointine ulaşılamadı.");
     }
 
     if (!res.ok) {

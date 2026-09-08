@@ -1,5 +1,7 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import supabase from "./supabaseClient";
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight, Calculator, ChartNoAxesCombined, FilePlus2, MapPinned, PackagePlus, Route, WalletCards } from 'lucide-react';
 
 import {
     Box, Typography, Button, Table, TableBody, TableCell,
@@ -23,9 +25,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import './AdminPanel.css';
 
 const screens = [
-    { label: "Dashboard", path: "/dashboard", group: "Genel" },
-
     { label: "Sipariş Oluştur", path: "/SiparisIslemleri/SiparisOlustur", group: "Sipariş" },
+    { label: "Yeni Sipariş", path: "/SiparisIslemleri/YeniSiparis", group: "Sipariş" },
     { label: "Parsiyel Sipariş Oluştur", path: "/SiparisIslemleri/ParsiyelSiparisOlustur", group: "Sipariş" },
     { label: "Sipariş Açanlar", path: "/SiparisIslemleri/SiparisAcanlar", group: "Sipariş" },
     { label: "Arkas", path: "/SiparisIslemleri/Arkas", group: "Sipariş" },
@@ -45,18 +46,20 @@ const screens = [
 ];
 
 const screenButtons = {
-    "/dashboard": [
-        "Görüntüle",
-        "Kullanıcı Ekle",
-        "Kullanıcı Sil",
-        "Yetki Düzenle"
-    ],
-
     "/SiparisIslemleri/SiparisOlustur": [
         "Görüntüle",
         "Kaydet",
         "Sil",
         "Güncelle"
+    ],
+
+    "/SiparisIslemleri/YeniSiparis": [
+        "Görüntüle",
+        "Kaydet",
+        "Sil",
+        "Güncelle",
+        "Şablon İndir",
+        "Excel Yükle"
     ],
 
     "/SiparisIslemleri/ParsiyelSiparisOlustur": [
@@ -139,6 +142,7 @@ const screenButtons = {
     ]
 };
 export default function AdminPanel() {
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [open, setOpen] = useState(false);
     const [editingUserId, setEditingUserId] = useState(null);
@@ -217,6 +221,20 @@ export default function AdminPanel() {
 
     const adminCount = users.filter(user => user.rol === 'admin').length;
     const totalPermissions = users.reduce((sum, user) => sum + user.allowedScreens.length + user.allowedButtons.length, 0);
+    const dashboardName = (() => { try { const u = JSON.parse(localStorage.getItem('loginUser') || 'null'); return u?.kullanici || 'Odak Ekibi'; } catch { return 'Odak Ekibi'; } })();
+
+    const currentUser = (() => { try { return JSON.parse(localStorage.getItem('loginUser') || 'null'); } catch { return null; } })();
+    const userAllowedScreens = parseArray(currentUser?.allowedScreens);
+    const isCurrentAdmin = String(currentUser?.rol || '').toLowerCase() === 'admin';
+    const quickActions = [
+        { title: 'Sipariş Oluştur', description: 'Yeni taşıma kaydı oluştur', path: '/SiparisIslemleri/SiparisOlustur', icon: PackagePlus },
+        { title: 'Yeni Sipariş', description: 'Excel ile toplu sipariş işle', path: '/SiparisIslemleri/YeniSiparis', icon: FilePlus2 },
+        { title: 'Parsiyel Sipariş', description: 'Parsiyel yük akışını yönet', path: '/SiparisIslemleri/ParsiyelSiparisOlustur', icon: Route },
+        { title: 'Teslim Noktaları', description: 'Teslimat lokasyonlarını yönet', path: '/SiparisIslemleri/TeslimNoktalari', icon: MapPinned },
+        { title: 'Sefer Fiyatlandırma', description: 'Sefer maliyetlerini hesapla', path: '/fiyatlandirma/seferFiyatlandirma', icon: Calculator },
+        { title: 'Özet Analiz', description: 'Operasyon performansını incele', path: '/analiz/ozet', icon: ChartNoAxesCombined },
+        { title: 'Gelir Ekleme', description: 'Finansal gelir kaydı aktar', path: '/GelirGider/GelirEkleme', icon: WalletCards },
+    ].filter((item) => isCurrentAdmin || userAllowedScreens.includes(item.path));
 
     const availableButtons = [
         ...new Set(formData.allowedScreens.flatMap((path) => screenButtons[path] || []))
@@ -343,6 +361,33 @@ export default function AdminPanel() {
         <Box className="admin-container">
             <Box className="admin-shell">
 
+                <Box className="dashboard-hero">
+                    <Box className="dashboard-hero-copy">
+                        <Typography className="dashboard-hero-eyebrow">ODAK LOJİSTİK · YÖNETİM MERKEZİ</Typography>
+                        <Typography className="dashboard-hero-title">Hoş geldin, {dashboardName}. <span>Her yükte daha ileriye.</span></Typography>
+                        <Typography className="dashboard-hero-text">Operasyon, sipariş, finans ve analiz süreçlerini tek merkezden yönetin. Yetkilendirmeleri kontrol edin ve ihtiyaç duyduğunuz modüllere sol menüden hızlıca erişin.</Typography>
+                    </Box>
+                    <Box className="dashboard-hero-brand"><img src="/odak-logo.png" alt="Odak Lojistik" /></Box>
+                </Box>
+
+                {quickActions.length > 0 && (
+                    <Box className="dashboard-quick-actions">
+                        {quickActions.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                                <button key={item.path} type="button" className="dashboard-quick-action" onClick={() => navigate(item.path)}>
+                                    <span className="dashboard-quick-action-icon"><Icon size={19} strokeWidth={1.8} /></span>
+                                    <span className="dashboard-quick-action-copy">
+                                        <strong>{item.title}</strong>
+                                        <small>{item.description}</small>
+                                    </span>
+                                    <ArrowRight className="dashboard-quick-action-arrow" size={17} />
+                                </button>
+                            );
+                        })}
+                    </Box>
+                )}
+
                 <Box className="topbar">
                     <Box className="brand-area">
                         <Box className="brand-logo">
@@ -350,8 +395,8 @@ export default function AdminPanel() {
                         </Box>
 
                         <Box>
-                            <Typography className="brand-title">NEXORA</Typography>
-                            <Typography className="brand-subtitle">ACCESS CONTROL</Typography>
+                            <Typography className="brand-title">Yönetim Merkezi</Typography>
+                            <Typography className="brand-subtitle">KULLANICI & YETKİ</Typography>
                         </Box>
                     </Box>
 

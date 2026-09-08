@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './odak-modern-v7.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
@@ -10,5 +11,5 @@ root.render(
     <App />
   </React.StrictMode>
 );
-https://bit.ly/CRA-vitals
+// https://bit.ly/CRA-vitals
 reportWebVitals();

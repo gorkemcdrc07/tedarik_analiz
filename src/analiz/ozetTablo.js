@@ -1,5 +1,6 @@
-﻿// src/analiz/ozetTablo.js
+// src/analiz/ozetTablo.js
 import React, { useEffect, useMemo, useState } from "react";
+import { BarChart3, Download, Filter, Layers3 } from "lucide-react";
 
 /* ====== ENV ====== */
 const API_BASE = (process.env.REACT_APP_API_BASE_URL || "").replace(/\/+$/, "");
@@ -7,25 +8,25 @@ const ODAK_KEY = process.env.REACT_APP_ODAK_API_KEY || "";
 
 /* ====== Mini UI (dark) ====== */
 const Page = ({ children }) => (
-    <div className="h-screen overflow-y-auto text-gray-100 bg-gradient-to-br from-gray-950 via-[#0b0f19] to-black">
+    <div className="w-full text-slate-800 bg-transparent">
         {children}
     </div>
 );
 const GlowCard = ({ children, className = "" }) => (
-    <div className={`p-[1px] rounded-2xl bg-gradient-to-br from-white/15 via-white/5 to-transparent ${className}`}>
-        <div className="rounded-2xl border border-white/10 bg-gray-900/70 backdrop-blur">{children}</div>
+    <div className={`rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,.035),0_8px_24px_rgba(15,23,42,.035)] ${className}`}>
+        {children}
     </div>
 );
 const Card = ({ children, className = "" }) => (
-    <div className={`rounded-2xl border border-white/10 bg-gray-900/60 backdrop-blur ${className}`}>{children}</div>
+    <div className={`rounded-2xl border border-slate-200 bg-white backdrop-blur ${className}`}>{children}</div>
 );
 const CardHeader = ({ children, className = "" }) => <div className={`px-5 pt-4 ${className}`}>{children}</div>;
 const CardTitle = ({ children, className = "" }) => <h3 className={`text-base font-semibold ${className}`}>{children}</h3>;
 const CardContent = ({ children, className = "" }) => <div className={`p-5 ${className}`}>{children}</div>;
 const Button = ({ children, className = "", ...props }) => (
     <button
-        className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm transition
-      bg-white/10 hover:bg-white/20 border border-white/10 text-gray-100 ${className}`}
+        className={`inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all
+      bg-white hover:bg-red-50 hover:text-red-700 border border-slate-200 hover:border-red-200 text-slate-700 active:scale-[.985] ${className}`}
         {...props}
     >
         {children}
@@ -33,11 +34,11 @@ const Button = ({ children, className = "", ...props }) => (
 );
 const Input = (props) => (
     <input
-        className="block w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20"
+        className="block min-h-[42px] w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-red-300 focus:ring-4 focus:ring-red-500/10"
         {...props}
     />
 );
-const Skeleton = ({ className = "" }) => <div className={`animate-pulse bg-white/10 rounded ${className || "h-4 w-full"}`} />;
+const Skeleton = ({ className = "" }) => <div className={`animate-pulse bg-slate-100 rounded ${className || "h-4 w-full"}`} />;
 
 /* ====== Helpers ====== */
 const onlyDate = (s) => (s ? s.split("T")[0] : null);
@@ -300,20 +301,20 @@ export default function OzetTablo() {
     return (
         <Page>
             {/* Üst bar */}
-            <header className="sticky top-0 z-30 border-b border-white/10 backdrop-blur bg-gray-950/60">
+            <header className="relative z-10 border border-slate-200 bg-white rounded-2xl shadow-sm">
                 <div className="w-full flex flex-wrap items-center justify-between gap-3 px-6 py-4">
                     <div className="flex items-center gap-3">
-                        <div className="grid w-10 h-10 place-items-center rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/20">
-                            📋
+                        <div className="grid w-11 h-11 place-items-center rounded-xl bg-red-50 border border-red-100 text-red-600">
+                            <BarChart3 size={21} strokeWidth={1.8} />
                         </div>
                         <div>
-                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Analiz</p>
+                            <p className="text-[10px] uppercase tracking-widest text-slate-500">Analiz</p>
                             <h1 className="text-lg font-semibold">Günlük Talep (Benzersiz VP/BOS/BOŞ)</h1>
                             <div className="mt-1 flex flex-wrap gap-1">
                                 {(selected.length ? selected : allProjects).map((p) => (
                                     <span
                                         key={p}
-                                        className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 border border-white/10 text-gray-200"
+                                        className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700"
                                     >
                                         {p}
                                     </span>
@@ -322,8 +323,8 @@ export default function OzetTablo() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="text-xs text-gray-400">Ay: {startDate} – {endDate}</div>
-                        <Button onClick={exportCsv}>⬇️ CSV</Button>
+                        <div className="text-xs text-slate-500">Ay: {startDate} – {endDate}</div>
+                        <Button onClick={exportCsv}><Download size={15} />CSV</Button>
                     </div>
                 </div>
             </header>
@@ -351,7 +352,7 @@ export default function OzetTablo() {
                         <CardHeader>
                             <CardTitle>Hata</CardTitle>
                         </CardHeader>
-                        <CardContent className="text-sm text-rose-300">{error}</CardContent>
+                        <CardContent className="text-sm text-red-600">{error}</CardContent>
                     </Card>
                 )}
 
@@ -360,7 +361,7 @@ export default function OzetTablo() {
                         {/* Sol: Proje seçimi */}
                         <GlowCard className="h-fit">
                             <CardHeader className="pb-2">
-                                <CardTitle>ProjectName Seçimi</CardTitle>
+                                <CardTitle><span className="inline-flex items-center gap-2"><Filter size={16} className="text-red-600" />Proje Seçimi</span></CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <Input
@@ -372,14 +373,14 @@ export default function OzetTablo() {
                                     <Button onClick={() => setSelected(filteredProjects)}>Tümünü Seç</Button>
                                     <Button onClick={() => setSelected([])}>Temizle</Button>
                                 </div>
-                                <div className="max-h-[360px] overflow-auto rounded-xl border border-white/10">
-                                    <ul className="divide-y divide-white/5">
+                                <div className="max-h-[360px] overflow-auto rounded-xl border border-slate-200">
+                                    <ul className="divide-y divide-slate-100">
                                         {filteredProjects.map((p) => {
                                             const active = selected.includes(p);
                                             return (
                                                 <li
                                                     key={p}
-                                                    className={`px-3 py-2 cursor-pointer text-sm flex items-center justify-between hover:bg-white/5 ${active ? "bg-white/5" : ""
+                                                    className={`px-3 py-2 cursor-pointer text-sm flex items-center justify-between hover:bg-slate-50 ${active ? "bg-slate-50" : ""
                                                         }`}
                                                     onClick={() =>
                                                         setSelected((prev) =>
@@ -390,18 +391,18 @@ export default function OzetTablo() {
                                                 >
                                                     <span className="truncate">{p}</span>
                                                     <span
-                                                        className={`ml-3 inline-block h-4 w-4 rounded border ${active ? "bg-cyan-500 border-cyan-400" : "bg-transparent border-white/20"
+                                                        className={`ml-3 inline-block h-4 w-4 rounded border ${active ? "bg-red-500 border-red-400" : "bg-transparent border-white/20"
                                                             }`}
                                                     />
                                                 </li>
                                             );
                                         })}
                                         {filteredProjects.length === 0 && (
-                                            <li className="px-3 py-2 text-sm text-gray-400">Proje bulunamadı.</li>
+                                            <li className="px-3 py-2 text-sm text-slate-500">Proje bulunamadı.</li>
                                         )}
                                     </ul>
                                 </div>
-                                <div className="text-xs text-gray-400">
+                                <div className="text-xs text-slate-500">
                                     Seçili: {selected.length || "Tümü"} / {allProjects.length}
                                 </div>
                             </CardContent>
@@ -410,7 +411,7 @@ export default function OzetTablo() {
                         {/* Sağ: Özet tablo + filtre barı */}
                         <GlowCard className="lg:col-span-2">
                             <CardHeader className="pb-2">
-                                <CardTitle>Özet Tablo</CardTitle>
+                                <CardTitle><span className="inline-flex items-center gap-2"><Layers3 size={16} className="text-red-600" />Özet Tablo</span></CardTitle>
                                 <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
                                     <Input
                                         placeholder="Gün ara… (örn. 03.10, 2025)"
@@ -424,18 +425,18 @@ export default function OzetTablo() {
                                         value={minRequested}
                                         onChange={(e) => setMinRequested(e.target.value)}
                                     />
-                                    <div className="text-xs text-gray-400 md:text-right self-center">Satır: {tableRows.length}</div>
+                                    <div className="text-xs text-slate-500 md:text-right self-center">Satır: {tableRows.length}</div>
                                 </div>
                             </CardHeader>
 
                             <CardContent className="p-0">
                                 {tableRows.length === 0 ? (
-                                    <div className="p-5 text-sm text-gray-400">Kriterlere uyan veri bulunamadı.</div>
+                                    <div className="p-5 text-sm text-slate-500">Kriterlere uyan veri bulunamadı.</div>
                                 ) : (
                                     <div className="overflow-auto max-h-[70vh]">
                                         <table className="w-full text-sm">
-                                            <thead className="sticky top-0 z-10 bg-gray-900/80 backdrop-blur">
-                                                <tr className="border-b border-white/10 text-left text-gray-300">
+                                            <thead className="sticky top-0 z-10 bg-slate-50 backdrop-blur">
+                                                <tr className="border-b border-slate-200 text-left text-slate-600">
                                                     <th className="py-2 pl-5 pr-3">Proje Adı</th>
                                                     <th className="py-2 px-3">Yükleme Tarihi</th>
                                                     <th className="py-2 px-3">Talep Edilen</th>
@@ -455,9 +456,9 @@ export default function OzetTablo() {
                                                             ? "bg-emerald-500/20 text-emerald-300"
                                                             : perf >= 70
                                                                 ? "bg-amber-500/20 text-amber-300"
-                                                                : "bg-rose-500/20 text-rose-300";
+                                                                : "bg-rose-500/20 text-red-600";
                                                     return (
-                                                        <tr key={`${r.project}-${r.day}-${idx}`} className="border-b border-white/5 odd:bg-white/[0.02]">
+                                                        <tr key={`${r.project}-${r.day}-${idx}`} className="border-b border-slate-100 odd:bg-slate-50/70">
                                                             <td className="py-2 pl-5 pr-3">{r.project}</td>
                                                             <td className="py-2 px-3">{fmtTR(r.day)}</td>
                                                             <td className="py-2 px-3 font-semibold">{r.requested}</td>
@@ -473,7 +474,7 @@ export default function OzetTablo() {
                                                 })}
                                             </tbody>
                                             <tfoot>
-                                                <tr className="border-t border-white/10 bg-white/5/5">
+                                                <tr className="border-t border-slate-200 bg-slate-50">
                                                     <td className="py-2 pl-5 pr-3 font-semibold">TOPLAM</td>
                                                     <td className="py-2 px-3"></td>
                                                     <td className="py-2 px-3 font-semibold">{totals.requested}</td>
@@ -487,7 +488,7 @@ export default function OzetTablo() {
                                                                     ? "bg-emerald-500/20 text-emerald-300"
                                                                     : totalPerf >= 70
                                                                         ? "bg-amber-500/20 text-amber-300"
-                                                                        : "bg-rose-500/20 text-rose-300"
+                                                                        : "bg-rose-500/20 text-red-600"
                                                                 }`}
                                                         >
                                                             %{totalPerf}

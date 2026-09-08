@@ -1,180 +1,224 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-    LayoutDashboard,
-    PlusCircle,
-    TrendingUp,
-    ArrowDownCircle,
-    RefreshCcw,
-    Package,
-    Calendar,
-    Database,
-    Layers,
-    ArrowRight
+  ArrowRight,
+  BarChart3,
+  Calculator,
+  CalendarDays,
+  ChartNoAxesCombined,
+  ClipboardList,
+  Clock3,
+  Coins,
+  FilePlus2,
+  FolderKanban,
+  Gauge,
+  LayoutGrid,
+  MapPinned,
+  PackagePlus,
+  ReceiptText,
+  Route,
+  ShieldCheck,
+  Ship,
+  Sparkles,
+  Truck,
+  UsersRound,
+  WalletCards,
+  Warehouse,
+  Waypoints,
+  Zap
 } from "lucide-react";
+import "./AnaSayfa.css";
 
-/* ---------- STAT CARD ---------- */
-const StatCard = ({ title, value, icon: Icon, color }) => (
-    <motion.div
-        whileHover={{ scale: 1.04 }}
-        className="relative rounded-2xl p-[1px] bg-gradient-to-br from-white/10 to-white/0"
-    >
-        <div className="rounded-2xl bg-[#0B1120] p-5 backdrop-blur-xl border border-white/5">
-            <div className="flex justify-between items-center">
-                <div>
-                    <p className="text-xs text-gray-400">{title}</p>
-                    <h2 className="text-2xl font-bold mt-1 text-white">{value}</h2>
-                </div>
-
-                <div className={`p-3 rounded-xl ${color}`}>
-                    <Icon size={20} className="text-white" />
-                </div>
-            </div>
-
-            <div className="absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
-        </div>
-    </motion.div>
-);
-
-/* ---------- BUTTON ---------- */
-const ActionButton = ({ icon: Icon, label, primary }) => (
-    <button
-        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all
-        ${primary
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:scale-105"
-                : "bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
-            }`}
-    >
-        <Icon size={18} />
-        {label}
-    </button>
-);
-
-/* ---------- MAIN ---------- */
-const AnaSayfa = () => {
-    const [loading, setLoading] = useState(false);
-    const [lastUpdated, setLastUpdated] = useState(new Date());
-
-    const [stats] = useState({
-        gelir: "₺124.800",
-        gider: "₺32.400",
-        siparis: "18",
-        kapasite: "%72"
-    });
-
-    const refresh = async () => {
-        setLoading(true);
-        await new Promise(r => setTimeout(r, 700));
-        setLastUpdated(new Date());
-        setLoading(false);
-    };
-
-    return (
-        <div className="min-h-screen bg-[#020617] text-white font-sans">
-
-            {/* 🔥 BACKGROUND EFFECT */}
-            <div className="fixed inset-0 -z-10">
-                <div className="absolute w-[500px] h-[500px] bg-blue-600/10 blur-[140px] top-[-100px] left-[-100px]" />
-                <div className="absolute w-[500px] h-[500px] bg-indigo-600/10 blur-[140px] bottom-[-100px] right-[-100px]" />
-            </div>
-
-            <main className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
-
-                {/* HEADER */}
-                <div className="flex justify-between items-center">
-
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            Operasyon Paneli
-                        </h1>
-                        <p className="text-xs text-gray-500 mt-1">
-                            Sistem aktif • Canlı veri akışı
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={refresh}
-                            className="p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10"
-                        >
-                            <RefreshCcw className={loading ? "animate-spin" : ""} size={18} />
-                        </button>
-
-                        <ActionButton icon={ArrowDownCircle} label="Gider" />
-                        <ActionButton icon={TrendingUp} label="Gelir" />
-                        <ActionButton icon={PlusCircle} label="Sipariş" primary />
-                    </div>
-                </div>
-
-                {/* STATS */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-                    <StatCard title="Gelir" value={stats.gelir} icon={TrendingUp} color="bg-emerald-500/20" />
-                    <StatCard title="Gider" value={stats.gider} icon={ArrowDownCircle} color="bg-red-500/20" />
-                    <StatCard title="Sipariş" value={stats.siparis} icon={Package} color="bg-blue-500/20" />
-                    <StatCard title="Kapasite" value={stats.kapasite} icon={LayoutDashboard} color="bg-indigo-500/20" />
-                </div>
-
-                {/* CONTENT */}
-                <div className="grid lg:grid-cols-3 gap-6">
-
-                    {/* TABLE */}
-                    <div className="lg:col-span-2 bg-[#0B1120] border border-white/5 rounded-2xl">
-
-                        <div className="p-5 border-b border-white/5 flex items-center gap-2">
-                            <Layers size={18} className="text-blue-400" />
-                            <h3 className="text-sm font-semibold">Son Hareketler</h3>
-                        </div>
-
-                        <div className="p-8 flex justify-center items-center min-h-[300px]">
-
-                            <AnimatePresence>
-                                {loading ? (
-                                    <div className="space-y-3 w-full">
-                                        {[1, 2, 3].map(i => (
-                                            <div key={i} className="h-10 bg-white/5 animate-pulse rounded-lg" />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center">
-                                        <Database size={36} className="mx-auto text-gray-600 mb-3" />
-                                        <p className="text-gray-400 text-sm">
-                                            Henüz veri yok
-                                        </p>
-                                    </div>
-                                )}
-                            </AnimatePresence>
-
-                        </div>
-                    </div>
-
-                    {/* SIDE */}
-                    <div className="bg-[#0B1120] border border-white/5 rounded-2xl p-6 space-y-4">
-
-                        <div className="flex items-center gap-2 text-gray-300">
-                            <Calendar size={18} />
-                            <h3 className="text-sm font-semibold">Notlar</h3>
-                        </div>
-
-                        <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl text-sm text-gray-300">
-                            Sistem gerçek zamanlı çalışıyor.
-                        </div>
-
-                        <button className="w-full flex justify-between items-center p-4 bg-white/5 rounded-xl hover:bg-white/10">
-                            <span>Raporlar</span>
-                            <ArrowRight size={16} />
-                        </button>
-
-                    </div>
-                </div>
-            </main>
-
-            {/* FOOTER */}
-            <footer className="text-xs text-gray-500 flex justify-between max-w-[1400px] mx-auto px-6 py-6 border-t border-white/5">
-                <span>© 2026</span>
-                <span>{lastUpdated.toLocaleTimeString("tr-TR")}</span>
-            </footer>
-        </div>
-    );
+const getUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("loginUser") || "null");
+  } catch {
+    return null;
+  }
 };
 
-export default AnaSayfa;
+const parseArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return String(value).split(",").map((item) => item.trim()).filter(Boolean);
+  }
+};
+
+const MODULES = [
+  { title: "Sipariş Oluştur", description: "Yeni taşıma kaydı oluştur", path: "/SiparisIslemleri/SiparisOlustur", icon: PackagePlus, group: "Sipariş İşlemleri", color: "red" },
+  { title: "Yeni Sipariş", description: "Excel ile toplu sipariş işle", path: "/SiparisIslemleri/YeniSiparis", icon: FilePlus2, group: "Sipariş İşlemleri", color: "blue" },
+  { title: "Parsiyel Sipariş", description: "Parsiyel yük akışını yönet", path: "/SiparisIslemleri/ParsiyelSiparisOlustur", icon: Waypoints, group: "Sipariş İşlemleri", color: "green" },
+  { title: "Teslim Noktaları", description: "Teslimat lokasyonlarını yönet", path: "/SiparisIslemleri/TeslimNoktalari", icon: MapPinned, group: "Operasyon", color: "purple" },
+  { title: "Sipariş Açanlar", description: "Sipariş kullanıcılarını incele", path: "/SiparisIslemleri/SiparisAcanlar", icon: UsersRound, group: "Operasyon", color: "cyan" },
+  { title: "Arkas", description: "Arkas operasyon kayıtlarını yönet", path: "/SiparisIslemleri/Arkas", icon: Ship, group: "Operasyon", color: "navy" },
+  { title: "Fasdat", description: "Fasdat operasyon akışını yönet", path: "/SiparisIslemleri/Fasdat", icon: Warehouse, group: "Operasyon", color: "teal" },
+  { title: "Proje Tanımları", description: "Müşteri ve proje tanımlamalarını yönet", path: "/Tanimlamalar/ProjeEkle", icon: FolderKanban, group: "Tanımlamalar", color: "blue" },
+  { title: "Gelir Ekleme", description: "Gelir kayıtlarını sisteme aktar", path: "/GelirGider/GelirEkleme", icon: WalletCards, group: "Finans", color: "green" },
+  { title: "Gider Ekleme", description: "Gider kayıtlarını sisteme aktar", path: "/GelirGider/GiderEkleme", icon: ReceiptText, group: "Finans", color: "orange" },
+  { title: "Sefer Fiyatlandırma", description: "Sefer maliyetlerini hesapla", path: "/fiyatlandirma/seferFiyatlandirma", icon: Calculator, group: "Finans", color: "orange" },
+  { title: "Özet Analiz", description: "Operasyon performansını incele", path: "/analiz/ozet", icon: ChartNoAxesCombined, group: "Rapor & Analiz", color: "blue" },
+  { title: "Görsel Analiz", description: "Grafik ve görselleri incele", path: "/gorsel", icon: BarChart3, group: "Rapor & Analiz", color: "navy" }
+];
+
+const GROUP_META = {
+  "Sipariş İşlemleri": { icon: PackagePlus, color: "red" },
+  Operasyon: { icon: Truck, color: "blue" },
+  Finans: { icon: Coins, color: "orange" },
+  Tanımlamalar: { icon: FolderKanban, color: "blue" },
+  "Rapor & Analiz": { icon: ChartNoAxesCombined, color: "navy" },
+  Yönetim: { icon: ShieldCheck, color: "gray" }
+};
+
+function trDate(date) {
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(date);
+}
+
+function trTime(date) {
+  return new Intl.DateTimeFormat("tr-TR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+export default function AnaSayfa() {
+  const navigate = useNavigate();
+  const user = useMemo(() => getUser(), []);
+  const isAdmin = String(user?.rol || "").toLowerCase() === "admin";
+  const allowedScreens = useMemo(() => parseArray(user?.allowedScreens), [user?.allowedScreens]);
+  const name = user?.kullanici || user?.kullanici_adi || "Odak Kullanıcısı";
+
+  const availableModules = useMemo(
+    () => MODULES.filter((item) => isAdmin || allowedScreens.includes(item.path)),
+    [isAdmin, allowedScreens]
+  );
+
+  const quickModules = availableModules.slice(0, 6);
+
+  const groupedModules = useMemo(() => {
+    const map = new Map();
+    availableModules.forEach((item) => {
+      if (!map.has(item.group)) map.set(item.group, []);
+      map.get(item.group).push(item);
+    });
+    if (isAdmin) map.set("Yönetim", [{ title: "Yönetici Paneli", path: "/admin" }]);
+    return Array.from(map.entries());
+  }, [availableModules, isAdmin]);
+
+  const now = new Date();
+  const sessionItems = useMemo(() => {
+    const device = /Edg/i.test(navigator.userAgent) ? "Windows • Edge" : /Chrome/i.test(navigator.userAgent) ? "Windows • Chrome" : "Aktif cihaz";
+    return [
+      { title: "Aktif oturum", detail: device, time: `Bugün ${trTime(new Date())}`, status: "success" },
+      { title: isAdmin ? "Yönetici hesabı" : "Kullanıcı hesabı", detail: `${availableModules.length} erişilebilir modül`, time: "Aktif", status: "info" }
+    ];
+  }, [availableModules.length, isAdmin]);
+
+  return (
+    <div className="od-home">
+      <section className="od-home-hero">
+        <div className="od-home-hero-shade" />
+
+        <div className="od-home-hero-copy">
+          <span className="od-home-eyebrow">GÜVENLİ TAŞIMACILIK, GÜÇLÜ YARINLAR</span>
+          <h1>Her yükte<br /><em>daha ileriye.</em></h1>
+          <p>Odak Lojistik olarak, operasyonlarınızı tek merkezden yönetmeniz için hızlı, güvenilir ve akıllı çözümler sunuyoruz.</p>
+          <button className="od-home-cta" onClick={() => document.getElementById("od-quick-actions")?.scrollIntoView({ behavior: "smooth" })}>
+            Hızlı İşlemlere Göz At <ArrowRight size={17} />
+          </button>
+        </div>
+
+        <div className="od-home-hero-features">
+          <div><span><ShieldCheck size={21} /></span><strong>GÜVENİLİR<small>OPERASYON</small></strong></div>
+          <div><span><Clock3 size={21} /></span><strong>ZAMANINDA<small>TESLİMAT</small></strong></div>
+          <div><span><Route size={21} /></span><strong>DAHA GÜÇLÜ<small>İŞ ORTAKLIĞI</small></strong></div>
+        </div>
+      </section>
+
+      {quickModules.length > 0 && (
+        <section className="od-quick-grid" id="od-quick-actions">
+          {quickModules.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button className="od-quick-card" key={item.path} onClick={() => navigate(item.path)}>
+                <span className={`od-card-icon od-card-icon-${item.color}`}><Icon size={21} strokeWidth={1.9} /></span>
+                <span className="od-quick-copy"><strong>{item.title}</strong><small>{item.description}</small></span>
+                <ArrowRight size={16} className="od-quick-arrow" />
+              </button>
+            );
+          })}
+        </section>
+      )}
+
+      <div className="od-home-grid">
+        <section className="od-home-panel od-welcome-panel">
+          <div className="od-panel-head">
+            <div>
+              <h2>Sisteme Hoş Geldin <span>👋</span></h2>
+              <p>{name}, hızlı erişim için yetkin bulunan modülleri kullanabilirsin.</p>
+            </div>
+            <div className="od-date-card">
+              <span><CalendarDays size={18} /></span>
+              <div><strong>{trDate(now)}</strong><small>{trTime(now)}</small></div>
+            </div>
+          </div>
+
+          <div className="od-panel-divider" />
+
+          <div className="od-modules-head">
+            <h3>Erişilebilir Modüller</h3>
+            <span>{availableModules.length + (isAdmin ? 1 : 0)} modül</span>
+          </div>
+
+          <div className="od-module-group-grid">
+            {groupedModules.map(([groupName, items]) => {
+              const meta = GROUP_META[groupName] || { icon: LayoutGrid, color: "gray" };
+              const Icon = meta.icon;
+              const firstPath = items[0]?.path;
+              return (
+                <button key={groupName} className="od-module-group-card" onClick={() => firstPath && navigate(firstPath)}>
+                  <span className={`od-card-icon od-card-icon-${meta.color}`}><Icon size={21} /></span>
+                  <span className="od-module-group-copy"><strong>{groupName}</strong><small>{items.length} modül</small></span>
+                  <ArrowRight size={16} />
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <aside className="od-home-panel od-session-panel">
+          <div className="od-session-title">
+            <span><Zap size={18} /></span>
+            <h2>Oturum Bilgisi</h2>
+          </div>
+
+          <div className="od-session-list">
+            {sessionItems.map((item, index) => (
+              <div className="od-session-item" key={`${item.title}-${index}`}>
+                <span className={`od-session-dot is-${item.status}`} />
+                <span className="od-session-line" />
+                <div className="od-session-copy"><strong>{item.title}</strong><small>{item.detail}</small></div>
+                <time>{item.time}</time>
+              </div>
+            ))}
+          </div>
+
+          {isAdmin && (
+            <button className="od-admin-shortcut" onClick={() => navigate("/admin")}>
+              <ShieldCheck size={17} />
+              <span>Yönetici Paneli</span>
+              <ArrowRight size={16} />
+            </button>
+          )}
+        </aside>
+      </div>
+    </div>
+  );
+}

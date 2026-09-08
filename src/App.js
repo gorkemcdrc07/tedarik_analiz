@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     BrowserRouter as Router,
     Routes,
@@ -9,12 +9,14 @@ import {
 
 import Login from "./Login";
 import Dashboard from "./Dashboard";
+import AnaSayfa from "./AnaSayfa";
 import Layout from "./Layout";
 import Gorsel from "./gorsel";
 import Yetkisiz from "./Yetkisiz";
 
 // Sipariş
 import SiparisOlustur from "./SiparisIslemleri/SiparisOlustur";
+import YeniSiparis from "./SiparisIslemleri/YeniSiparis";
 import ParsiyelSiparisOlustur from "./SiparisIslemleri/ParsiyelSiparisOlustur";
 import SiparisAcanlar from "./SiparisIslemleri/siparisAcanlar";
 import Arkas from "./SiparisIslemleri/Arkas";
@@ -36,6 +38,13 @@ import SeferFiyatlandirma from "./fiyatlandirma/seferFiyatlandirma";
 // Analiz
 import OzetTablo from "./analiz/ozetTablo";
 
+import OdakMuiTheme from "./theme/OdakMuiTheme";
+import "./odak-modern.css";
+import "./odak-modern-v3.css";
+import "./odak-modern-v4.css";
+import "./odak-modern-v6.css";
+import "./odak-dark-compat.css";
+
 function getLoginUser() {
     try {
         return JSON.parse(localStorage.getItem("loginUser") || "null");
@@ -51,17 +60,7 @@ function getFirstAllowedPath() {
         return "/";
     }
 
-    if (user.rol === "admin") {
-        return "/dashboard";
-    }
-
-    const allowedScreens = Array.isArray(user.allowedScreens)
-        ? user.allowedScreens
-        : [];
-
-    return allowedScreens.length > 0
-        ? allowedScreens[0]
-        : "/yetkisiz";
+    return "/dashboard";
 }
 
 function ProtectedPage({ children }) {
@@ -77,6 +76,17 @@ function ProtectedPage({ children }) {
     const allowedScreens = Array.isArray(user.allowedScreens)
         ? user.allowedScreens
         : [];
+
+    if (currentPath === "/dashboard") {
+        return <Layout>{children}</Layout>;
+    }
+
+    if (currentPath === "/admin") {
+        if (String(user.rol || "").toLowerCase() !== "admin") {
+            return <Layout><Yetkisiz /></Layout>;
+        }
+        return <Layout>{children}</Layout>;
+    }
 
     if (user.rol === "admin") {
         return <Layout>{children}</Layout>;
@@ -106,6 +116,7 @@ export default function App() {
     };
 
     return (
+        <OdakMuiTheme>
         <Router>
             <Routes>
                 <Route
@@ -137,6 +148,15 @@ export default function App() {
                     path="/dashboard"
                     element={
                         <ProtectedPage>
+                            <AnaSayfa />
+                        </ProtectedPage>
+                    }
+                />
+
+                <Route
+                    path="/admin"
+                    element={
+                        <ProtectedPage>
                             <Dashboard />
                         </ProtectedPage>
                     }
@@ -148,6 +168,15 @@ export default function App() {
                     element={
                         <ProtectedPage>
                             <SiparisOlustur />
+                        </ProtectedPage>
+                    }
+                />
+
+                <Route
+                    path="/SiparisIslemleri/YeniSiparis"
+                    element={
+                        <ProtectedPage>
+                            <YeniSiparis />
                         </ProtectedPage>
                     }
                 />
@@ -280,5 +309,6 @@ export default function App() {
                 />
             </Routes>
         </Router>
+        </OdakMuiTheme>
     );
 }

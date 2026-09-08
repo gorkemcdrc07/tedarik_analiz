@@ -1,26 +1,5 @@
-﻿.ge-page.gider {
-    --accent: #ef4444; 
-    --accent-2: #dc2626; 
-    --danger: #b91c1c;
-}
-
-
-@media (prefers-color-scheme: dark) {
-    .ge-page.gider {
-        --accent: #f87171;
-        --accent-2: #ef4444;
-        --danger: #ef4444;
-    }
-}
-
-
-.ge-page.gider .ge-file {
-    border-left: 4px solid color-mix(in oklab, var(--accent), #000 15%);
-}
-
-
-.ge-page.gider .ge-drop:hover,
-.ge-page.gider .ge-drop:focus-within,
-.ge-page.gider .ge-drop.dragging {
-    box-shadow: 0 10px 26px color-mix(in oklab, var(--accent), #000 80%), var(--shadow);
-}
+@import "./GelirEkleme.css";
+.ge-page.gider{--accent:#e5252a;--accent-2:#c9181e;--danger:#dc2626}.ge-page.gider .ge-file{border-left:4px solid #f97316}
+html[data-odak-theme="dark"] .ge-page { background:#07131f!important; color:#edf4fb!important; }
+html[data-odak-theme="dark"] .ge-page :is(.ge-card,.ge-panel,.ge-toolbar,.ge-table-wrap,.ge-upload,.MuiPaper-root) { background:#0d1b2a!important; border-color:#20364a!important; color:#edf4fb!important; }
+html[data-odak-theme="dark"] .ge-page :is(input,select,textarea) { background:#0a1724!important; color:#edf4fb!important; border-color:#29445e!important; color-scheme:dark; }

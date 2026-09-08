@@ -13,6 +13,10 @@ import {
     AlertTriangle,
     Zap,
     Shield,
+    LoaderCircle,
+    ChevronDown,
+    FileCheck2,
+    ArrowRight,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import "./SiparisOlustur.css";
@@ -352,6 +356,9 @@ export default function SiparisOlustur() {
     const [overlayLoading, setOverlayLoading] = useState(false);
     const [ballogImporting, setBallogImporting] = useState(false);
     const [ballogImportResult, setBallogImportResult] = useState(null);
+    const [uploadStage, setUploadStage] = useState("");
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
 
     // Download progress state
     const [dlPhase, setDlPhase] = useState(null); // null | "template"|"fetch"|"build"|"done"
@@ -446,14 +453,25 @@ export default function SiparisOlustur() {
 
     const parseExcel = async (file) => {
         setError("");
+        setIsUploading(true);
+        setUploadProgress(8);
+        setUploadStage("Dosya okunuyor");
         try {
             if (!projeAdi) throw new Error("Excel yüklemeden önce lütfen bir proje seçin.");
             if (!isExcelFile(file)) throw new Error("Lütfen .xlsx / .xls dosyası yükleyin.");
+
             const buf = await file.arrayBuffer();
+            setUploadProgress(34);
+            setUploadStage("Excel yapısı analiz ediliyor");
+            await new Promise((r) => setTimeout(r, 90));
+
             const wb = XLSX.read(buf, { type: "array" });
             const ws = wb.Sheets[wb.SheetNames[0]];
             const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
             if (!aoa || aoa.length === 0) throw new Error("Boş sayfa görünüyor.");
+
+            setUploadProgress(56);
+            setUploadStage("Başlıklar doğrulanıyor");
             const [rawHeaders, ...body] = aoa;
             const headerIndexMap = {};
             HEADERS.forEach((h) => {
@@ -461,6 +479,7 @@ export default function SiparisOlustur() {
             });
             const missing = REQUIRED_EXPORT_HEADERS.filter((h) => headerIndexMap[h] === -1);
             if (missing.length) throw new Error(`Eksik başlık: ${missing.join(", ")}. Lütfen şablonu kullanın.`);
+
             const parsedRows = body
                 .filter((row) => row.some((cell) => normalize(cell) !== ""))
                 .map((row) => {
@@ -469,6 +488,9 @@ export default function SiparisOlustur() {
                     return enrichRow(obj);
                 })
                 .map((r) => ({ ...r, Proje: projeAdi || "" }));
+
+            setUploadProgress(76);
+            setUploadStage("Proje verileri uygulanıyor");
             try {
                 const incoming = await fetchProjectRows(projeAdi);
                 const overlaid = applyOverlay(parsedRows, incoming);
@@ -477,10 +499,20 @@ export default function SiparisOlustur() {
                 setRows(applyBallogOverrides(parsedRows));
                 setError(er.message || "Proje verileri alınamadı fakat Excel yüklendi.");
             }
+
             setLastFile(file);
+            setUploadProgress(100);
+            setUploadStage("Dosya hazır");
+            await new Promise((r) => setTimeout(r, 420));
         } catch (e) {
             setRows([]);
+            setUploadStage("Yükleme başarısız");
             setError(e.message || "Excel okunamadı.");
+            await new Promise((r) => setTimeout(r, 260));
+        } finally {
+            setIsUploading(false);
+            setUploadProgress(0);
+            setUploadStage("");
         }
     };
 
@@ -1336,39 +1368,87 @@ export default function SiparisOlustur() {
                 {/* ── BALLOG Banner ── */}
                 {isBallog && <BallogBanner />}
 
+                <section className="so-workflow" aria-label="Sipariş oluşturma adımları">
+                    <div className={`so-workflow__step ${selectedProject ? "is-done" : "is-active"}`}>
+                        <span className="so-workflow__index">1</span>
+                        <div><strong>Proje Seç</strong><small>Siparişin ait olduğu projeyi belirle</small></div>
+                        {selectedProject && <CheckCircle2 size={17} />}
+                    </div>
+                    <div className={`so-workflow__line ${selectedProject ? "is-done" : ""}`} />
+                    <div className={`so-workflow__step ${rows.length ? "is-done" : selectedProject ? "is-active" : ""}`}>
+                        <span className="so-workflow__index">2</span>
+                        <div><strong>Excel Yükle</strong><small>Şablonu doldur ve dosyanı bırak</small></div>
+                        {rows.length > 0 && <CheckCircle2 size={17} />}
+                    </div>
+                    <div className={`so-workflow__line ${rows.length ? "is-done" : ""}`} />
+                    <div className={`so-workflow__step ${rows.length ? "is-active" : ""}`}>
+                        <span className="so-workflow__index">3</span>
+                        <div><strong>Eşleştir</strong><small>Adres ve firma kayıtlarını doğrula</small></div>
+                        <LinkIcon size={17} />
+                    </div>
+                    <div className="so-workflow__line" />
+                    <div className="so-workflow__step">
+                        <span className="so-workflow__index">4</span>
+                        <div><strong>Aktar</strong><small>Kontrol edilen veriyi dışa aktar</small></div>
+                        <FileSpreadsheet size={17} />
+                    </div>
+                </section>
+
                 {/* ── Controls ── */}
                 <div className="so-controls">
                     <div className="so-project-row">
-                        <div className="so-field">
-                            <label className="so-label">Proje Seçimi</label>
-                            <select
-                                className={`so-select${isBallog ? " so-select--ballog" : ""}`}
-                                value={projeAdi}
-                                onChange={(e) => setProjeAdi(e.target.value)}
-                                disabled={projectsLoading}
-                            >
-                                <option value="">— Proje seçiniz —</option>
-                                {projectsLoading && <option disabled>Yükleniyor...</option>}
-                                {!projectsLoading && projectsError && <option disabled>Hata: {projectsError}</option>}
-                                {!projectsLoading && !projectsError && projects.map((p) => (
-                                    <option key={p.id} value={p.name}>{p.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        {selectedProject ? (
-                            <div className={`so-project-badge so-project-badge--ok${isBallog ? " so-project-badge--ballog" : ""}`}>
-                                <CheckCircle2 size={14} />
-                                {selectedProject.name}
+                        <div className="so-project-heading">
+                            <div className="so-project-heading__icon"><FolderKanban size={18} /></div>
+                            <div>
+                                <strong>Çalışılacak proje</strong>
+                                <span>Excel verisinin bağlanacağı projeyi seç</span>
                             </div>
-                        ) : (
-                            <div className="so-project-badge so-project-badge--empty">Seçilmedi</div>
-                        )}
+                        </div>
+
+                        <div className="so-project-select-row">
+                            <div className="so-field">
+                                <label className="so-label">Proje seçimi</label>
+                                <div className="so-select-shell">
+                                    <select
+                                        className={`so-select${isBallog ? " so-select--ballog" : ""}`}
+                                        value={projeAdi}
+                                        onChange={(e) => setProjeAdi(e.target.value)}
+                                        disabled={projectsLoading}
+                                    >
+                                        <option value="">Proje seçiniz</option>
+                                        {projectsLoading && <option disabled>Yükleniyor...</option>}
+                                        {!projectsLoading && projectsError && <option disabled>Hata: {projectsError}</option>}
+                                        {!projectsLoading && !projectsError && projects.map((p) => (
+                                            <option key={p.id} value={p.name}>{p.name}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown size={16} className="so-select-shell__chevron" />
+                                </div>
+                            </div>
+                            {selectedProject ? (
+                                <div className={`so-project-badge so-project-badge--ok${isBallog ? " so-project-badge--ballog" : ""}`}>
+                                    <CheckCircle2 size={15} />
+                                    <span><small>Aktif proje</small>{selectedProject.name}</span>
+                                </div>
+                            ) : (
+                                <div className="so-project-badge so-project-badge--empty">
+                                    <FolderKanban size={14} />
+                                    <span><small>Durum</small>Proje bekleniyor</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="so-action-group">
+                    <div className="so-action-panel">
+                        <div className="so-action-panel__title">
+                            <Zap size={15} />
+                            <span>Hızlı işlemler</span>
+                        </div>
+                        <div className="so-action-group">
                         <button className="so-btn so-btn--primary" onClick={handleTemplateDownload} title="Şablonu indir">
-                            <Download size={15} />
-                            Şablon İndir
+                            <span className="so-btn__icon"><Download size={15} /></span>
+                            <span>Şablon İndir</span>
+                            <ArrowRight size={14} className="so-btn__arrow" />
                         </button>
                         {isBallog && (
                             <>
@@ -1396,8 +1476,8 @@ export default function SiparisOlustur() {
                             disabled={!projeAdi || overlayLoading || !rows.length}
                             title="Adres eşleştir"
                         >
-                            <LinkIcon size={15} />
-                            {overlayLoading ? "Eşleştiriliyor..." : "Eşleştir"}
+                            <span className="so-btn__icon">{overlayLoading ? <LoaderCircle size={15} className="so-spin" /> : <LinkIcon size={15} />}</span>
+                            <span>{overlayLoading ? "Eşleştiriliyor" : "Eşleştir"}</span>
                         </button>
                         <button
                             className="so-btn"
@@ -1405,8 +1485,8 @@ export default function SiparisOlustur() {
                             disabled={!rows.length || !projeAdi}
                             title="Excel olarak aktar"
                         >
-                            <FileSpreadsheet size={15} />
-                            Excel Aktar
+                            <span className="so-btn__icon"><FileSpreadsheet size={15} /></span>
+                            <span>Excel Aktar</span>
                         </button>
                         <button
                             className="so-btn so-btn--danger"
@@ -1414,8 +1494,9 @@ export default function SiparisOlustur() {
                             disabled={!rows.length && !lastFile && !error}
                             title="Temizle"
                         >
-                            <Trash2 size={15} />
+                            <span className="so-btn__icon"><Trash2 size={15} /></span>
                         </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1477,16 +1558,37 @@ export default function SiparisOlustur() {
                                                 tabIndex={0}
                                                 aria-label="Excel sürükleyip bırak veya tıkla"
                                             >
-                                                <div className={`so-drop-icon${isBallog ? " so-drop-icon--ballog" : ""}`}>
-                                                    <UploadCloud size={26} />
-                                                </div>
-                                                <div className="so-drop-title">Excel dosyanı buraya sürükle</div>
-                                                <div className="so-drop-sub">veya <strong>tıklayarak seç</strong> (.xlsx / .xls)</div>
-                                                {!projeAdi && (
-                                                    <div className="so-drop-warn">
-                                                        <AlertTriangle size={13} />
-                                                        Önce proje seçmelisiniz
+                                                {isUploading ? (
+                                                    <div className="so-upload-progress">
+                                                        <div className="so-upload-progress__orb">
+                                                            <LoaderCircle size={28} className="so-spin" />
+                                                            <span>{uploadProgress}%</span>
+                                                        </div>
+                                                        <div className="so-upload-progress__copy">
+                                                            <strong>{uploadStage}</strong>
+                                                            <span>{lastFile?.name || "Excel dosyası hazırlanıyor"}</span>
+                                                        </div>
+                                                        <div className="so-upload-progress__track">
+                                                            <i style={{ width: `${uploadProgress}%` }} />
+                                                        </div>
                                                     </div>
+                                                ) : (
+                                                    <>
+                                                        <div className={`so-drop-icon${isBallog ? " so-drop-icon--ballog" : ""}`}>
+                                                            <UploadCloud size={26} />
+                                                            <span className="so-drop-icon__ring" />
+                                                        </div>
+                                                        <div className="so-drop-title">Excel dosyanı buraya sürükle</div>
+                                                        <div className="so-drop-sub">veya <strong>dosya seçmek için tıkla</strong> · .xlsx / .xls</div>
+                                                        {projeAdi ? (
+                                                            <div className="so-drop-ready"><FileCheck2 size={13} /> {projeAdi} için yüklemeye hazır</div>
+                                                        ) : (
+                                                            <div className="so-drop-warn">
+                                                                <AlertTriangle size={13} />
+                                                                Önce proje seçmelisiniz
+                                                            </div>
+                                                        )}
+                                                    </>
                                                 )}
                                                 <input
                                                     ref={fileInputRef}

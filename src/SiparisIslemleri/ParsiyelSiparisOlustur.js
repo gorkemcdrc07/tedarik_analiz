@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
     Plus,
     Trash2,
@@ -17,6 +17,13 @@ import {
     Hash,
     Layers,
     Zap,
+    CheckCircle2,
+    Send,
+    LoaderCircle,
+    Sparkles,
+    ShieldCheck,
+    Rows3,
+    ArrowRight,
 } from "lucide-react";
 import supabase from "../supabaseClient";
 import { getTmsToken } from "./tmsService";
@@ -175,9 +182,9 @@ button, input, select, textarea {
     --text-2: #aab4c8;
     --text-3: #6f7a92;
 
-    --accent: #4f8cff;
-    --accent-dim: rgba(79,140,255,0.12);
-    --accent-glow: rgba(79,140,255,0.26);
+    --accent: #e5252a;
+    --accent-dim: rgba(229,37,42,0.12);
+    --accent-glow: rgba(229,37,42,0.26);
 
     --green: #22c55e;
     --green-dim: rgba(34,197,94,0.12);
@@ -205,15 +212,15 @@ button, input, select, textarea {
     --r-xl: 22px;
     --r-2xl: 26px;
 
-    --auto-col-bg: rgba(79,140,255,0.055);
-    --auto-col-border: rgba(79,140,255,0.16);
+    --auto-col-bg: rgba(229,37,42,0.055);
+    --auto-col-border: rgba(229,37,42,0.16);
 }
 
 /* ROOT */
 .ps-root {
     min-height: 100vh;
     background:
-        radial-gradient(circle at top left, rgba(79,140,255,0.13), transparent 34%),
+        radial-gradient(circle at top left, rgba(229,37,42,0.13), transparent 34%),
         radial-gradient(circle at top right, rgba(34,197,94,0.08), transparent 30%),
         linear-gradient(180deg, #070a12 0%, #090d17 100%);
     color: var(--text-1);
@@ -243,7 +250,7 @@ button, input, select, textarea {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(79,140,255,0.13), transparent 42%);
+    background: linear-gradient(135deg, rgba(229,37,42,0.13), transparent 42%);
     pointer-events: none;
 }
 
@@ -653,7 +660,7 @@ button, input, select, textarea {
 
 .ps-field[readonly] {
     cursor: default;
-    background: rgba(79,140,255,0.065);
+    background: rgba(229,37,42,0.065);
     border-color: var(--auto-col-border);
     border-style: dashed;
     color: var(--accent);
@@ -801,7 +808,7 @@ button, input, select, textarea {
 }
 
 .ps-resizer:hover {
-    background: rgba(79,140,255,0.35);
+    background: rgba(229,37,42,0.35);
 }
 
 .ps-table thead th {
@@ -897,7 +904,786 @@ button, input, select, textarea {
         flex-direction: column;
     }
 }
+/* OTS LIGHT THEME */
+.ps-light {
+    --bg: transparent;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --surface-3: #f1f5f9;
+    --surface-hover: #f8fafc;
+    --border: #e2e8f0;
+    --border-md: #d8e1ec;
+    --border-hi: #cbd5e1;
+    --text-1: #14213d;
+    --text-2: #475569;
+    --text-3: #64748b;
+    --accent: #e5252a;
+    --accent-dim: #fff1f2;
+    --accent-glow: #fecaca;
+    --green: #16a34a;
+    --green-dim: #f0fdf4;
+    --red: #dc2626;
+    --red-dim: #fef2f2;
+    --amber: #d97706;
+    --amber-dim: #fffbeb;
+    --field-bg: #ffffff;
+    --field-bg-hover: #f8fafc;
+    --field-border: #d8e1ec;
+    --field-text: #14213d;
+    --field-ph: #94a3b8;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.04);
+    --shadow-md: 0 8px 24px rgba(15,23,42,.07);
+    --shadow-xl: 0 24px 70px rgba(15,23,42,.18);
+    --auto-col-bg: #f5f9ff;
+    --auto-col-border: #ffe4e6;
+}
+
+html, body, #root { background: transparent; }
+.ps-root { min-height:0; padding:0; background:transparent; }
+.ps-container { max-width:1800px; gap:16px; }
+.ps-header { background:rgba(255,255,255,.97); border-color:#e2e8f0; border-radius:16px; box-shadow:var(--shadow-sm); }
+.ps-header::before { background:linear-gradient(135deg,rgba(229,37,42,.06),transparent 42%); }
+.ps-eyebrow { color:#e5252a; background:#fff1f2; border-color:#fecaca; }
+.ps-title { color:#14213d; }
+.ps-subtitle { color:#64748b; }
+.ps-theme-btn { display:none!important; }
+.ps-btn { border-color:#d8e1ec; box-shadow:none; }
+.ps-btn--ghost { color:#475569; background:#fff; }
+.ps-btn--add,.ps-btn--export { background:#e5252a; border-color:#e5252a; color:#fff; box-shadow:0 5px 14px rgba(229,37,42,.17); }
+.ps-btn--admin { color:#9a3412; background:#fff7ed; border-color:#fed7aa; }
+.ps-search,.ps-metric,.ps-table-card { background:#fff; border-color:#e2e8f0; box-shadow:var(--shadow-sm); }
+.ps-search input { color:#14213d; }
+.ps-metric__label,.ps-table-bar__meta { color:#64748b; }
+.ps-metric__value { color:#0f172a; }
+.ps-table thead th { background:#f8fafc; color:#526174; border-color:#e2e8f0; }
+.ps-table tbody td { color:#334155; background:#fff; border-color:#f1f5f9; }
+.ps-table tbody tr:hover td { background:#f8fafc; }
+.ps-table-wrap::-webkit-scrollbar-thumb { background:#cbd5e1; }
+.ps-row-idx { color:#64748b; background:#f1f5f9; border-color:#e2e8f0; }
+.ss-trigger { color:#14213d; background:#fff; border-color:#d8e1ec; }
+.ss-trigger:hover,.ss-trigger.is-open { border-color:#e5252a; box-shadow:0 0 0 3px rgba(229,37,42,.10); }
+.ss-dropdown { background:#fff; border-color:#e2e8f0; box-shadow:var(--shadow-xl); }
+.ss-search { background:#f8fafc; border-color:#e2e8f0; }
+.ss-search input { color:#14213d; }
+.ss-option { color:#334155; }
+.ss-option:hover { background:#fff1f2; color:#c9181e; }
+.ps-field-input,.ps-field-select { color:#14213d; background:#fff; border-color:#d8e1ec; }
+.ps-field-input:focus,.ps-field-select:focus { border-color:#e5252a; box-shadow:0 0 0 3px rgba(229,37,42,.10); }
+
+
+/* ═══════════════════════ V7.3 PARSIYEL UX ═══════════════════════ */
+.ps-header {
+    isolation: isolate;
+}
+
+.ps-header::after {
+    content: '';
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    right: -90px;
+    top: -130px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(229,37,42,.18), transparent 68%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.ps-actions--modern {
+    padding: 5px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+    border: 1px solid var(--border);
+}
+
+.ps-btn--motion {
+    position: relative;
+    overflow: hidden;
+    min-height: 42px;
+    transition: transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.ps-btn--motion::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.22) 48%, transparent 72%);
+    transform: translateX(-130%);
+    transition: transform .55s ease;
+    pointer-events: none;
+}
+
+.ps-btn--motion:hover::after {
+    transform: translateX(130%);
+}
+
+.ps-btn--motion:hover {
+    transform: translateY(-2px);
+}
+
+.ps-btn--motion:active {
+    transform: translateY(0) scale(.98);
+}
+
+.ps-btn__icon {
+    width: 27px;
+    height: 27px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.12);
+    flex: 0 0 auto;
+}
+
+.ps-btn--ghost .ps-btn__icon {
+    background: var(--surface-hover);
+}
+
+.ps-btn__arrow {
+    margin-left: 2px;
+    transition: transform .2s ease;
+}
+
+.ps-btn--reel:hover .ps-btn__arrow {
+    transform: translateX(3px);
+}
+
+.ps-spin {
+    animation: psSpin .8s linear infinite;
+}
+
+@keyframes psSpin { to { transform: rotate(360deg); } }
+
+.ps-flow {
+    position: relative;
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: minmax(220px, 1.25fr) minmax(430px, 2fr) minmax(150px, .65fr);
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--border-md);
+    background: linear-gradient(135deg, var(--surface-2), color-mix(in srgb, var(--surface-3) 72%, transparent));
+    overflow: hidden;
+}
+
+.ps-flow::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--accent), rgba(229,37,42,.15));
+}
+
+.ps-flow__intro {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.ps-flow__spark {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-glow);
+    box-shadow: 0 0 24px rgba(229,37,42,.10);
+}
+
+.ps-flow__intro strong,
+.ps-flow-step b {
+    color: var(--text-1);
+}
+
+.ps-flow__intro strong {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 800;
+}
+
+.ps-flow__intro small,
+.ps-flow-step small {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-3);
+    font-size: 10.5px;
+}
+
+.ps-flow__steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+}
+
+.ps-flow-step {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    transition: all .22s ease;
+}
+
+.ps-flow-step > span {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-3);
+    color: var(--text-3);
+}
+
+.ps-flow-step.is-active {
+    border-color: rgba(229,37,42,.26);
+    background: var(--accent-dim);
+}
+
+.ps-flow-step.is-active > span,
+.ps-flow-step.is-ready > span {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 18px var(--accent-glow);
+}
+
+.ps-flow-step.is-done {
+    border-color: rgba(34,197,94,.24);
+    background: var(--green-dim);
+}
+
+.ps-flow-step.is-done > span {
+    background: var(--green);
+    color: #fff;
+}
+
+.ps-flow-step.is-processing {
+    border-color: rgba(23,185,130,.3);
+    box-shadow: inset 0 0 0 1px rgba(23,185,130,.08), 0 8px 24px rgba(23,185,130,.08);
+}
+
+.ps-readiness {
+    min-width: 0;
+}
+
+.ps-readiness__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 7px;
+    color: var(--text-3);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.ps-readiness__top strong {
+    color: var(--text-1);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+}
+
+.ps-readiness__track {
+    height: 7px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.ps-readiness__track i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), #ff5a5f);
+    box-shadow: 0 0 18px var(--accent-glow);
+    transition: width .45s cubic-bezier(.2,.8,.2,1);
+}
+
+.ps-loading-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ps-table-card {
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.ps-table-card:hover {
+    border-color: var(--border-hi);
+    box-shadow: 0 18px 48px rgba(0,0,0,.22);
+}
+
+.ps-table-ready {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid rgba(34,197,94,.2);
+    font-size: 9.5px;
+    font-weight: 800;
+}
+
+.ps-row.is-new td {
+    animation: psRowEnter .7s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes psRowEnter {
+    0% { background: rgba(229,37,42,.18); transform: translateY(-6px); opacity: .35; }
+    55% { background: rgba(229,37,42,.07); }
+    100% { background: transparent; transform: translateY(0); opacity: 1; }
+}
+
+.ps-row-actions {
+    opacity: .76;
+    transform: translateX(2px);
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+.ps-row:hover .ps-row-actions,
+.ps-row:focus-within .ps-row-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.ps-icon-btn {
+    transition: transform .16s ease, background .16s ease, color .16s ease, box-shadow .16s ease;
+}
+
+.ps-icon-btn:hover {
+    transform: translateY(-2px) scale(1.04);
+}
+
+.ps-icon-btn:active {
+    transform: scale(.94);
+}
+
+.ps-field:focus,
+.ss-trigger.is-open {
+    box-shadow: 0 0 0 3px var(--accent-dim), 0 8px 20px rgba(0,0,0,.08);
+}
+
+/* Light theme keeps the same premium surfaces without losing contrast. */
+.ps-light .ps-flow {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    box-shadow: 0 8px 26px rgba(15,23,42,.05);
+}
+
+.ps-light .ps-actions--modern {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+@media (max-width: 1180px) {
+    .ps-flow { grid-template-columns: 1fr; }
+    .ps-flow__steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+    .ps-flow__steps { grid-template-columns: 1fr; }
+    .ps-actions--modern { width: 100%; }
+    .ps-actions--modern .ps-btn { flex: 1 1 auto; justify-content: center; }
+}
+
+/* ═══════════════════════ V7.4 THEME + PREMIUM UX ═══════════════════════ */
+.ps-theme-btn { display:none !important; }
+
+.ps-root {
+    background: transparent;
+    padding: 0;
+}
+
+.ps-container {
+    max-width: none;
+    width: 100%;
+    gap: 14px;
+}
+
+.ps-header {
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 18px 45px rgba(0,0,0,.14);
+}
+
+.ps-dark .ps-header {
+    background:
+        radial-gradient(circle at 86% -30%, rgba(229,37,42,.16), transparent 34%),
+        linear-gradient(145deg, rgba(13,27,42,.98), rgba(8,22,35,.98));
+    border-color: #20364a;
+}
+
+.ps-dark .ps-header::before {
+    background: linear-gradient(110deg, rgba(229,37,42,.08), transparent 38%);
+}
+
+.ps-header__row {
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.ps-eyebrow {
+    height: 26px;
+    padding: 0 10px;
+    margin-bottom: 9px;
+}
+
+.ps-title {
+    font-size: clamp(24px, 2vw, 31px);
+    letter-spacing: -.045em;
+}
+
+.ps-subtitle {
+    font-size: 12.5px;
+    max-width: 680px;
+}
+
+/* Tek parça, modern operasyon aksiyon barı */
+.ps-actions--modern {
+    gap: 7px;
+    padding: 6px;
+    border-radius: 14px;
+    box-shadow: inset 0 1px rgba(255,255,255,.035);
+}
+
+.ps-dark .ps-actions--modern {
+    background: rgba(5,15,26,.76);
+    border-color: #20364a;
+}
+
+.ps-btn--motion {
+    height: 42px;
+    border-radius: 10px;
+    padding: 0 13px 0 8px;
+    box-shadow: none;
+}
+
+.ps-btn__icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+}
+
+.ps-dark .ps-btn--admin,
+.ps-dark .ps-btn--ghost {
+    background: #102235;
+    color: #dce8f2;
+    border-color: #294158;
+}
+
+.ps-dark .ps-btn--admin:hover,
+.ps-dark .ps-btn--ghost:hover {
+    background: #142b42;
+    border-color: #3a5872;
+}
+
+.ps-dark .ps-btn--add,
+.ps-dark .ps-btn--export {
+    background: linear-gradient(135deg,#f02d33,#d91e24);
+    border-color: rgba(255,90,95,.55);
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(229,37,42,.19);
+}
+
+.ps-dark .ps-btn--export:hover {
+    box-shadow: 0 12px 30px rgba(229,37,42,.28);
+}
+
+/* KPI şeridi */
+.ps-metrics {
+    gap: 9px;
+}
+
+.ps-dark .ps-search,
+.ps-dark .ps-metric {
+    background: linear-gradient(180deg,#0d1b2a,#0a1724);
+    border-color: #20364a;
+    box-shadow: none;
+}
+
+.ps-dark .ps-search:focus-within {
+    border-color: rgba(229,37,42,.62);
+    box-shadow: 0 0 0 3px rgba(229,37,42,.10);
+}
+
+.ps-dark .ps-search input {
+    color: #edf4fb;
+}
+
+.ps-dark .ps-metric__label { color:#7690a7; }
+.ps-dark .ps-metric__value { color:#f4f8fb; }
+.ps-dark .ps-metric__icon {
+    background: rgba(229,37,42,.11);
+    border: 1px solid rgba(229,37,42,.16);
+}
+
+/* Hazırlık panelini beyaz kart olmaktan çıkarıp operasyon rail yap */
+.ps-flow {
+    grid-template-columns: minmax(210px,.95fr) minmax(490px,2.25fr) minmax(150px,.7fr);
+    min-height: 76px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    margin-top: 10px;
+    box-shadow: none;
+}
+
+.ps-dark .ps-flow {
+    background: linear-gradient(135deg,rgba(7,20,32,.94),rgba(11,29,45,.96));
+    border-color: #20364a;
+}
+
+.ps-flow__spark {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+}
+
+.ps-flow__steps { gap: 8px; }
+
+.ps-flow-step {
+    min-height: 54px;
+    border-radius: 10px;
+    padding: 8px 10px;
+}
+
+.ps-dark .ps-flow-step {
+    background: #0d1b2a;
+    border-color: #20364a;
+}
+
+.ps-dark .ps-flow-step > span {
+    background: #10283d;
+    color: #8ca4b8;
+}
+
+.ps-dark .ps-flow-step.is-active {
+    background: linear-gradient(135deg,rgba(229,37,42,.16),rgba(229,37,42,.07));
+    border-color: rgba(229,37,42,.42);
+}
+
+.ps-dark .ps-flow-step.is-done {
+    background: linear-gradient(135deg,rgba(34,197,94,.13),rgba(34,197,94,.055));
+    border-color: rgba(34,197,94,.28);
+}
+
+.ps-dark .ps-readiness__track {
+    background: #06131f;
+    border-color: #20364a;
+    height: 8px;
+}
+
+/* Tablo başlığını tema ile aynı yüzeye al */
+.ps-table-card {
+    border-radius: 16px;
+    box-shadow: none;
+}
+
+.ps-dark .ps-table-card {
+    background: #0a1724;
+    border-color: #20364a;
+}
+
+.ps-table-bar {
+    min-height: 50px;
+    padding: 10px 14px;
+}
+
+.ps-dark .ps-table-bar {
+    background: linear-gradient(180deg,#0d1b2a,#0b1927);
+    border-bottom-color: #20364a;
+}
+
+.ps-dark .ps-table-bar__title { color:#edf4fb; }
+.ps-dark .ps-table-bar__meta { color:#7890a5; }
+.ps-dark .ps-table-bar__pill {
+    color:#ff6c71;
+    background:rgba(229,37,42,.12);
+    border:1px solid rgba(229,37,42,.18);
+}
+
+.ps-dark .ps-table thead th {
+    background:#102235;
+    color:#9fb4c6;
+    border-bottom-color:#294158;
+}
+
+.ps-dark .ps-table thead th.col--auto {
+    background:#12263a;
+    border-left-color:rgba(229,37,42,.18);
+}
+
+.ps-dark .ps-table tbody td {
+    background:#0a1724;
+    color:#dce7f2;
+    border-bottom-color:#183047;
+}
+
+.ps-dark .ps-table tbody td.col--auto {
+    background:#0c1c2a;
+    border-left-color:rgba(229,37,42,.14);
+}
+
+.ps-dark .ps-table tbody tr:hover td {
+    background:#10243a;
+}
+
+.ps-dark .ps-table tbody tr:hover td.col--auto {
+    background:#11283d;
+}
+
+/* Form alanları – modern ve okunur */
+.ps-field,
+.ss-trigger {
+    height: 38px;
+    border-radius: 9px;
+    font-size: 11.5px;
+    padding: 0 10px;
+}
+
+.ps-dark .ps-field,
+.ps-dark .ss-trigger {
+    background:#081724;
+    color:#e8f0f7;
+    border-color:#294158;
+}
+
+.ps-dark .ps-field:hover,
+.ps-dark .ss-trigger:hover {
+    background:#0d1f31;
+    border-color:#3a5872;
+}
+
+.ps-dark .ps-field:focus,
+.ps-dark .ss-trigger.is-open {
+    background:#0d1f31;
+    border-color:#ef3b40;
+    box-shadow:0 0 0 3px rgba(229,37,42,.11),0 10px 24px rgba(0,0,0,.18);
+}
+
+.ps-dark .ps-field[readonly] {
+    background:rgba(229,37,42,.06);
+    color:#ff8c90;
+    border-color:rgba(229,37,42,.24);
+}
+
+.ps-dark .ss-dropdown {
+    background:#0d1b2a;
+    border-color:#294158;
+    box-shadow:0 24px 70px rgba(0,0,0,.42);
+}
+
+.ps-dark .ss-search {
+    background:#081724;
+    border-color:#20364a;
+}
+
+.ps-dark .ss-search input { color:#edf4fb; }
+.ps-dark .ss-option { color:#dce7f2; }
+.ps-dark .ss-option:hover { background:#132b42; color:#fff; }
+
+.ps-row-idx {
+    width:30px;
+    height:30px;
+    border-radius:8px;
+}
+
+.ps-dark .ps-row-idx {
+    background:#102235;
+    color:#a8bbcb;
+    border-color:#294158;
+}
+
+.ps-icon-btn {
+    width:34px;
+    height:34px;
+    border-radius:9px;
+}
+
+.ps-dark .ps-icon-btn--copy {
+    background:#102235;
+    color:#b9cada;
+    border-color:#294158;
+}
+
+.ps-dark .ps-icon-btn--del {
+    background:rgba(229,37,42,.08);
+    color:#ff7378;
+    border-color:rgba(229,37,42,.20);
+}
+
+.ps-dark .ps-icon-btn--copy:hover {
+    background:#17314a;
+    color:#fff;
+}
+
+.ps-dark .ps-icon-btn--del:hover {
+    background:rgba(229,37,42,.17);
+    color:#fff;
+}
+
+/* Yükleme / kaydetme esnasında üst panelde canlı progress çizgisi */
+.ps-header:has(.ps-spin)::after {
+    content:'';
+    position:absolute;
+    left:0;
+    bottom:0;
+    height:2px;
+    width:36%;
+    border-radius:999px;
+    background:linear-gradient(90deg,transparent,#ff555a,#e5252a,transparent);
+    box-shadow:0 0 18px rgba(229,37,42,.5);
+    animation:psHeaderLoading 1.25s ease-in-out infinite;
+}
+
+@keyframes psHeaderLoading {
+    0% { transform:translateX(-110%); opacity:.25; }
+    40% { opacity:1; }
+    100% { transform:translateX(310%); opacity:.2; }
+}
+
+/* Light tema da aynı yapısal tasarımı korusun */
+.ps-light .ps-header,
+.ps-light .ps-table-card {
+    border-color:#dfe7ef;
+    box-shadow:0 10px 30px rgba(15,23,42,.055);
+}
+
+.ps-light .ps-flow {
+    border-color:#e1e8ef;
+    background:linear-gradient(135deg,#fbfdff,#f6f9fc);
+}
+
+.ps-light .ps-table-bar { background:#fbfcfe; }
+.ps-light .ps-actions--modern { background:#f7f9fc; }
+
+@media (max-width: 1180px) {
+    .ps-flow { grid-template-columns:1fr; }
+}
+
+@media (max-width: 900px) {
+    .ps-header { padding:15px; }
+    .ps-header__row { align-items:flex-start; }
+    .ps-actions--modern { width:100%; }
+    .ps-actions--modern .ps-btn { flex:1 1 calc(50% - 8px); justify-content:center; }
+}
+
 `;
+
 /* ══════════════════════ SUB-COMPONENTS ══════════════════════ */
 function SearchableSelect({ value, onSelect, options = [], placeholder = "Seçiniz", labelKey = "label", valueKey = "value", disabled = false, emptyMessage = "Sonuç bulunamadı" }) {
     const [open, setOpen] = useState(false);
@@ -956,13 +1742,19 @@ function SearchableSelect({ value, onSelect, options = [], placeholder = "Seçin
 export default function ParsiyelSiparisOlustur() {
     const [rows, setRows] = useState([emptyRow()]);
     const [search, setSearch] = useState("");
-    const [theme, setTheme] = useState("dark");
+    const [theme, setTheme] = useState(() => {
+        const htmlTheme = document.documentElement.getAttribute("data-odak-theme");
+        return htmlTheme || localStorage.getItem("odak-theme") || "light";
+    });
     const [projectOptions, setProjectOptions] = useState([]);
     const [customerOptions, setCustomerOptions] = useState([]);
     const [loadingProjects, setLoadingProjects] = useState(false);
     const [loadError, setLoadError] = useState("");
     const [tmsToken, setTmsToken] = useState("");
     const [resultModal, setResultModal] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveProgress, setSaveProgress] = useState({ current: 0, total: 0, label: "" });
+    const [animatedRowIndex, setAnimatedRowIndex] = useState(null);
 
     // ✅ Rol bazlı görünürlük — sadece "admin" rolündeki kullanıcılar "Proje Ekle" butonunu görür
     const [isAdmin, setIsAdmin] = useState(false);
@@ -984,6 +1776,27 @@ export default function ParsiyelSiparisOlustur() {
 
     useEffect(() => {
         setIsAdmin(getCurrentUserRole() === "admin");
+    }, []);
+
+    // Uygulamanın Navbar temasını birebir takip et. Parsiyel ekranın kendi
+    // light/dark state'i global temadan kopmasın.
+    useEffect(() => {
+        const syncTheme = () => {
+            const next = document.documentElement.getAttribute("data-odak-theme")
+                || localStorage.getItem("odak-theme")
+                || "light";
+            setTheme(next === "dark" ? "dark" : "light");
+        };
+
+        syncTheme();
+        const observer = new MutationObserver(syncTheme);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-odak-theme"] });
+        window.addEventListener("storage", syncTheme);
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("storage", syncTheme);
+        };
     }, []);
 
     const startResizeColumn = (key, startX) => {
@@ -1134,10 +1947,36 @@ export default function ParsiyelSiparisOlustur() {
         setRows((prev) => prev.map((row, i) => i === index ? { ...row, proje: project?.ProjeAdi || "", vkn: project?.ID != null ? String(project.ID) : "" } : row));
     };
 
-    const addRow = () => setRows((prev) => generateAutoNumbers([...prev, emptyRow()]));
-    const duplicateRow = (index) => setRows((prev) => { const next = [...prev]; next.splice(index + 1, 0, { ...prev[index] }); return generateAutoNumbers(next); });
-    const removeRow = (index) => setRows((prev) => { if (prev.length === 1) return [emptyRow()]; return generateAutoNumbers(prev.filter((_, i) => i !== index)); });
-    const resetTable = () => setRows([emptyRow()]);
+    const pulseRow = (index) => {
+        setAnimatedRowIndex(index);
+        window.setTimeout(() => setAnimatedRowIndex((current) => current === index ? null : current), 850);
+    };
+
+    const addRow = () => {
+        const nextIndex = rows.length;
+        setRows((prev) => generateAutoNumbers([...prev, emptyRow()]));
+        pulseRow(nextIndex);
+    };
+
+    const duplicateRow = (index) => {
+        setRows((prev) => {
+            const next = [...prev];
+            next.splice(index + 1, 0, { ...prev[index] });
+            return generateAutoNumbers(next);
+        });
+        pulseRow(index + 1);
+    };
+
+    const removeRow = (index) => setRows((prev) => {
+        if (prev.length === 1) return [emptyRow()];
+        return generateAutoNumbers(prev.filter((_, i) => i !== index));
+    });
+
+    const resetTable = () => {
+        setRows([emptyRow()]);
+        setSearch("");
+        pulseRow(0);
+    };
 
     // ✅ Yeni proje/firma kaydı ekleme (sadece admin butonundan tetiklenir)
     // ✅ Aynı ID varsa uyarı verir ve kayıt atmaz.
@@ -1216,6 +2055,12 @@ export default function ParsiyelSiparisOlustur() {
         return rows.filter((row) => Object.values(row).some((v) => normalizeSearch(v).includes(q)));
     }, [rows, search]);
 
+    const readyRowCount = useMemo(() => rows.filter((row) =>
+        row.musteriAdi && row.proje && row.siparisTarihi && row.yuklemeTarihi && row.teslimTarihi
+    ).length, [rows]);
+
+    const readiness = rows.length ? Math.round((readyRowCount / rows.length) * 100) : 0;
+
     const handleSave = async () => {
         if (!tmsToken) {
             setResultModal({
@@ -1228,7 +2073,15 @@ export default function ParsiyelSiparisOlustur() {
         const sent = [];
         const skipped = [];
 
-        for (const row of rows) {
+        setIsSaving(true);
+        setSaveProgress({ current: 0, total: rows.length, label: "Siparişler hazırlanıyor" });
+
+        for (const [rowIndex, row] of rows.entries()) {
+            setSaveProgress({
+                current: rowIndex + 1,
+                total: rows.length,
+                label: `${rowIndex + 1}. satır REEL için kontrol ediliyor`
+            });
             try {
                 if (
                     !row.musteriAdi ||
@@ -1331,7 +2184,12 @@ export default function ParsiyelSiparisOlustur() {
 
         setSearch("");
 
+        setSaveProgress({ current: rows.length, total: rows.length, label: "Aktarım tamamlandı" });
         setResultModal({ sent, skipped });
+        window.setTimeout(() => {
+            setIsSaving(false);
+            setSaveProgress({ current: 0, total: 0, label: "" });
+        }, 450);
     };
     const inputCols = columns.filter((c) => c.group === "input");
     const autoCols = columns.filter((c) => c.group === "auto");
@@ -1659,15 +2517,26 @@ export default function ParsiyelSiparisOlustur() {
                                 <h1 className="ps-title">Sipariş Giriş Paneli</h1>
                                 <p className="ps-subtitle">Yeni lojistik taleplerinizi hızlıca oluşturun, müşteri bazlı proje seçin ve sipariş akışını yönetin.</p>
                             </div>
-                            <div className="ps-actions">
+                            <div className="ps-actions ps-actions--modern">
                                 {isAdmin && (
-                                    <button className="ps-btn ps-btn--admin" onClick={() => setShowAddProject(true)}>
-                                        <FolderKanban size={16} />Proje Ekle
+                                    <button className="ps-btn ps-btn--admin ps-btn--motion" onClick={() => setShowAddProject(true)}>
+                                        <span className="ps-btn__icon"><FolderKanban size={16} /></span>
+                                        <span>Proje Ekle</span>
                                     </button>
                                 )}
-                                <button className="ps-btn ps-btn--add" onClick={addRow}><Plus size={16} />Yeni Satır</button>
-                                <button className="ps-btn ps-btn--ghost" onClick={resetTable}><RotateCcw size={16} />Temizle</button>
-                                <button className="ps-btn ps-btn--export" onClick={handleSave}><Zap size={16} />REEL'e Aktar</button>
+                                <button className="ps-btn ps-btn--add ps-btn--motion" onClick={addRow}>
+                                    <span className="ps-btn__icon"><Plus size={16} /></span>
+                                    <span>Yeni Satır</span>
+                                </button>
+                                <button className="ps-btn ps-btn--ghost ps-btn--motion" onClick={resetTable} disabled={isSaving}>
+                                    <span className="ps-btn__icon"><RotateCcw size={16} /></span>
+                                    <span>Temizle</span>
+                                </button>
+                                <button className="ps-btn ps-btn--export ps-btn--motion ps-btn--reel" onClick={handleSave} disabled={isSaving}>
+                                    <span className="ps-btn__icon">{isSaving ? <LoaderCircle size={16} className="ps-spin" /> : <Send size={16} />}</span>
+                                    <span>{isSaving ? `Aktarılıyor ${saveProgress.current}/${saveProgress.total}` : "REEL'e Aktar"}</span>
+                                    {!isSaving && <ArrowRight size={14} className="ps-btn__arrow" />}
+                                </button>
                                 <button className="ps-theme-btn" onClick={() => setTheme((t) => t === "dark" ? "light" : "dark")} title="Tema değiştir">
                                     {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
                                 </button>
@@ -1697,9 +2566,39 @@ export default function ParsiyelSiparisOlustur() {
                             </div>
                         </div>
 
+                        <div className="ps-flow">
+                            <div className="ps-flow__intro">
+                                <span className="ps-flow__spark"><Sparkles size={15} /></span>
+                                <div>
+                                    <strong>Sipariş hazırlık durumu</strong>
+                                    <small>Satırları tamamlayın, kontrol edin ve REEL'e aktarın.</small>
+                                </div>
+                            </div>
+                            <div className="ps-flow__steps">
+                                <div className={`ps-flow-step ${rows.length ? "is-active" : ""}`}>
+                                    <span><Rows3 size={14} /></span>
+                                    <div><b>1. Satırlar</b><small>{rows.length} kayıt</small></div>
+                                </div>
+                                <div className={`ps-flow-step ${readyRowCount === rows.length && rows.length ? "is-done" : readyRowCount ? "is-active" : ""}`}>
+                                    <span>{readyRowCount === rows.length && rows.length ? <CheckCircle2 size={14} /> : <ShieldCheck size={14} />}</span>
+                                    <div><b>2. Kontrol</b><small>{readyRowCount}/{rows.length} hazır</small></div>
+                                </div>
+                                <div className={`ps-flow-step ${isSaving ? "is-processing" : readiness === 100 ? "is-ready" : ""}`}>
+                                    <span>{isSaving ? <LoaderCircle size={14} className="ps-spin" /> : <Send size={14} />}</span>
+                                    <div><b>3. REEL</b><small>{isSaving ? "Aktarılıyor" : readiness === 100 ? "Aktarıma hazır" : "Hazırlanıyor"}</small></div>
+                                </div>
+                            </div>
+                            <div className="ps-readiness" aria-label={`Hazırlık yüzde ${readiness}`}>
+                                <div className="ps-readiness__top"><span>Hazırlık</span><strong>%{readiness}</strong></div>
+                                <div className="ps-readiness__track"><i style={{ width: `${readiness}%` }} /></div>
+                            </div>
+                        </div>
+
                         {(loadingProjects || loadError) && (
                             <div className={`ps-banner ${loadError ? "is-error" : ""}`}>
-                                {loadingProjects ? "⏳ Müşteri ve proje verileri yükleniyor..." : `⚠ ${loadError}`}
+                                {loadingProjects ? (
+                                    <span className="ps-loading-inline"><LoaderCircle size={15} className="ps-spin" /> Müşteri ve proje verileri hazırlanıyor...</span>
+                                ) : `⚠ ${loadError}`}
                             </div>
                         )}
                     </header>
@@ -1710,6 +2609,7 @@ export default function ParsiyelSiparisOlustur() {
                             <div className="ps-table-bar__title">
                                 <Layers size={15} />Sipariş Satırları
                                 <span className="ps-table-bar__pill">{filteredRows.length}</span>
+                                {readyRowCount === rows.length && rows.length > 0 && <span className="ps-table-ready"><CheckCircle2 size={12} /> Hazır</span>}
                             </div>
                             <div className="ps-table-bar__meta">
                                 <span style={{ color: "var(--green)", fontWeight: 700, fontFamily: "'DM Mono', monospace", fontSize: 11 }}>● GİRİŞ</span>
@@ -1764,7 +2664,7 @@ export default function ParsiyelSiparisOlustur() {
                                         const actualIndex = rows.indexOf(row);
                                         const projOpts = getProjectsByCustomer(row.musteriAdi);
                                         return (
-                                            <tr key={actualIndex}>
+                                            <tr key={actualIndex} className={animatedRowIndex === actualIndex ? "ps-row is-new" : "ps-row"}>
                                                 <td><div className="ps-row-idx">{actualIndex + 1}</div></td>
                                                 {columns.map((col) => {
                                                     const isAuto = col.group === "auto";
@@ -1788,8 +2688,8 @@ export default function ParsiyelSiparisOlustur() {
                                                 })}
                                                 <td>
                                                     <div className="ps-row-actions">
-                                                        <button className="ps-icon-btn ps-icon-btn--copy" onClick={() => duplicateRow(actualIndex)} title="Kopyala"><Copy size={14} /></button>
-                                                        <button className="ps-icon-btn ps-icon-btn--del" onClick={() => removeRow(actualIndex)} title="Sil"><Trash2 size={14} /></button>
+                                                        <button className="ps-icon-btn ps-icon-btn--copy" onClick={() => duplicateRow(actualIndex)} title="Satırı kopyala" aria-label="Satırı kopyala"><Copy size={14} /></button>
+                                                        <button className="ps-icon-btn ps-icon-btn--del" onClick={() => removeRow(actualIndex)} title="Satırı sil" aria-label="Satırı sil"><Trash2 size={14} /></button>
                                                     </div>
                                                 </td>
                                             </tr>

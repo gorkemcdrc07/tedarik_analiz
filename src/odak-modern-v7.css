@@ -1,0 +1,117 @@
+/* ODAK UI V7 — interaction & premium operations layer */
+:root {
+  --v7-radius-xl: 20px;
+  --v7-radius-lg: 16px;
+  --v7-radius-md: 12px;
+  --v7-shadow: 0 12px 32px rgba(15, 23, 42, .08);
+  --v7-ring: 0 0 0 4px rgba(229, 37, 42, .10);
+  --v7-ease: cubic-bezier(.2,.8,.2,1);
+}
+
+button, [role="button"], a { -webkit-tap-highlight-color: transparent; }
+button { transition: transform .16s var(--v7-ease), box-shadow .2s, background-color .2s, border-color .2s, opacity .2s; }
+button:not(:disabled):active { transform: translateY(1px) scale(.985); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: none !important; box-shadow: var(--v7-ring) !important;
+}
+
+/* Generic operational cards */
+.app-route-stage section, .app-route-stage .MuiPaper-root { transition: border-color .22s, box-shadow .22s, transform .22s; }
+
+/* Sipariş Oluştur workflow */
+.so-workflow {
+  display:grid; grid-template-columns:minmax(150px,1fr) 44px minmax(150px,1fr) 44px minmax(150px,1fr) 44px minmax(150px,1fr);
+  align-items:center; gap:8px; padding:12px 14px; border:1px solid var(--c-border); border-radius:16px;
+  background:linear-gradient(180deg,var(--c-surface),color-mix(in srgb,var(--c-surface) 96%,var(--c-primary) 4%)); box-shadow:var(--shadow-sm);
+}
+.so-workflow__step { min-width:0; display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:12px; color:var(--c-muted); }
+.so-workflow__step > div { min-width:0; flex:1; }
+.so-workflow__step strong { display:block; color:var(--c-text); font-size:12px; font-weight:800; }
+.so-workflow__step small { display:block; margin-top:2px; font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.so-workflow__index { width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:var(--c-surface-3);border:1px solid var(--c-border-md);font-weight:900;font-size:11px; }
+.so-workflow__step.is-active { background:var(--c-primary-tint); color:var(--c-primary); }
+.so-workflow__step.is-active .so-workflow__index { background:var(--c-primary);color:#fff;border-color:transparent;box-shadow:0 7px 18px rgba(229,37,42,.22); }
+.so-workflow__step.is-done .so-workflow__index { background:#16a34a;color:#fff;border-color:transparent; }
+.so-workflow__step.is-done > svg { color:#16a34a; }
+.so-workflow__line { height:2px;background:var(--c-border-md);border-radius:99px;position:relative;overflow:hidden; }
+.so-workflow__line.is-done::after { content:"";position:absolute;inset:0;background:linear-gradient(90deg,#16a34a,#22c55e); }
+.so-action-group { border-radius:16px !important; }
+.so-btn { min-height:42px !important; gap:8px !important; font-weight:750 !important; }
+.so-btn svg { transition:transform .18s var(--v7-ease); }
+.so-btn:not(:disabled):hover svg { transform:translateY(-1px) scale(1.06); }
+.so-table-card { overflow:hidden; }
+.so-table-top { min-height:48px; }
+.so-table tbody tr:not(.so-drop-row):hover { background:color-mix(in srgb,var(--c-primary) 4%,var(--c-surface)) !important; }
+
+/* Teslim Noktaları */
+.import-flow { display:grid;grid-template-columns:1fr 28px 1fr 28px 1fr;gap:8px;align-items:center;margin:0 0 16px;padding:10px;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc; }
+.import-flow-step { display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;color:#64748b; }
+.import-flow-step > span { width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#fff;border:1px solid #e2e8f0; }
+.import-flow-step b { display:block;color:#0f172a;font-size:12px; }
+.import-flow-step small { display:block;margin-top:2px;font-size:10.5px; }
+.import-flow-step.is-active { background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.06); }
+.import-flow-step.is-active > span { background:rgba(229,37,42,.09);color:#e5252a;border-color:rgba(229,37,42,.16); }
+.import-flow-step.is-done > span { background:#dcfce7;color:#16a34a;border-color:#bbf7d0; }
+.import-flow-arrow { color:#cbd5e1;justify-self:center; }
+.result-card { position:relative;overflow:hidden; }
+.result-card-icon { position:absolute;right:12px;top:12px;width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0; }
+.result-card.main .result-card-icon { background:rgba(229,37,42,.08);color:#e5252a;border-color:rgba(229,37,42,.12); }
+.drop-area { transition:border-color .2s,background .2s,transform .2s,box-shadow .2s !important; }
+.drop-area:hover { transform:translateY(-2px);box-shadow:0 18px 42px rgba(15,23,42,.08); }
+.drop-area button { display:inline-flex;align-items:center;gap:7px; }
+
+/* Fasdat */
+.fasdat-flow { display:grid;grid-template-columns:1fr 30px 1fr 30px 1fr;align-items:center;gap:8px;padding:10px 12px;border:1px solid #dbe5ef;border-radius:16px;background:#f8fafc; }
+.fasdat-flow-step { display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:#64748b; }
+.fasdat-flow-step > span { width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:#fff;border:1px solid #dbe5ef; }
+.fasdat-flow-step strong { display:block;color:#0f172a;font-size:12px;font-weight:850; }
+.fasdat-flow-step small { display:block;margin-top:2px;font-size:10.5px; }
+.fasdat-flow-step.is-active { background:#fff;box-shadow:0 7px 20px rgba(15,23,42,.06); }
+.fasdat-flow-step.is-active > span { background:rgba(229,37,42,.08);border-color:rgba(229,37,42,.16);color:#e5252a; }
+.fasdat-flow-step.is-done > span { background:#dcfce7;color:#16a34a;border-color:#bbf7d0; }
+.fasdat-flow-arrow { justify-self:center;color:#cbd5e1; }
+.fasdat-mode-card { transition:transform .2s var(--v7-ease),box-shadow .2s,border-color .2s !important; }
+.fasdat-mode-card:hover { transform:translateY(-3px);box-shadow:0 14px 30px rgba(15,23,42,.08); }
+.fasdat-btn { min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:8px; }
+.fasdat-dropzone { transition:transform .2s,border-color .2s,box-shadow .2s,background .2s !important; }
+.fasdat-dropzone:hover { transform:translateY(-2px);box-shadow:0 18px 44px rgba(15,23,42,.07); }
+
+/* Dark counterparts */
+[data-odak-theme="dark"] .import-flow,
+[data-odak-theme="dark"] .fasdat-flow { background:#0b1d2d;border-color:#22384b; }
+[data-odak-theme="dark"] .import-flow-step.is-active,
+[data-odak-theme="dark"] .fasdat-flow-step.is-active { background:#102638;box-shadow:none; }
+[data-odak-theme="dark"] .import-flow-step > span,
+[data-odak-theme="dark"] .fasdat-flow-step > span { background:#0e2233;border-color:#294156; }
+[data-odak-theme="dark"] .import-flow-step b,
+[data-odak-theme="dark"] .fasdat-flow-step strong { color:#e8f0f7; }
+[data-odak-theme="dark"] .result-card-icon { background:#102638;border-color:#294156;color:#9fb2c4; }
+[data-odak-theme="dark"] .result-card.main .result-card-icon { background:rgba(229,37,42,.13);color:#ff656a;border-color:rgba(229,37,42,.22); }
+
+@media (max-width:1100px){
+  .so-workflow { grid-template-columns:1fr 1fr; }
+  .so-workflow__line { display:none; }
+  .import-flow,.fasdat-flow { grid-template-columns:1fr; }
+  .import-flow-arrow,.fasdat-flow-arrow { display:none; }
+}
+@media (max-width:720px){
+  .so-workflow { grid-template-columns:1fr; }
+  .so-workflow__step small,.import-flow-step small,.fasdat-flow-step small { white-space:normal; }
+}
+
+/* Cross-screen component unification */
+.MuiButton-root { border-radius:12px !important; min-height:40px; font-weight:750 !important; text-transform:none !important; letter-spacing:0 !important; }
+.MuiIconButton-root { border-radius:11px !important; }
+.MuiOutlinedInput-root { border-radius:12px !important; transition:box-shadow .2s,border-color .2s,background .2s; }
+.MuiTableContainer-root { border-radius:16px !important; overflow:auto; }
+.MuiTableHead-root .MuiTableCell-root { font-size:11px !important; font-weight:800 !important; letter-spacing:.02em; text-transform:uppercase; }
+.MuiChip-root { border-radius:9px !important; font-weight:750 !important; }
+.MuiDialog-paper { border-radius:20px !important; }
+
+/* Native operational controls used by legacy screens */
+.app-route-stage input:not([type="checkbox"]):not([type="radio"]),
+.app-route-stage select,
+.app-route-stage textarea { transition:border-color .18s,box-shadow .18s,background-color .18s; }
+.app-route-stage table tbody tr { transition:background-color .16s; }
+.app-route-stage table tbody tr:hover { background-color:rgba(229,37,42,.025); }
+[data-odak-theme="dark"] .app-route-stage table tbody tr:hover { background-color:rgba(229,37,42,.055); }

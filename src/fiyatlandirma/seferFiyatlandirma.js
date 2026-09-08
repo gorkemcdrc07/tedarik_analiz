@@ -1,6 +1,7 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./seferFiyatlandirma.css";
 import ExcelJS from "exceljs";
+import { Calculator, Download, FilterX, RefreshCw, Truck } from "lucide-react";
 
 
 const API_BASE = (process.env.REACT_APP_API_BASE_URL || "http://localhost:5000")
@@ -881,46 +882,13 @@ export default function SeferFiyatlandirma() {
 
     return (
         <section className="fx-content">
-            <style>{`
-        .fx-content{display:flex;flex-direction:column;gap:14px;padding:18px;height:100dvh;overflow:hidden;background:
-          radial-gradient(1000px 520px at 10% -10%, rgba(119,255,231,.08), transparent 60%),
-          radial-gradient(800px 520px at 110% 0%, rgba(89,219,255,.06), transparent 65%),
-          #0b0f14;}
-        .fx-toolbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:22px;background:linear-gradient(180deg,rgba(18,22,28,.78),rgba(18,22,28,.6));border:1px solid rgba(119,255,231,.28);backdrop-filter:blur(14px)}
-        .fx-title{font-weight:800;letter-spacing:.2px;color:#eafff7}
-        .pill{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(119,255,231,.28)}
-        .pill input{height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.18);color:inherit;padding:0 8px}
-        .switch{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px dashed rgba(119,255,231,.4)}
-        .fx-btn{--h:40px;display:inline-flex;align-items:center;gap:8px;height:var(--h);padding:0 14px;border-radius:12px;border:1px solid rgba(119,255,231,.4);background:linear-gradient(180deg,rgba(119,255,231,.18),rgba(0,160,160,.12));color:inherit;cursor:pointer}
-        .fx-btn-outline{background:linear-gradient(180deg,rgba(89,219,255,.12),rgba(89,219,255,.06));border-color:rgba(89,219,255,.6)}
-        .fx-btn-ghost{background:transparent;border-color:transparent;outline:1px dashed rgba(119,255,231,.45)}
-        .fx-badge{font-size:12px;padding:6px 10px;border-radius:999px;background:linear-gradient(180deg,rgba(119,255,231,.18),rgba(119,255,231,.08));border:1px solid rgba(119,255,231,.4);color:#dffff7}
-        .fx-card{background:linear-gradient(180deg,rgba(18,22,28,.6),rgba(18,22,28,.78));border:1px solid rgba(119,255,231,.28);border-radius:22px}
-        .fx-input{border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);padding:10px 12px;color:inherit;width:100%}
-        .fx-table-wrap{padding:10px;border-radius:22px;display:flex;flex-direction:column;min-height:0;background:linear-gradient(180deg,rgba(18,22,28,.6),rgba(18,22,28,.78));border:1px solid rgba(119,255,231,.28)}
-        .fx-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;border-radius:14px;border:1px solid rgba(255,255,255,.08);max-height:clamp(420px,60vh,780px)}
-        .fx-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
-        .fx-table thead th{position:sticky;top:0;z-index:1;background:linear-gradient(180deg,rgba(18,22,28,.9),rgba(0,0,0,.35));border-bottom:1px solid rgba(119,255,231,.28);padding:8px 10px;text-align:left;font-weight:800;color:#d7fff6}
-        .th-inner{display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer}
-        .th-filter{background:transparent;border-bottom:1px solid rgba(119,255,231,.16)}
-        .th-filter-row{display:flex;align-items:center;gap:6px}
-        .th-filter input[type="text"], .th-filter input[type="number"]{width:100%;padding:6px 8px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:inherit}
-        .fx-table tbody td{padding:7px 9px;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.25}
-        .fx-table tbody tr:nth-child(2n){background:rgba(255,255,255,.018)}
-        .fx-table tbody tr:hover{background:rgba(119,255,231,.06)}
-        .fx-table td:first-child,.fx-table th:first-child{position:sticky;left:0;z-index:2;background:linear-gradient(180deg,rgba(18,22,28,.9),rgba(0,0,0,.32))}
-        .col-resizer{position:absolute;right:-4px;top:0;width:8px;height:100%;cursor:col-resize}
-        .col-resizer::after{content:"";position:absolute;right:3px;top:25%;height:50%;width:2px;background:rgba(255,255,255,.14);border-radius:2px}
-        .fx-empty{text-align:center;color:#9bd7c9;padding:26px}
-      `}</style>
-
-            {/* Toolbar */}
+{/* Toolbar */}
             <div className="fx-toolbar">
                 <div
                     className="fx-toolbar__left"
                     style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}
                 >
-                    <h1 className="fx-title m-0">Sefer Fiyatlandırma</h1>
+                    <h1 className="fx-title m-0"><span className="fx-title-icon"><Truck size={18} /></span>Sefer Fiyatlandırma</h1>
 
                     <div className="pill">
                         <span>Aralık</span>
@@ -961,7 +929,7 @@ export default function SeferFiyatlandirma() {
                         disabled={!dateValid || loading}
                         title="Veri Getir"
                     >
-                        {loading ? "Yükleniyor…" : "Veri Getir"}
+                        {loading ? <><RefreshCw className="fx-spin" size={15} />Yükleniyor…</> : <><RefreshCw size={15} />Veri Getir</>}
                     </button>
 
                     <button
@@ -970,7 +938,7 @@ export default function SeferFiyatlandirma() {
                         disabled={!rows.length || calcLoading || !HAS_SB}
                         title={HAS_SB ? "Supabase fiyatları uygula" : "Supabase ayarları yok (.env dosyasını doldurun)"}
                     >
-                        {calcLoading ? "Hesaplanıyor…" : "HESAPLA"}
+                        {calcLoading ? <><Calculator className="fx-spin" size={15} />Hesaplanıyor…</> : <><Calculator size={15} />Hesapla</>}
                     </button>
 
                     <button
@@ -981,6 +949,7 @@ export default function SeferFiyatlandirma() {
                         }}
                         title="Tüm filtreleri temizle"
                     >
+                        <FilterX size={15} />
                         Filtreleri Sıfırla
                     </button>
 
@@ -990,6 +959,7 @@ export default function SeferFiyatlandirma() {
                         disabled={!rows.length}
                         title="Excel (.xlsx) olarak dışa aktar"
                     >
+                        <Download size={15} />
                         Excel’e Aktar
                     </button>
 
@@ -1010,11 +980,11 @@ export default function SeferFiyatlandirma() {
                     className="fx-card"
                     style={{
                         padding: 12,
-                        color: "#ffb4b4",
+                        color: "#b91c1c",
                         marginBottom: 10,
                         whiteSpace: "pre-wrap",
-                        borderColor: "rgba(255,100,100,.35)",
-                        background: "rgba(120,10,10,.25)",
+                        borderColor: "#fecaca",
+                        background: "#fef2f2",
                     }}
                 >
                     <b>Hata:</b> {error}

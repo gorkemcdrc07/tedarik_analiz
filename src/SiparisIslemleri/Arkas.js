@@ -1,7 +1,8 @@
-﻿import React, { useMemo, useRef, useState } from "react";
-import { Link as LinkIcon, ListChecks, FileSpreadsheet, UploadCloud, Loader2, X } from "lucide-react";
+import React, { useMemo, useRef, useState } from "react";
+import { Link as LinkIcon, ListChecks, FileSpreadsheet, UploadCloud, Loader2, X, FileCheck2, Route, Sparkles, Download, RotateCcw, CheckCircle2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import supabase from "../supabaseClient";
+import "./Arkas.css";
 
 /** ===================== SABİTLER ===================== */
 const HEADERS = [
@@ -75,6 +76,9 @@ export default function ArkasEkrani() {
     const [error, setError] = useState("");
     const [lastFile, setLastFile] = useState(null);
     const [overlayLoading, setOverlayLoading] = useState(false);
+    const [uploadLoading, setUploadLoading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadStage, setUploadStage] = useState("");
     const fileInputRef = useRef(null);
     const columns = useMemo(() => HEADERS, []);
 
@@ -307,10 +311,35 @@ export default function ArkasEkrani() {
     };
 
     // Drag & drop
-    const onDrop = (e) => { e.preventDefault(); setDragActive(false); const f = e.dataTransfer.files?.[0]; if (f) parseExcel(f); };
+    const processExcelWithFeedback = async (file) => {
+        setUploadLoading(true);
+        setUploadProgress(12);
+        setUploadStage("Dosya okunuyor");
+        const timer = setInterval(() => {
+            setUploadProgress((p) => {
+                if (p >= 88) return p;
+                const next = Math.min(88, p + Math.max(4, Math.round((92 - p) * 0.12)));
+                if (next > 60) setUploadStage("Sipariş satırları hazırlanıyor");
+                else if (next > 32) setUploadStage("Excel yapısı doğrulanıyor");
+                return next;
+            });
+        }, 160);
+        try {
+            await parseExcel(file);
+            setUploadStage("Dosya hazır");
+            setUploadProgress(100);
+            await new Promise((r) => setTimeout(r, 320));
+        } finally {
+            clearInterval(timer);
+            setUploadLoading(false);
+            setTimeout(() => { setUploadProgress(0); setUploadStage(""); }, 250);
+        }
+    };
+
+    const onDrop = (e) => { e.preventDefault(); setDragActive(false); const f = e.dataTransfer.files?.[0]; if (f) processExcelWithFeedback(f); };
     const onDragOver = (e) => { e.preventDefault(); setDragActive(true); };
     const onDragLeave = () => setDragActive(false);
-    const onFileChange = (e) => { const f = e.target.files?.[0]; if (f) parseExcel(f); e.target.value = ""; };
+    const onFileChange = (e) => { const f = e.target.files?.[0]; if (f) processExcelWithFeedback(f); e.target.value = ""; };
 
     /** --- DIŞA AKTAR --- */
     const handleExportExcel = () => {
@@ -542,74 +571,145 @@ export default function ArkasEkrani() {
 
     /** ===================== UI ===================== */
     return (
-        <div className="p-4 space-y-3">
-            {/* HEADER */}
-            <div className="flex items-end justify-between">
-                <div>
-                    <h1 className="text-xl font-semibold">Arkas — Sipariş Oluştur</h1>
-                    <div className="text-xs text-gray-500">ArkasEkrani.jsx</div>
+        <div className="arkas-page ots-page">
+            <section className="arkas-hero">
+                <div className="arkas-hero-main">
+                    <span className="arkas-hero-icon">
+                        <FileSpreadsheet size={24} strokeWidth={1.9} />
+                    </span>
+                    <div>
+                        <span className="arkas-eyebrow">Sipariş İşlemleri</span>
+                        <h2>Arkas — Sipariş Oluştur</h2>
+                        <p>
+                            Excel siparişlerini içeri alın, adresleri sistem kayıtlarıyla
+                            eşleştirin ve standart sipariş formatında dışarı aktarın.
+                        </p>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={handleEslesmeYap} disabled={!rows.length || overlayLoading} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg border hover:bg-gray-50 disabled:opacity-50">
-                        {overlayLoading ? <Loader2 className="animate-spin" size={16} /> : <LinkIcon size={16} />}
+
+                <div className="arkas-hero-actions">
+                    <button
+                        type="button"
+                        onClick={handleEslesmeYap}
+                        disabled={!rows.length || overlayLoading}
+                        className="arkas-btn arkas-btn-secondary"
+                    >
+                        {overlayLoading ? (
+                            <Loader2 className="arkas-spin" size={16} />
+                        ) : (
+                            <LinkIcon size={16} />
+                        )}
                         {overlayLoading ? "Eşleştiriliyor..." : "Eşleşme Yap"}
                     </button>
-                    <button onClick={handleExportExcel} disabled={!rows.length} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg border hover:bg-gray-50 disabled:opacity-50">
-                        <FileSpreadsheet size={16} /> Dışarı Aktar
+
+                    <button
+                        type="button"
+                        onClick={handleExportExcel}
+                        disabled={!rows.length}
+                        className="arkas-btn arkas-btn-primary"
+                    >
+                        <FileSpreadsheet size={16} />
+                        Dışarı Aktar
                     </button>
                 </div>
-            </div>
+            </section>
 
-            {/* SÜRÜKLE-BIRAK ALANI */}
-            <div className="rounded-xl border overflow-hidden">
-                <div className="px-3 py-2 flex items-center gap-2 border-b text-xs text-gray-700">
-                    <ListChecks size={16} /> <span className="font-medium">Şablon</span>
-                    <span className="text-[11px] text-gray-500">
-                        (Legacy: B→Alıcı, C→Teslim, F→Müşteri Sipariş No. Sabitler: VKN 079002095, Proje 458, Yükleme Firması 13, Ürün 2, Kap 1, Ambalaj 1. Tarihler: bugün/+1)
-                    </span>
+            <section className="arkas-flow" aria-label="Arkas sipariş iş akışı">
+                <div className={`arkas-flow-step ${rows.length ? "is-complete" : "is-active"}`}>
+                    <span><UploadCloud size={16} /></span>
+                    <div><b>1. Excel Yükle</b><small>Arkas şablonunu içeri al</small></div>
+                </div>
+                <i />
+                <div className={`arkas-flow-step ${rows.length && !overlayLoading ? "is-active" : ""} ${matchResults.length ? "is-complete" : ""}`}>
+                    <span><Route size={16} /></span>
+                    <div><b>2. Adresleri Eşleştir</b><small>Sistem kayıtlarıyla doğrula</small></div>
+                </div>
+                <i />
+                <div className={`arkas-flow-step ${matchResults.length ? "is-active" : ""}`}>
+                    <span><Download size={16} /></span>
+                    <div><b>3. Dışarı Aktar</b><small>Standart sipariş dosyasını üret</small></div>
+                </div>
+            </section>
+
+            <section className="arkas-card">
+                <div className="arkas-card-header">
+                    <div className="arkas-card-title">
+                        <span className="arkas-card-icon">
+                            <ListChecks size={17} />
+                        </span>
+                        <div>
+                            <strong>Arkas Excel Şablonu</strong>
+                            <span>
+                                Legacy: B → Alıcı, C → Teslim, F → Müşteri Sipariş No
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="arkas-fixed-values">
+                        <span>VKN <b>079002095</b></span>
+                        <span>Proje <b>458</b></span>
+                        <span>Yükleme <b>13</b></span>
+                    </div>
                 </div>
 
                 <div
-                    className={`relative ${rows.length === 0 ? "min-h-[180px]" : ""}`}
+                    className="arkas-import-area"
                     onDrop={onDrop}
                     onDragOver={onDragOver}
                     onDragLeave={onDragLeave}
                     onDragEnd={onDragLeave}
                     onDragExit={onDragLeave}
                 >
-                    {rows.length === 0 && (
-                        <div
+                    {rows.length === 0 ? (
+                        <button
+                            type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            role="button"
-                            tabIndex={0}
+                            className={`arkas-dropzone ${dragActive ? "is-dragging" : ""}`}
                             aria-label="Excel sürükleyip bırak veya tıklayıp seç"
-                            className={`flex flex-col items-center justify-center text-center p-6 cursor-pointer ${dragActive ? "bg-blue-50" : "bg-gray-50"}`}
                         >
-                            <UploadCloud size={24} />
-                            <div className="mt-1 font-medium text-sm">Excel’i buraya sürükleyip bırakın</div>
-                            <div className="text-xs text-gray-500">ya da <b>tıklayın</b> (.xlsx / .xls)</div>
-                            <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.xlsm" onChange={onFileChange} hidden />
-                        </div>
-                    )}
-
-                    {rows.length > 0 && (
-                        <div className="overflow-auto max-h-[70vh]">
-                            <table className="min-w-full text-xs leading-tight text-gray-800 dark:text-gray-100">
-                                <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10 text-gray-900 dark:text-gray-100">
+                            {uploadLoading ? (
+                                <>
+                                    <span className="arkas-dropzone-icon is-loading">
+                                        <Loader2 size={30} className="arkas-spin" />
+                                    </span>
+                                    <strong>{uploadStage || "Excel işleniyor"}</strong>
+                                    <span>Dosyanız sipariş formatına hazırlanıyor...</span>
+                                    <div className="arkas-upload-progress"><span style={{ width: `${uploadProgress}%` }} /></div>
+                                    <small className="arkas-upload-percent">%{uploadProgress}</small>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="arkas-dropzone-icon">
+                                        <UploadCloud size={32} strokeWidth={1.7} />
+                                    </span>
+                                    <strong>Excel dosyasını buraya bırakın</strong>
+                                    <span>veya tıklayarak .xlsx / .xls dosyası seçin</span>
+                                    <div className="arkas-dropzone-tags">
+                                        <span>.XLSX</span>
+                                        <span>.XLS</span>
+                                        <span>.XLSM</span>
+                                    </div>
+                                </>
+                            )}
+                        </button>
+                    ) : (
+                        <div className="arkas-table-scroll">
+                            <table className="arkas-table">
+                                <thead>
                                     <tr>
-                                        <th className="px-1.5 py-1 text-left w-10">#</th>
+                                        <th className="arkas-row-index">#</th>
                                         {columns.map((c) => (
-                                            <th key={c} className="px-1.5 py-1 text-left whitespace-nowrap">{c}</th>
+                                            <th key={c}>{c}</th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {rows.map((row, rowIdx) => (
-                                        <tr key={rowIdx} className="odd:bg-white even:bg-gray-50 dark:odd:bg-gray-900 dark:even:bg-gray-800">
-                                            <td className="px-1.5 py-1 align-top text-gray-500">{rowIdx + 1}</td>
+                                        <tr key={rowIdx}>
+                                            <td className="arkas-row-index">{rowIdx + 1}</td>
                                             {columns.map((col) => (
-                                                <td key={`${rowIdx}-${col}`} className="px-1.5 py-1 align-top">
-                                                    <div className="max-w-[220px] truncate" title={row[col]}>{row[col]}</div>
+                                                <td key={`${rowIdx}-${col}`} title={row[col]}>
+                                                    <span>{row[col] || "-"}</span>
                                                 </td>
                                             ))}
                                         </tr>
@@ -618,127 +718,153 @@ export default function ArkasEkrani() {
                             </table>
                         </div>
                     )}
-                </div>
 
-                <div className="px-3 py-2 text-[11px] text-gray-500 border-t">
-                    İpucu: Excel’i yükledikten sonra “Eşleşme Yap” ile adresleri eşleştirebilirsiniz.
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".xlsx,.xls,.xlsm"
+                        onChange={onFileChange}
+                        hidden
+                    />
                 </div>
 
                 {error && (
-                    <div className="mx-3 mb-3 mt-2 rounded-lg bg-rose-50 text-rose-700 px-2.5 py-2 flex items-start gap-2">
-                        <X size={14} className="mt-0.5" />
-                        <div className="text-xs">{error}</div>
+                    <div className="arkas-alert arkas-alert-error">
+                        <X size={16} />
+                        <span>{error}</span>
                     </div>
                 )}
+
                 {lastFile && (
-                    <p className="mx-3 mb-3 text-xs text-gray-600">
-                        Yüklü: <b>{lastFile.name}</b>
-                    </p>
+                    <div className="arkas-file-info">
+                        <span>Yüklü dosya</span>
+                        <strong>{lastFile.name}</strong>
+                    </div>
                 )}
 
-                <div className="px-3 py-2 flex justify-end">
-                    <button onClick={handleTemizle} disabled={!rows.length && !lastFile && !error} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50" title="Tabloyu ve uyarıları temizle">
+                <div className="arkas-card-footer">
+                    <p>
+                        Excel yüklendikten sonra <b>Eşleşme Yap</b> ile teslim adreslerini
+                        sistemdeki adres kayıtlarıyla kontrol edebilirsiniz.
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={handleTemizle}
+                        disabled={!rows.length && !lastFile && !error}
+                        className="arkas-btn arkas-btn-danger"
+                    >
+                        <RotateCcw size={15} />
                         Temizle
                     </button>
                 </div>
-            </div>
+            </section>
 
-            {/* Eşleşme onay modali */}
             {matchModalOpen && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-                    <div className="w-full max-w-5xl rounded-2xl shadow-2xl bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-                        {/* HEADER */}
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                            <h3 className="text-lg font-semibold">Adres Eşleşme Özeti</h3>
-                            <div className="flex items-center gap-2 text-xs">
-                                <span className="px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">Toplam: <b>{matchPreview.total}</b></span>
-                                <span className="px-2 py-1 rounded-full bg-green-100 text-green-700">Eşleşen: <b>{matchPreview.matchedCount}</b></span>
-                                <span className="px-2 py-1 rounded-full bg-rose-100 text-rose-700">Eşleşmeyen: <b>{matchPreview.unmatchedCount}</b></span>
+                <div className="arkas-modal-backdrop" role="dialog" aria-modal="true">
+                    <div className="arkas-modal arkas-modal-wide">
+                        <div className="arkas-modal-header">
+                            <div>
+                                <span className="arkas-eyebrow">Adres Eşleştirme</span>
+                                <h3>Eşleşme Özeti</h3>
+                            </div>
+
+                            <div className="arkas-summary-badges">
+                                <span className="neutral">Toplam <b>{matchPreview.total}</b></span>
+                                <span className="success">Eşleşen <b>{matchPreview.matchedCount}</b></span>
+                                <span className="danger">Eşleşmeyen <b>{matchPreview.unmatchedCount}</b></span>
                             </div>
                         </div>
 
-                        {/* BODY */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 max-h-[65vh] overflow-auto text-sm">
-                            {/* EŞLEŞENLER */}
-                            <div className="border rounded-xl border-gray-200 dark:border-gray-800">
-                                <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                                    <span className="font-medium">Eşleşenler</span>
-                                    <span className="text-xs bg-gray-100 dark:bg-gray-800 rounded-full px-2">{matchPreview.matchedCount}</span>
+                        <div className="arkas-match-grid">
+                            <section className="arkas-match-panel">
+                                <div className="arkas-match-panel-header">
+                                    <strong>Eşleşenler</strong>
+                                    <span>{matchPreview.matchedCount}</span>
                                 </div>
-                                {matchPreview.matchedSamples?.length ? (
-                                    <ul className="divide-y divide-gray-200 dark:divide-gray-800">
-                                        {matchPreview.matchedSamples.map((s) => (
-                                            <li key={`m-${s.rowIndex}`} className="p-3 space-y-1">
-                                                <div className="text-xs text-gray-600 dark:text-gray-400">Bizim Adres</div>
-                                                <div className="font-medium">{s.before}</div>
-                                                <div className="text-xs text-gray-600 dark:text-gray-400 mt-2">Sistemdeki Adres</div>
-                                                <div className="font-medium">{s.matchedAdresAdi}</div>
-                                                <div className="text-[11px] mt-2 flex gap-2 text-gray-600 dark:text-gray-400">
-                                                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800">adres_id: {s.matchedAdresId}</span>
-                                                    <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800">cari_hesap_id: {s.matchedCariId}</span>
+
+                                <div className="arkas-match-list">
+                                    {matchPreview.matchedSamples?.length ? (
+                                        matchPreview.matchedSamples.map((s) => (
+                                            <article key={`m-${s.rowIndex}`} className="arkas-match-item">
+                                                <span className="arkas-match-label">Excel Adresi</span>
+                                                <strong>{s.before}</strong>
+
+                                                <span className="arkas-match-label arkas-match-spacer">
+                                                    Sistem Adresi
+                                                </span>
+                                                <strong>{s.matchedAdresAdi}</strong>
+
+                                                <div className="arkas-id-row">
+                                                    <span>adres_id: {s.matchedAdresId}</span>
+                                                    <span>cari_hesap_id: {s.matchedCariId}</span>
                                                 </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className="p-4 text-gray-600 dark:text-gray-400">Eşleşen kayıt yok.</div>
-                                )}
-                            </div>
-
-                            {/* EŞLEŞMEYENLER */}
-                            <div className="border rounded-xl border-gray-200 dark:border-gray-800">
-                                <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                                    <span className="font-medium">Eşleşmeyenler</span>
-                                    <span className="text-xs bg-rose-100 text-rose-700 rounded-full px-2">{matchPreview.unmatchedCount}</span>
+                                            </article>
+                                        ))
+                                    ) : (
+                                        <div className="arkas-empty-small">Eşleşen kayıt yok.</div>
+                                    )}
                                 </div>
-                                {matchPreview.unmatchedSamples?.length ? (
-                                    <ul className="divide-y divide-gray-200 dark:divide-gray-800">
-                                        {matchPreview.unmatchedSamples.map((s) => (
-                                            <li key={`u-${s.rowIndex}`} className="p-3 space-y-1">
-                                                <div className="text-xs text-gray-600 dark:text-gray-400">Bizim Adres</div>
-                                                <div className="font-medium">{s.before}</div>
+                            </section>
 
-                                                {/* Öneriler */}
+                            <section className="arkas-match-panel">
+                                <div className="arkas-match-panel-header danger">
+                                    <strong>Eşleşmeyenler</strong>
+                                    <span>{matchPreview.unmatchedCount}</span>
+                                </div>
+
+                                <div className="arkas-match-list">
+                                    {matchPreview.unmatchedSamples?.length ? (
+                                        matchPreview.unmatchedSamples.map((s) => (
+                                            <article key={`u-${s.rowIndex}`} className="arkas-match-item">
+                                                <span className="arkas-match-label">Excel Adresi</span>
+                                                <strong>{s.before}</strong>
+
+                                                <span className="arkas-match-label arkas-match-spacer">Öneriler</span>
+
                                                 {s.suggestions?.length ? (
-                                                    <div className="mt-2">
-                                                        <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Öneriler</div>
-                                                        <ul className="list-disc pl-5 space-y-0.5">
-                                                            {s.suggestions.map((sg) => (
-                                                                <li key={sg.adres_id}>
-                                                                    <span className="font-medium">{sg.adres_adi}</span>{" "}
-                                                                    <span className="text-xs text-gray-600 dark:text-gray-400">(skor: {sg.score})</span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
+                                                    <div className="arkas-suggestions">
+                                                        {s.suggestions.map((sg) => (
+                                                            <div key={sg.adres_id}>
+                                                                <span>{sg.adres_adi}</span>
+                                                                <small>Skor {sg.score}</small>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 ) : (
-                                                    <div className="text-gray-600 dark:text-gray-400">Uygun öneri yok</div>
+                                                    <span className="arkas-no-suggestion">Uygun öneri yok</span>
                                                 )}
 
-                                                {/* Manuel eşleştirme butonu */}
-                                                <div className="pt-2">
-                                                    <button
-                                                        className="px-2 py-1 text-xs rounded-md border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                                                        onClick={() => openSelector(s.rowIndex, s.before)}
-                                                    >
-                                                        Eşleştir
-                                                    </button>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className="p-4">Hepsi eşleşti 🎉</div>
-                                )}
-                            </div>
+                                                <button
+                                                    type="button"
+                                                    className="arkas-btn arkas-btn-secondary arkas-btn-small"
+                                                    onClick={() => openSelector(s.rowIndex, s.before)}
+                                                >
+                                                    Manuel Eşleştir
+                                                </button>
+                                            </article>
+                                        ))
+                                    ) : (
+                                        <div className="arkas-empty-small">Tüm kayıtlar eşleşti.</div>
+                                    )}
+                                </div>
+                            </section>
                         </div>
 
-                        {/* FOOTER */}
-                        <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-end gap-2">
-                            <button className="px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => setMatchModalOpen(false)}>
+                        <div className="arkas-modal-footer">
+                            <button
+                                type="button"
+                                className="arkas-btn arkas-btn-secondary"
+                                onClick={() => setMatchModalOpen(false)}
+                            >
                                 Vazgeç
                             </button>
-                            <button className="px-2.5 py-1.5 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700" onClick={confirmApplyMatches}>
+                            <button
+                                type="button"
+                                className="arkas-btn arkas-btn-primary"
+                                onClick={confirmApplyMatches}
+                            >
+                                <CheckCircle2 size={16} />
                                 Onayla ve Uygula
                             </button>
                         </div>
@@ -746,81 +872,88 @@ export default function ArkasEkrani() {
                 </div>
             )}
 
-            {/* Manuel Eşleştirme / Adres Arama Modali */}
             {selOpen && (
-                <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4">
-                    <div className="w-full max-w-3xl rounded-2xl shadow-2xl bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-                        {/* HEADER */}
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                            <div className="font-semibold">
-                                Adres seç — Satır #{(selRowIndex ?? 0) + 1}
+                <div className="arkas-modal-backdrop arkas-modal-top" role="dialog" aria-modal="true">
+                    <div className="arkas-modal arkas-selector-modal">
+                        <div className="arkas-modal-header">
+                            <div>
+                                <span className="arkas-eyebrow">Manuel Eşleştirme</span>
+                                <h3>Adres Seç — Satır #{(selRowIndex ?? 0) + 1}</h3>
                             </div>
                             <button
-                                className="text-sm px-2 py-1 rounded-md border border-gray-300 dark:border-gray-700"
+                                type="button"
+                                className="arkas-btn arkas-btn-secondary arkas-btn-small"
                                 onClick={() => setSelOpen(false)}
                             >
                                 Kapat
                             </button>
                         </div>
 
-                        {/* SEARCH BAR — iki ayrı filtre */}
-                        <div className="p-4 pt-3 space-y-3">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <div className="arkas-selector-body">
+                            <div className="arkas-filter-grid">
                                 <input
-                                    className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
+                                    className="arkas-input"
                                     placeholder="Adres adı filtrele..."
                                     value={adresFilter}
                                     onChange={(e) => {
                                         const v = e.target.value;
                                         setAdresFilter(v);
                                         queueSelSearch(v, cariFilter);
-                                    }}                                />
+                                    }}
+                                />
+
                                 <input
-                                    className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
+                                    className="arkas-input"
                                     placeholder="Cari filtrele..."
                                     value={cariFilter}
                                     onChange={(e) => {
                                         const v = e.target.value;
                                         setCariFilter(v);
                                         queueSelSearch(adresFilter, v);
-                                    }}                                />
-                                <div className="flex gap-2">
+                                    }}
+                                />
+
+                                <div className="arkas-filter-actions">
                                     <button
-                                        className="px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 inline-flex items-center gap-2"
+                                        type="button"
+                                        className="arkas-btn arkas-btn-primary arkas-btn-small"
                                         onClick={() => runAddressSearch(adresFilter, cariFilter)}
                                     >
-                                        {selLoading ? <Loader2 size={16} className="animate-spin" /> : "Ara"}
+                                        {selLoading && <Loader2 size={15} className="arkas-spin" />}
+                                        Ara
                                     </button>
                                     <button
-                                        className="px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-                                        onClick={() => { setAdresFilter(""); setCariFilter(""); runAddressSearch("", ""); }}
+                                        type="button"
+                                        className="arkas-btn arkas-btn-secondary arkas-btn-small"
+                                        onClick={() => {
+                                            setAdresFilter("");
+                                            setCariFilter("");
+                                            runAddressSearch("", "");
+                                        }}
                                     >
                                         Temizle
                                     </button>
                                 </div>
                             </div>
 
-                            {/* RESULTS TABLE — sadece adres_adi & cari */}
-                            <div className="max-h-[55vh] overflow-auto">
-                                <table className="min-w-full text-sm">
-                                    <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800">
-                                        <tr className="text-left">
-                                            <th className="px-2 py-2">adres_adi</th>
-                                            <th className="px-2 py-2">cari</th>
-                                            <th className="px-2 py-2 w-24"></th>
+                            <div className="arkas-selector-table-wrap">
+                                <table className="arkas-selector-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Adres Adı</th>
+                                            <th>Cari</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {selResults.map((it) => (
-                                            <tr
-                                                key={it.adres_id}
-                                                className="odd:bg-white even:bg-gray-50 dark:odd:bg-gray-900 dark:even:bg-gray-800"
-                                            >
-                                                <td className="px-2 py-2">{it.adres_adi}</td>
-                                                <td className="px-2 py-2">{it.cari || "—"}</td>
-                                                <td className="px-2 py-2">
+                                            <tr key={it.adres_id}>
+                                                <td>{it.adres_adi}</td>
+                                                <td>{it.cari || "—"}</td>
+                                                <td>
                                                     <button
-                                                        className="px-2.5 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                                                        type="button"
+                                                        className="arkas-btn arkas-btn-primary arkas-btn-small"
                                                         onClick={() => applySelection(it)}
                                                     >
                                                         Seç
@@ -831,24 +964,16 @@ export default function ArkasEkrani() {
 
                                         {selLoading && (
                                             <tr>
-                                                <td
-                                                    colSpan={3}
-                                                    className="px-2 py-6 text-center text-gray-600 dark:text-gray-400"
-                                                >
-                                                    <span className="inline-flex items-center gap-2">
-                                                        <Loader2 size={16} className="animate-spin" />
-                                                        Yükleniyor...
-                                                    </span>
+                                                <td colSpan={3} className="arkas-selector-status">
+                                                    <Loader2 size={16} className="arkas-spin" />
+                                                    Yükleniyor...
                                                 </td>
                                             </tr>
                                         )}
 
                                         {!selLoading && selResults.length === 0 && (
                                             <tr>
-                                                <td
-                                                    colSpan={3}
-                                                    className="px-2 py-6 text-center text-gray-600 dark:text-gray-400"
-                                                >
+                                                <td colSpan={3} className="arkas-selector-status">
                                                     Sonuç yok.
                                                 </td>
                                             </tr>
@@ -856,7 +981,6 @@ export default function ArkasEkrani() {
                                     </tbody>
                                 </table>
                             </div>
-
                         </div>
                     </div>
                 </div>

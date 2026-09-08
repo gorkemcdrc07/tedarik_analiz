@@ -1,6 +1,6 @@
 // src/SiparisIslemleri/siparisAcanlar.js - SIDEBAR ENTEGRASYONUNA UYGUN HALE GETİRİLDİ
 import React, { useEffect, useMemo, useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { CalendarDays, RefreshCw, UsersRound, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -10,20 +10,20 @@ const ODAK_KEY = process.env.REACT_APP_ODAK_API_KEY || "";
 
 /* ====== UI (DEĞİŞMEDİ) ====== */
 const GlowCard = ({ children, className = "" }) => (
-    <div className={`p-[1px] rounded-2xl bg-gradient-to-br from-white/20 via-white/10 to-transparent ${className}`}>
-        <div className="rounded-2xl border border-white/10 bg-gray-900/70 backdrop-blur">{children}</div>
+    <div className={`rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,.035),0_8px_24px_rgba(15,23,42,.035)] ${className}`}>
+        {children}
     </div>
 );
 const Card = ({ children, className = "" }) => (
-    <div className={`rounded-2xl border border-white/10 bg-gray-900/60 backdrop-blur ${className}`}>{children}</div>
+    <div className={`rounded-2xl border border-slate-200 bg-white backdrop-blur ${className}`}>{children}</div>
 );
 const CardHeader = ({ children, className = "" }) => <div className={`px-5 pt-4 ${className}`}>{children}</div>;
 const CardTitle = ({ children, className = "" }) => <h3 className={`text-base font-semibold ${className}`}>{children}</h3>;
 const CardContent = ({ children, className = "" }) => <div className={`p-5 ${className}`}>{children}</div>;
 const Button = ({ children, className = "", ...props }) => (
     <button
-        className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm transition
-        bg-white/10 hover:bg-white/20 border border-white/10 text-gray-100 ${className}`}
+        className={`inline-flex min-h-[42px] items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all
+        bg-white hover:bg-red-50 hover:text-red-700 border border-slate-200 hover:border-red-200 text-slate-700 active:scale-[.985] ${className}`}
         {...props}
     >
         {children}
@@ -31,24 +31,24 @@ const Button = ({ children, className = "", ...props }) => (
 );
 const Input = (props) => (
     <input
-        className="block w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20"
+        className="block min-h-[42px] w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-red-300 focus:ring-4 focus:ring-red-500/10"
         {...props}
     />
 );
-const Skeleton = ({ className = "" }) => <div className={`animate-pulse bg-white/10 rounded ${className || "h-4 w-full"}`} />;
+const Skeleton = ({ className = "" }) => <div className={`animate-pulse bg-slate-100 rounded ${className || "h-4 w-full"}`} />;
 
 const Modal = ({ open, onClose, title, children }) => {
     if (!open) return null;
     return (
         <div className="fixed inset-0 z-[200] grid place-items-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
             <div
-                className="w-full max-w-3xl rounded-2xl border border-white/10 bg-gray-900/90"
+                className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
                     <h3 className="text-lg font-semibold">{title}</h3>
-                    <button onClick={onClose} className="rounded-lg px-2 py-1 bg-white/10 hover:bg-white/20">
-                        ✕
+                    <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600">
+                        <X size={16} />
                     </button>
                 </div>
                 <div className="p-5 max-h-[70vh] overflow-auto">{children}</div>
@@ -413,28 +413,28 @@ export default function SiparisAcanlar() {
     // ----------------------------------------------------
 
     return (
-        <div className="relative w-full text-gray-100 pl-0 md:pl-[var(--sidebar-width,260px)]">
+        <div className="relative w-full text-slate-800">
             {/* Arka plan glow */}
             <div className="pointer-events-none absolute inset-0 -z-10">
-                <div className="absolute -top-16 -right-16 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl" />
-                <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-indigo-500/15 blur-3xl" />
+                <div className="absolute -top-16 -right-16 h-80 w-80 rounded-full bg-red-500/5 blur-3xl" />
+                <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-orange-500/5 blur-3xl" />
             </div>
 
-            <header className="sticky top-16 z-20 border-b border-white/10 backdrop-blur bg-gray-950/60">
+            <header className="relative z-10 border border-slate-200 bg-white rounded-2xl shadow-sm">
                 <div className="w-full flex flex-wrap items-center justify-between gap-3 px-6 py-4">
                     <div className="flex items-center gap-3">
-                        <div className="grid w-10 h-10 place-items-center rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/20">
-                            📊
+                        <div className="grid w-11 h-11 place-items-center rounded-xl bg-red-50 border border-red-100 text-red-600">
+                            <UsersRound size={21} strokeWidth={1.8} />
                         </div>
                         <div>
-                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Sipariş Açanlar</p>
+                            <p className="text-[10px] uppercase tracking-widest text-slate-500">Sipariş Açanlar</p>
                             <h1 className="text-lg font-semibold">Kullanıcı Liderliği (Günlük Ortalamalar + Proje)</h1>
                         </div>
                     </div>
 
                     <div className="flex flex-wrap gap-3 items-center">
                         <div className="relative">
-                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">📅</span>
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><CalendarDays size={15} /></span>
                             <Input
                                 type="date"
                                 value={startDate}
@@ -444,7 +444,7 @@ export default function SiparisAcanlar() {
                             />
                         </div>
                         <div className="relative">
-                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">📅</span>
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><CalendarDays size={15} /></span>
                             <Input
                                 type="date"
                                 value={endDate}
@@ -486,7 +486,7 @@ export default function SiparisAcanlar() {
                         <CardHeader>
                             <CardTitle>Hata</CardTitle>
                         </CardHeader>
-                        <CardContent className="text-sm text-rose-300">{error}</CardContent>
+                        <CardContent className="text-sm text-red-600">{error}</CardContent>
                     </Card>
                 )}
 
@@ -500,8 +500,8 @@ export default function SiparisAcanlar() {
                                 <CardContent className="p-0">
                                     <div className="overflow-auto">
                                         <table className="w-full text-sm">
-                                            <thead className="sticky top-0 z-10 bg-gray-900/80 backdrop-blur">
-                                                <tr className="border-b border-white/10 text-left text-gray-300">
+                                            <thead className="sticky top-0 z-10 bg-slate-50 backdrop-blur">
+                                                <tr className="border-b border-slate-200 text-left text-slate-600">
                                                     <th className="py-2 pl-5 pr-3">Kullanıcı</th>
                                                     <th className="py-2 px-3">Günlük Ort. Açma Süresi</th>
                                                     <th className="py-2 px-3">Günlük Ort. Sipariş</th>
@@ -510,7 +510,7 @@ export default function SiparisAcanlar() {
                                             </thead>
                                             <tbody>
                                                 {tableRows.map((r) => (
-                                                    <tr key={r.key} className="border-b border-white/5 odd:bg-white/[0.02]">
+                                                    <tr key={r.key} className="border-b border-slate-100 odd:bg-slate-50/70">
                                                         <td className="py-2 pl-5 pr-3 font-medium">{r.display}</td>
                                                         <td className="py-2 px-3">{r.avgDailySpanHM}</td>
                                                         <td className="py-2 px-3">{r.avgOrdersPerDay}</td>
@@ -531,7 +531,7 @@ export default function SiparisAcanlar() {
                                 </CardHeader>
                                 <CardContent>
                                     {pieData.length === 0 ? (
-                                        <div className="text-sm text-gray-400">Kayıt bulunamadı.</div>
+                                        <div className="text-sm text-slate-500">Kayıt bulunamadı.</div>
                                     ) : (
                                         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                                             <div className="w-full h-[280px]">
@@ -555,12 +555,12 @@ export default function SiparisAcanlar() {
                                                 </ResponsiveContainer>
                                             </div>
 
-                                            <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-300">
+                                            <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-600">
                                                 {pieData.map((d, i) => (
                                                     <span key={`${d.OrderCreatedBy}-${i}`} className="inline-flex items-center gap-2">
                                                         <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: COLORS[i % COLORS.length] }} />
                                                         <span>
-                                                            {d.OrderCreatedBy} <span className="text-gray-400">({d.Count})</span>
+                                                            {d.OrderCreatedBy} <span className="text-slate-500">({d.Count})</span>
                                                         </span>
                                                     </span>
                                                 ))}
@@ -579,35 +579,35 @@ export default function SiparisAcanlar() {
                                         <CardContent className="space-y-3">
                                             <div className="flex items-start justify-between gap-3">
                                                 <div>
-                                                    <div className="text-xs uppercase tracking-wider text-gray-400">Kullanıcı</div>
-                                                    <div className="text-base font-semibold text-gray-100">{u.OrderCreatedBy}</div>
+                                                    <div className="text-xs uppercase tracking-wider text-slate-500">Kullanıcı</div>
+                                                    <div className="text-base font-semibold text-slate-800">{u.OrderCreatedBy}</div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-xs text-gray-400">Sipariş (Satır)</div>
+                                                    <div className="text-xs text-slate-500">Sipariş (Satır)</div>
                                                     <div className="text-2xl font-bold">{u.Count}</div>
                                                 </div>
                                             </div>
 
-                                            <div className="text-xs text-gray-400">Projeler (Satır):</div>
+                                            <div className="text-xs text-slate-500">Projeler (Satır):</div>
                                             <div className="flex flex-wrap gap-2">
                                                 {top.length === 0 ? (
-                                                    <span className="text-sm text-gray-400">-</span>
+                                                    <span className="text-sm text-slate-500">-</span>
                                                 ) : (
                                                     top.map((p) => (
                                                         <span
                                                             key={p.ProjectName}
                                                             title={`${p.ProjectName}: ${p.Count}`}
-                                                            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
+                                                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs"
                                                         >
                                                             {p.ProjectName}
-                                                            <span className="rounded bg-white/10 px-1">{p.Count}</span>
+                                                            <span className="rounded bg-slate-100 px-1">{p.Count}</span>
                                                         </span>
                                                     ))
                                                 )}
                                                 {restCount > 0 && (
                                                     <button
                                                         onClick={() => setDetailUser(u.OrderCreatedBy)}
-                                                        className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 text-xs text-cyan-200 hover:bg-cyan-500/20"
+                                                        className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700 hover:bg-red-100"
                                                         title="Tüm projeleri gör"
                                                     >
                                                         +{restCount} diğer
@@ -634,18 +634,18 @@ export default function SiparisAcanlar() {
                         <GlowCard>
                             <CardHeader className="pb-2">
                                 <CardTitle>Kapanan Siparişler (OrderStatu = 200) • Kapanış Nedenleri</CardTitle>
-                                <div className="text-xs text-gray-400 mt-1">
+                                <div className="text-xs text-slate-500 mt-1">
                                     Aralık: {startDate} – {endDate} • Satır: {closingRows.length}
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0">
                                 {closingRows.length === 0 ? (
-                                    <div className="p-4 text-sm text-gray-400">Bu aralıkta kapanan sipariş bulunamadı.</div>
+                                    <div className="p-4 text-sm text-slate-500">Bu aralıkta kapanan sipariş bulunamadı.</div>
                                 ) : (
                                     <div className="overflow-auto max-h-[60vh]">
                                         <table className="w-full text-sm">
-                                            <thead className="sticky top-0 z-10 bg-gray-900/80 backdrop-blur">
-                                                <tr className="border-b border-white/10 text-left text-gray-300">
+                                            <thead className="sticky top-0 z-10 bg-slate-50 backdrop-blur">
+                                                <tr className="border-b border-slate-200 text-left text-slate-600">
                                                     <th className="py-2 pl-5 pr-3">ProjectName</th>
                                                     <th className="py-2 px-3">OrderClosingReasonName</th>
                                                     <th className="py-2 px-3">Adet</th>
@@ -654,7 +654,7 @@ export default function SiparisAcanlar() {
                                             </thead>
                                             <tbody>
                                                 {closingRows.map((r, i) => (
-                                                    <tr key={`${r.ProjectName}-${r.OrderClosingReasonName}-${i}`} className="border-b border-white/5 odd:bg-white/[0.02]">
+                                                    <tr key={`${r.ProjectName}-${r.OrderClosingReasonName}-${i}`} className="border-b border-slate-100 odd:bg-slate-50/70">
                                                         <td className="py-2 pl-5 pr-3 font-medium">{r.ProjectName}</td>
                                                         <td className="py-2 px-3">{r.OrderClosingReasonName}</td>
                                                         <td className="py-2 px-3">{r.Count}</td>
@@ -673,9 +673,9 @@ export default function SiparisAcanlar() {
 
             <Modal open={!!detailUser} onClose={() => setDetailUser(null)} title={detailUser ? `Detay • ${detailUser}` : "Detay"}>
                 {!detailUser ? (
-                    <div className="text-sm text-gray-400">Kayıt yok.</div>
+                    <div className="text-sm text-slate-500">Kayıt yok.</div>
                 ) : loadingWeek ? (
-                    <div className="text-sm text-gray-400">Haftalık analiz yükleniyor…</div>
+                    <div className="text-sm text-slate-500">Haftalık analiz yükleniyor…</div>
                 ) : (
                     (() => {
                         const pMap = userProjectMap.get(detailUser) || new Map();
@@ -688,14 +688,14 @@ export default function SiparisAcanlar() {
                         return (
                             <div className="space-y-6">
                                 <Card className="p-4">
-                                    <div className="text-xs text-gray-300">
+                                    <div className="text-xs text-slate-600">
                                         <strong>Son 1 haftada:</strong> {weekStart} – {endDate} • <strong>Veri bulunan gün:</strong> {stats.activeDays} /{" "}
                                         {stats.windowDays}
                                     </div>
                                 </Card>
 
                                 <Card className="p-4">
-                                    <div className="text-xs text-gray-400 mb-2">Analiz (Son 1 Hafta)</div>
+                                    <div className="text-xs text-slate-500 mb-2">Analiz (Son 1 Hafta)</div>
                                     <ul className="list-disc pl-5 space-y-1 text-sm">
                                         <li>
                                             <strong>Son işlem:</strong> {stats.lastTime}
@@ -737,7 +737,7 @@ export default function SiparisAcanlar() {
                                             <div className="overflow-auto">
                                                 <table className="w-full text-sm">
                                                     <thead>
-                                                        <tr className="text-left text-gray-300 border-b border-white/10">
+                                                        <tr className="text-left text-slate-600 border-b border-slate-200">
                                                             <th className="py-2 pr-2">Tarih</th>
                                                             <th className="py-2 pr-2">Sipariş Adedi</th>
                                                             <th className="py-2 pr-2">İlk–Son Arası</th>
@@ -745,7 +745,7 @@ export default function SiparisAcanlar() {
                                                     </thead>
                                                     <tbody>
                                                         {stats.perDayRows.slice(0, 10).map((x, idx) => (
-                                                            <tr key={idx} className="border-b border-white/5">
+                                                            <tr key={idx} className="border-b border-slate-100">
                                                                 <td className="py-2 pr-2">{x.day}</td>
                                                                 <td className="py-2 pr-2">{x.orders}</td>
                                                                 <td className="py-2 pr-2">{x.spanHM}</td>
@@ -753,7 +753,7 @@ export default function SiparisAcanlar() {
                                                         ))}
                                                         {stats.perDayRows.length > 10 && (
                                                             <tr>
-                                                                <td className="text-xs text-gray-400 p-3" colSpan={3}>
+                                                                <td className="text-xs text-slate-500 p-3" colSpan={3}>
                                                                     (+{stats.perDayRows.length - 10} gün daha)
                                                                 </td>
                                                             </tr>
@@ -773,21 +773,21 @@ export default function SiparisAcanlar() {
                                         <div className="overflow-auto">
                                             <table className="w-full text-sm">
                                                 <thead>
-                                                    <tr className="text-left text-gray-300 border-b border-white/10">
+                                                    <tr className="text-left text-slate-600 border-b border-slate-200">
                                                         <th className="py-2 pr-2">ProjectName</th>
                                                         <th className="py-2 pr-2">Satır</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {projRows.map((x, idx) => (
-                                                        <tr key={idx} className="border-b border-white/5">
+                                                        <tr key={idx} className="border-b border-slate-100">
                                                             <td className="py-2 pr-2">{x.ProjectName}</td>
                                                             <td className="py-2 pr-2">{x.Count}</td>
                                                         </tr>
                                                     ))}
                                                     {projRows.length === 0 && (
                                                         <tr>
-                                                            <td className="py-2 pr-2 text-gray-400" colSpan={2}>
+                                                            <td className="py-2 pr-2 text-slate-500" colSpan={2}>
                                                                 Proje bulunamadı.
                                                             </td>
                                                         </tr>

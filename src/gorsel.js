@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
     Box,
     Typography,
@@ -53,7 +53,7 @@ const COLORS = [
     "#a855f7",
     "#22c55e",
     "#eab308",
-    "#3b82f6"
+    "#ef3539"
 ];
 
 const rawData = [
@@ -117,10 +117,6 @@ const DATE_COLUMNS = [
     { key: "d4", label: "25.03.2026" }
 ];
 
-const SIDEBAR_OFFSET = {
-    md: "88px",
-    lg: "96px"
-};
 
 const formatCurrency = (value) => {
     if (value === null || value === undefined || Number.isNaN(value)) return "-";
@@ -197,8 +193,8 @@ export default function MultiCustomerDashboard() {
     return (
         <Box
             sx={{
-                minHeight: "100vh",
-                bgcolor: "#f8fafc",
+                minHeight: "100%",
+                bgcolor: "transparent",
                 position: "relative",
                 zIndex: 1,
                 overflowX: "hidden"
@@ -206,12 +202,7 @@ export default function MultiCustomerDashboard() {
         >
             <Box
                 sx={{
-                    ml: { xs: 0, md: SIDEBAR_OFFSET.md, lg: SIDEBAR_OFFSET.lg },
-                    width: {
-                        xs: "100%",
-                        md: `calc(100% - ${SIDEBAR_OFFSET.md})`,
-                        lg: `calc(100% - ${SIDEBAR_OFFSET.lg})`
-                    },
+                    width: "100%",
                     transition: "all 0.25s ease"
                 }}
             >
@@ -227,7 +218,7 @@ export default function MultiCustomerDashboard() {
                             variant="h4"
                             sx={{
                                 fontWeight: 900,
-                                color: "#2563eb",
+                                color: "#e5252a",
                                 letterSpacing: "-0.02em",
                                 mb: 1
                             }}
@@ -248,7 +239,7 @@ export default function MultiCustomerDashboard() {
 
                     <Paper sx={{ ...sectionCardSx, mb: 3 }}>
                         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                            <FilterAltRoundedIcon sx={{ color: "#2563eb" }} />
+                            <FilterAltRoundedIcon sx={{ color: "#e5252a" }} />
                             <Typography variant="h6" fontWeight={800}>
                                 Grafik Filtreleri
                             </Typography>
@@ -328,7 +319,7 @@ export default function MultiCustomerDashboard() {
                         <Grid item xs={12} xl={7}>
                             <Paper sx={sectionCardSx}>
                                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                                    <ShowChartRoundedIcon sx={{ color: "#2563eb" }} />
+                                    <ShowChartRoundedIcon sx={{ color: "#e5252a" }} />
                                     <Typography variant="h6" fontWeight={800}>
                                         Fiyat Kıyaslama (Seçilen Müşteriler)
                                     </Typography>
@@ -403,7 +394,7 @@ export default function MultiCustomerDashboard() {
                         <Grid item xs={12} xl={5}>
                             <Paper sx={sectionCardSx}>
                                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                                    <BarChartRoundedIcon sx={{ color: "#2563eb" }} />
+                                    <BarChartRoundedIcon sx={{ color: "#e5252a" }} />
                                     <Typography variant="h6" fontWeight={800}>
                                         Genel Performans %
                                     </Typography>
@@ -486,7 +477,7 @@ export default function MultiCustomerDashboard() {
                                 borderBottom: "1px solid #e5e7eb"
                             }}
                         >
-                            <AssessmentIcon sx={{ color: "#2563eb" }} />
+                            <AssessmentIcon sx={{ color: "#e5252a" }} />
                             <Typography variant="subtitle1" fontWeight={800}>
                                 Veri Tablosu
                             </Typography>

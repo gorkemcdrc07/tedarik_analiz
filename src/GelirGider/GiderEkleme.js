@@ -1,9 +1,9 @@
-﻿import React, { useRef, useState, useMemo, useCallback, useEffect } from "react";
+import React, { useRef, useState, useMemo, useCallback, useEffect } from "react";
 import * as XLSX from "xlsx";
 import supabase from "../supabaseClient";
 import { authorizedJson } from "../auth/tokenManager";
-import { FiUploadCloud, FiFile, FiCheckCircle, FiXCircle, FiAlertTriangle, FiTrash2, FiDownload, FiSearch, FiSend, FiRefreshCw } from 'react-icons/fi';
-// import "./GiderEkleme.css"; // Harici CSS kaldırıldı.
+import { FiUploadCloud, FiFile, FiCheckCircle, FiXCircle, FiAlertTriangle, FiTrash2, FiDownload, FiSearch, FiSend, FiRefreshCw, FiTrendingDown } from 'react-icons/fi';
+import "./GiderEkleme.css";
 
 // API Base URL
 const endpoint = `/api/reel-api/tmsdespatchincomeexpenses/addexpense`;
@@ -11,57 +11,65 @@ const endpoint = `/api/reel-api/tmsdespatchincomeexpenses/addexpense`;
 
 // --- Renk Paleti ve Stil Sabitleri ---
 const COLORS = {
-    primary: '#dc3545', // Gider için Kırmızı/Bordo tonu
-    success: '#28a745',
-    danger: '#dc3545',
-    warning: '#ffc107',
-    text: '#333',
-    border: '#e0e0e0',
-    background: '#f8f9fa',
+    primary: '#e5252a', // OTS ana vurgu
+    success: '#16a34a',
+    danger: '#dc2626',
+    warning: '#d97706',
+    text: '#0f172a',
+    border: '#e2e8f0',
+    background: '#f4f7fb',
     cardBackground: '#ffffff',
-    muted: '#6c757d',
+    muted: '#64748b',
 };
 
 const STYLES = {
     page: {
-        padding: '24px',
-        maxWidth: '1200px',
+        padding: '0',
+        maxWidth: '1600px',
         margin: '0 auto',
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        fontFamily: "Inter, 'Segoe UI Variable', 'Segoe UI', sans-serif",
         color: COLORS.text,
     },
     header: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '20px',
-        paddingBottom: '15px',
-        borderBottom: `1px solid ${COLORS.border}`,
+        marginBottom: '16px',
+        padding: '18px 20px',
+        background: '#ffffff',
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: '16px',
+        boxShadow: '0 1px 2px rgba(15,23,42,.035), 0 8px 24px rgba(15,23,42,.035)',
     },
     h2: {
         margin: 0,
-        fontSize: '28px',
-        fontWeight: 600,
-        color: COLORS.primary,
+        fontSize: '22px',
+        fontWeight: 850,
+        letterSpacing: '-0.03em',
+        color: COLORS.text,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
     },
     card: {
         background: COLORS.cardBackground,
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-        padding: '24px',
-        marginBottom: '20px',
+        borderRadius: '16px',
+        boxShadow: '0 1px 2px rgba(15,23,42,.035), 0 8px 24px rgba(15,23,42,.035)',
+        padding: '20px',
+        marginBottom: '16px',
         border: `1px solid ${COLORS.border}`,
     },
     buttonBase: {
-        padding: '10px 15px',
-        border: 'none',
-        borderRadius: '6px',
+        minHeight: '42px',
+        padding: '0 15px',
+        border: '1px solid transparent',
+        borderRadius: '11px',
         cursor: 'pointer',
-        fontWeight: 500,
+        fontWeight: 700,
         transition: 'background-color 0.2s, opacity 0.2s',
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '5px',
+        gap: '7px',
     },
     buttonPrimary: {
         backgroundColor: COLORS.primary,
@@ -88,7 +96,7 @@ const STYLES = {
         padding: '15px',
         borderRadius: '8px',
         marginTop: '15px',
-        fontWeight: 500,
+        fontWeight: 700,
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
@@ -248,6 +256,8 @@ export default function GiderEkleme() {
     const [rowResults, setRowResults] = useState({}); // Yeni: Satır bazlı gönderim sonuçları
     const [sendSummary, setSendSummary] = useState(null); // Yeni: Toplu gönderim özeti
     const [notification, setNotification] = useState(null); // { message: '', type: 'success' | 'fail' }
+    const [currentSendingRow, setCurrentSendingRow] = useState(null);
+    const [sendProgress, setSendProgress] = useState({ processed: 0, total: 0 });
     const hasAutoUploadedRef = useRef(false);
 
 
@@ -264,6 +274,12 @@ export default function GiderEkleme() {
         }
     }, [notification]);
 
+    useEffect(() => {
+        if (currentSendingRow === null) return;
+        const el = document.querySelector(`[data-ge-row="${currentSendingRow}"]`);
+        el?.scrollIntoView?.({ behavior: "smooth", block: "nearest" });
+    }, [currentSendingRow]);
+
     // --- State Temizleme Fonksiyonları ---
     const closeNotification = useCallback(() => {
         setNotification(null);
@@ -272,6 +288,8 @@ export default function GiderEkleme() {
     const clearSendState = useCallback(() => {
         setRowResults({});
         setSendSummary(null);
+        setCurrentSendingRow(null);
+        setSendProgress({ processed: 0, total: 0 });
         closeNotification();
     }, [closeNotification]);
 
@@ -619,15 +637,24 @@ export default function GiderEkleme() {
 
             const endpoint = `/api/reel-api/tmsdespatchincomeexpenses/addexpense`;
             let ok = 0, fail = 0;
+            let processed = 0;
+            const sendableRows = previewRows.reduce((count, candidateRow) => {
+                const hasAny = (candidateRow || []).some((cell) => cell !== "" && cell !== null && typeof cell !== "undefined");
+                return count + (hasAny ? 1 : 0);
+            }, 0);
+            setSendProgress({ processed: 0, total: sendableRows });
 
             const setRowResult = (rowIdx, result) =>
                 setRowResults(prev => ({ ...prev, [rowIdx]: result }));
-
 
             for (let r = 0; r < previewRows.length; r++) {
                 const row = previewRows[r] || [];
                 const hasAny = row.some((cell) => cell !== "" && cell !== null && typeof cell !== "undefined");
                 if (!hasAny) continue;
+
+                setCurrentSendingRow(r);
+                setRowResult(r, { status: "sending", message: "REEL'e gönderiliyor…" });
+                await new Promise((resolve) => setTimeout(resolve, 90));
 
                 const rawSefer = row[iSeferID];
                 const rawCari = row[iCari];
@@ -655,6 +682,8 @@ export default function GiderEkleme() {
 
                     setRowResult(r, { status: "fail", message: "Zorunlu ID alanları geçersiz.", details });
                     fail++;
+                    processed++;
+                    setSendProgress({ processed, total: sendableRows });
                     continue;
                 }
 
@@ -663,6 +692,8 @@ export default function GiderEkleme() {
                     const details = [`Birim Fiyat: "${row[iBirimF] ?? ""}" → Sayı olmalı ve 0'dan büyük. Örn: 1250,5 veya 1250.5`];
                     setRowResult(r, { status: "fail", message: "Geçerli Birim Fiyat zorunlu.", details });
                     fail++;
+                    processed++;
+                    setSendProgress({ processed, total: sendableRows });
                     continue;
                 }
 
@@ -684,15 +715,19 @@ export default function GiderEkleme() {
 
                 try {
                     await authorizedJson(endpoint, "POST", payload);
-                    setRowResult(r, { status: "ok", message: "✅ Başarıyla Gönderildi." });
+                    setRowResult(r, { status: "ok", message: "Başarıyla REEL'e gönderildi." });
                     ok++;
                 } catch (err) {
                     const msg = err?.message || "API isteği bilinmeyen bir sebeple başarısız oldu.";
                     setRowResult(r, { status: "fail", message: "API İsteği Hatası.", details: [msg] });
                     fail++;
                 }
+                processed++;
+                setSendProgress({ processed, total: sendableRows });
             }
 
+            setCurrentSendingRow(null);
+            setSendProgress({ processed: sendableRows, total: sendableRows });
             setSendSummary({ ok, fail });
 
             // **ALERT() yerine TOAST BİLDİRİMİ**
@@ -714,6 +749,7 @@ export default function GiderEkleme() {
             setError(`❌ ${msg}`);
             setNotification({ message: msg, type: 'fail' });
         } finally {
+            setCurrentSendingRow(null);
             setSending(false);
         }
     };
@@ -757,7 +793,7 @@ export default function GiderEkleme() {
 
     // --- Render ---
     return (
-        <div style={STYLES.page}>
+        <div className="ge-inline-page gider" style={{ ...STYLES.page, position: "relative" }}>
             {/* EN ÜSTTE BİLDİRİMİ GÖSTER */}
             <ToastMessage
                 message={notification?.message}
@@ -766,8 +802,8 @@ export default function GiderEkleme() {
             />
 
             {/* BAŞLIK VE ŞABLON İNDİR */}
-            <div style={STYLES.header}>
-                <h2 style={STYLES.h2}>Excel'den Gider Ekleme 💸</h2>
+            <div className="ge-inline-header" style={STYLES.header}>
+                <h2 style={STYLES.h2}><FiTrendingDown size={22} color={COLORS.primary} />Gider Kayıt Aktarımı</h2>
                 <button
                     onClick={downloadTemplate}
                     style={{ ...STYLES.buttonBase, ...STYLES.buttonGhost }}
@@ -776,14 +812,14 @@ export default function GiderEkleme() {
                 </button>
             </div>
 
-            <div style={STYLES.card}>
+            <div className="ge-inline-card" style={STYLES.card}>
                 {/* 1. DROPZONE / DOSYA SEÇİMİ */}
                 {!file ? (
                     <div
                         style={{
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                            padding: '40px 20px', border: `2px dashed ${isDragging ? COLORS.primary : COLORS.border}`,
-                            borderRadius: '8px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s ease-in-out',
+                            padding: '48px 20px', border: `1.5px dashed ${isDragging ? COLORS.primary : '#cbd7e3'}`,
+                            borderRadius: '15px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s ease-in-out',
                             backgroundColor: isDragging ? 'rgba(220, 53, 69, 0.05)' : 'transparent' // Gider rengi
                         }}
                         onDragOver={onDragOver}
@@ -803,7 +839,7 @@ export default function GiderEkleme() {
                     </div>
                 ) : (
                     /* 2. SEÇİLEN DOSYA VE AKSİYONLAR */
-                    <div style={{
+                    <div className="ge-inline-file" style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                         padding: '10px', borderRadius: '8px', backgroundColor: COLORS.background
                     }}>
@@ -868,10 +904,41 @@ export default function GiderEkleme() {
                 </div>
             )}
 
+            {(sending || sendSummary) && sendProgress.total > 0 && (
+                <div className={`ge-send-flow ${sending ? "is-running" : "is-done"} ${sendSummary?.fail ? "has-errors" : ""}`}>
+                    <div className="ge-send-flow__orb">
+                        {sending ? <FiRefreshCw className="ge-send-flow__spinner" /> : (sendSummary?.fail ? <FiAlertTriangle /> : <FiCheckCircle />)}
+                    </div>
+                    <div className="ge-send-flow__content">
+                        <div className="ge-send-flow__top">
+                            <div>
+                                <strong>{sending ? "REEL aktarımı devam ediyor" : (sendSummary?.fail ? "Aktarım tamamlandı, kontrol gereken satırlar var" : "Aktarım başarıyla tamamlandı")}</strong>
+                                <span>
+                                    {sending && currentSendingRow !== null
+                                        ? `Excel satırı ${currentSendingRow + 2} gönderiliyor`
+                                        : `${sendProgress.processed} / ${sendProgress.total} satır işlendi`}
+                                </span>
+                            </div>
+                            <div className="ge-send-flow__percent">
+                                %{Math.round((sendProgress.processed / Math.max(sendProgress.total, 1)) * 100)}
+                            </div>
+                        </div>
+                        <div className="ge-send-flow__track">
+                            <div className="ge-send-flow__bar" style={{ width: `${Math.round((sendProgress.processed / Math.max(sendProgress.total, 1)) * 100)}%` }} />
+                        </div>
+                        <div className="ge-send-flow__meta">
+                            <span className="ok"><FiCheckCircle /> {Object.values(rowResults).filter((v) => v?.status === "ok").length} başarılı</span>
+                            <span className="live"><span className="ge-live-dot" /> {sending ? "canlı aktarım" : "tamamlandı"}</span>
+                            <span className="fail"><FiXCircle /> {Object.values(rowResults).filter((v) => v?.status === "fail").length} hatalı</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {previewHeaders.length > 0 && (
                 <>
                     {/* ÖZET ÇUBUĞU */}
-                    <div style={{
+                    <div className="ge-inline-summary" style={{
                         display: 'flex', backgroundColor: '#e9ecef', borderRadius: '8px',
                         padding: '15px', marginTop: '20px', gap: '20px', justifyContent: 'space-around'
                     }}>
@@ -909,7 +976,7 @@ export default function GiderEkleme() {
 
             {/* 4. ÖNİZLEME TABLOSU */}
             {previewHeaders.length > 0 && (
-                <div style={{
+                <div className="ge-inline-preview" style={{
                     marginTop: '20px', background: COLORS.cardBackground, borderRadius: '8px',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', padding: '15px'
                 }}>
@@ -974,15 +1041,19 @@ export default function GiderEkleme() {
                                     let rowColor = COLORS.text;
 
                                     if (rr?.status === "fail") {
-                                        rowBg = 'rgba(220, 53, 69, 0.15)';
+                                        rowBg = 'rgba(220, 53, 69, 0.10)';
                                         rowColor = COLORS.danger;
                                     } else if (rr?.status === "ok") {
-                                        rowBg = 'rgba(40, 167, 69, 0.1)';
+                                        rowBg = 'rgba(22, 163, 74, 0.08)';
+                                    } else if (rr?.status === "sending") {
+                                        rowBg = 'rgba(229, 37, 42, 0.07)';
                                     }
 
                                     return (
                                         <tr
                                             key={rIdx}
+                                            data-ge-row={rIdx}
+                                            className={`ge-transfer-row ${rr?.status ? `is-${rr.status}` : ""}`}
                                             title={rr?.message || ""}
                                             style={{
                                                 backgroundColor: rowBg,
@@ -999,7 +1070,15 @@ export default function GiderEkleme() {
                                                         whiteSpace: 'nowrap'
                                                     }}
                                                 >
-                                                    {row[cIdx] ?? ""}
+                                                    {cIdx === 0 && rr?.status && (
+                                                        <span className={`ge-row-state ge-row-state--${rr.status}`}>
+                                                            {rr.status === "sending" && <FiRefreshCw className="ge-row-state__spin" />}
+                                                            {rr.status === "ok" && <FiCheckCircle />}
+                                                            {rr.status === "fail" && <FiXCircle />}
+                                                            {rr.status === "sending" ? "Gönderiliyor" : rr.status === "ok" ? "Gönderildi" : "Hata"}
+                                                        </span>
+                                                    )}
+                                                    <span className="ge-cell-value">{row[cIdx] ?? ""}</span>
                                                 </td>
                                             ))}
                                         </tr>

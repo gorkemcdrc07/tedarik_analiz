@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after {
     box-sizing: border-box;
@@ -30,10 +30,10 @@ button, input, select, textarea {
     --text-1: #f0f2f7;
     --text-2: #9ba3b8;
     --text-3: #5a6278;
-    --accent: #4f8ef7;
-    --accent-soft: rgba(79,142,247,0.12);
-    --accent-glow: rgba(79,142,247,0.20);
-    --accent-press: #3b7aed;
+    --accent: #e5252a;
+    --accent-soft: rgba(229,37,42,0.12);
+    --accent-glow: rgba(229,37,42,0.20);
+    --accent-press: #c9181e;
     --violet: #7c5cf7;
     --violet-soft: rgba(124,92,247,0.14);
     --red: #f25858;
@@ -71,10 +71,10 @@ button, input, select, textarea {
     --text-1: #0d1120;
     --text-2: #4a526b;
     --text-3: #8a93aa;
-    --accent: #3674f0;
-    --accent-soft: rgba(54,116,240,0.08);
-    --accent-glow: rgba(54,116,240,0.15);
-    --accent-press: #2460e0;
+    --accent: #e5252a;
+    --accent-soft: rgba(229,37,42,0.08);
+    --accent-glow: rgba(229,37,42,0.15);
+    --accent-press: #c9181e;
     --violet: #6c48f5;
     --violet-soft: rgba(108,72,245,0.10);
     --red: #e03d3d;
