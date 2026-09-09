@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
     AlertCircle,
     Building2,
@@ -59,7 +59,6 @@ const ORDER_INPUT_HEADERS = [
     "İstenilen Araç Tipi",
     "Açıklama",
     "Yükleme Firması Adı",
-    "Alıcı Firma Cari Adı",
     "Teslim FirmaAdres Adı",
 ];
 
@@ -335,7 +334,6 @@ export default function YeniSiparis() {
     const [mappingImportStatus, setMappingImportStatus] = useState("");
     const [message, setMessage] = useState(null);
     const [customerRecords, setCustomerRecords] = useState([]);
-    const [customerPanelOpen, setCustomerPanelOpen] = useState(false);
     const [customerSearch, setCustomerSearch] = useState("");
     const [customerFormOpen, setCustomerFormOpen] = useState(false);
     const [customerEditingId, setCustomerEditingId] = useState(null);
@@ -597,8 +595,10 @@ export default function YeniSiparis() {
     const loadingCompanyIndex = useMemo(() => {
         const map = new Map();
         mappings.forEach((item) => {
-            const key = normalizeKey(item.teslim_alan_firma);
-            if (key && item.teslim_firmasi_id && !map.has(key)) map.set(key, item);
+            // Yükleme Firması Adı, eşleştirme tablosundaki Müşteriden Gelen alanında aranır.
+            // Eşleşme bulunduğunda siparişe Teslim Noktası ID yazılır.
+            const key = normalizeKey(item.musteriden_gelen);
+            if (key && item.teslim_noktasi_id && !map.has(key)) map.set(key, item);
         });
         return map;
     }, [mappings]);
@@ -637,7 +637,7 @@ export default function YeniSiparis() {
         }
 
         if (loadingMapping) {
-            next["Yükleme Firması Adı"] = normalize(loadingMapping.teslim_firmasi_id);
+            next["Yükleme Firması Adı"] = normalize(loadingMapping.teslim_noktasi_id);
             next.__loadingMapping = loadingMapping;
         }
 
@@ -662,7 +662,7 @@ export default function YeniSiparis() {
                     hasDirectIds ||
                     (incoming && mapping?.teslim_firmasi_id && mapping?.teslim_noktasi_id)
                 );
-                const loadingResolved = Boolean(hasLoadingId || loadingMapping?.teslim_firmasi_id);
+                const loadingResolved = Boolean(hasLoadingId || loadingMapping?.teslim_noktasi_id);
                 const ready = customerResolved && deliveryResolved && loadingResolved;
 
                 return {
@@ -707,8 +707,8 @@ export default function YeniSiparis() {
                 if (!seen.has(key)) {
                     const best = findBestFuzzyMapping(
                         loadingSource,
-                        mappings.filter((item) => item.teslim_alan_firma && item.teslim_firmasi_id),
-                        ["teslim_alan_firma"],
+                        mappings.filter((item) => item.musteriden_gelen && item.teslim_noktasi_id),
+                        ["musteriden_gelen", "teslim_noktasi_adi"],
                         rejectedSuggestionIds[key]
                     );
                     if (best) suggestions.push({ key, kind: "loading", source: loadingSource, ...best });
@@ -748,7 +748,7 @@ export default function YeniSiparis() {
                 next["Alıcı Firma Cari Adı"] = normalize(suggestion.item.teslim_firmasi_id);
                 next.__deliveryMapping = suggestion.item;
             } else {
-                next["Yükleme Firması Adı"] = normalize(suggestion.item.teslim_firmasi_id);
+                next["Yükleme Firması Adı"] = normalize(suggestion.item.teslim_noktasi_id);
                 next.__loadingMapping = suggestion.item;
             }
             return next;
@@ -840,7 +840,6 @@ export default function YeniSiparis() {
                 const sourceLoadingCompany = normalize(input["Yükleme Firması Adı"]);
                 const sourceDeliveryAddress = normalize(input["Teslim FirmaAdres Adı"]);
                 row["Yükleme Firması Adı"] = sourceLoadingCompany;
-                row["Alıcı Firma Cari Adı"] = normalize(input["Alıcı Firma Cari Adı"]);
                 row["Teslim Firma Adres Adı"] = sourceDeliveryAddress;
 
                 row = hydrateOrderDates(row);
@@ -953,7 +952,6 @@ export default function YeniSiparis() {
                 "TIR",
                 "Örnek sipariş açıklaması",
                 "Yükleme Firması",
-                "Teslim Alan Firma",
                 "Teslim Noktası",
             ]);
             orderSheet.columns = ORDER_INPUT_HEADERS.map((header) => ({
@@ -1065,7 +1063,13 @@ export default function YeniSiparis() {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Sipariş Önizleme");
         XLSX.utils.book_append_sheet(workbook, mappingSheet, "Teslim Noktaları");
-        XLSX.writeFile(workbook, `Yeni_Siparis_Hazir_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        const bugun = new Date();
+        const gun = String(bugun.getDate()).padStart(2, "0");
+        const ay = String(bugun.getMonth() + 1).padStart(2, "0");
+        const yil = bugun.getFullYear();
+        const dosyaAdi = `TMS_SİPARİŞ_${gun}.${ay}.${yil}.xlsx`;
+
+        XLSX.writeFile(workbook, dosyaAdi);
         showMessage("success", `Sipariş Önizleme tablosundaki standart 20 kolon Excel'e birebir aktarıldı; Teslim Noktaları sekmesine ${mappings.length} aktif eşleştirme kaydı eklendi.`);
     };
 
@@ -1544,8 +1548,18 @@ export default function YeniSiparis() {
     }, [mappings, mappingSearch]);
 
     const clearOrders = () => {
+        if (!rows.length) return;
+
+        const approved = window.confirm(
+            `${rows.length} sipariş satırının tamamı temizlensin mi? Bu işlem yalnızca Sipariş Hazırla ekranını temizler; müşteri ve eşleştirme kayıtlarına dokunmaz.`
+        );
+        if (!approved) return;
+
         setRows([]);
         setFileName("");
+        setRejectedSuggestionIds({});
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        showMessage("success", "Sipariş hazırlama alanı temizlendi.");
     };
 
     const canPrepareOrders = customerProjects.length > 0 && !customersLoading;
@@ -1600,8 +1614,8 @@ export default function YeniSiparis() {
                         </button>
                         <button
                             type="button"
-                            className="ys-customer-manager-trigger"
-                            onClick={() => setCustomerPanelOpen(true)}
+                            className={activeTab === "customers" ? "is-active" : ""}
+                            onClick={() => setActiveTab("customers")}
                         >
                             <Users size={16} /> Müşteriler
                             <span>{customerRecords.length}</span>
@@ -1678,6 +1692,15 @@ export default function YeniSiparis() {
                                 >
                                     <FileSpreadsheet size={16} /> Excel İndir
                                 </button>
+                                <button
+                                    type="button"
+                                    className="ys-btn ys-btn--danger"
+                                    onClick={clearOrders}
+                                    disabled={!rows.length}
+                                    title={!rows.length ? "Temizlenecek sipariş bulunmuyor" : "Sipariş hazırlama alanındaki tüm satırları temizle"}
+                                >
+                                    <Trash2 size={16} /> Tümünü Temizle
+                                </button>
                             </div>
                         </section>
 
@@ -1743,7 +1766,7 @@ export default function YeniSiparis() {
                                                     <div className="ys-suggestion-copy">
                                                         <small>{suggestion.kind === "delivery" ? "Teslim noktası" : "Yükleme firması"}</small>
                                                         <strong>“{suggestion.source}”</strong>
-                                                        <span>Bu mu: <b>{suggestion.kind === "delivery" ? (suggestion.item.musteriden_gelen || suggestion.item.teslim_noktasi_adi) : suggestion.item.teslim_alan_firma}</b></span>
+                                                        <span>Bu mu: <b>{suggestion.item.musteriden_gelen || suggestion.item.teslim_noktasi_adi}</b></span>
                                                         <em>%{Math.round(suggestion.score * 100)} benzerlik</em>
                                                     </div>
                                                     <div className="ys-suggestion-ids">
@@ -1842,7 +1865,7 @@ export default function YeniSiparis() {
                             </>
                         )}
                     </main>
-                ) : (
+                ) : activeTab === "mapping" ? (
                     <main className="ys-mapping-page">
                         <section className="ys-mapping-head">
                             <div>
@@ -1976,22 +1999,18 @@ export default function YeniSiparis() {
                             </div>
                         </section>
                     </main>
-                )}
-            </div>
-
-            {customerPanelOpen && (
-                <div className="ys-customer-overlay" onMouseDown={(event) => event.target === event.currentTarget && setCustomerPanelOpen(false)}>
-                    <aside className="ys-customer-drawer">
+                ) : (
+                    <main className="ys-customer-page">
+                        <section className="ys-customer-workspace">
                         <div className="ys-customer-drawer-head">
                             <div className="ys-customer-drawer-title">
                                 <span className="ys-customer-drawer-icon"><Building2 size={21} /></span>
                                 <div>
-                                    <small>MÜŞTERİ VERİ MERKEZİ</small>
+                                    <small>MÜŞTERİ YÖNETİMİ</small>
                                     <h2>Müşteriler</h2>
-                                    <p>Müşteri, proje ve ürün kayıtlarını tek noktadan yönetin.</p>
+                                    <p>Eşleştirme tablosunda olduğu gibi müşteri, proje ve ürün kayıtlarını ana çalışma alanında yönetin.</p>
                                 </div>
                             </div>
-                            <button className="ys-drawer-close" type="button" onClick={() => setCustomerPanelOpen(false)} title="Paneli kapat"><X size={19} /></button>
                         </div>
 
                         <div className="ys-customer-stats">
@@ -2100,9 +2119,10 @@ export default function YeniSiparis() {
                                 </table>
                             </div>
                         </div>
-                    </aside>
-                </div>
-            )}
+                        </section>
+                    </main>
+                )}
+            </div>
         </div>
     );
 }
