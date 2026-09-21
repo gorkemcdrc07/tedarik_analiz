@@ -1,0 +1,12 @@
+YAKIT V4 - FASDAT / DINAMIK FORMUL
+
+1) Supabase SQL Editor'da YAKIT_V4_DINAMIK_FORMUL_SUPABASE.sql dosyasini bir kez calistirin.
+2) Projeyi normal sekilde baslatin.
+3) Yakit Hesaplama > FASDAT ekraninda formulu butonlarla veya metin olarak olusturun.
+
+Desteklenen degiskenler:
+YENI_FIYAT, ESKI_FIYAT, ALIS_FIYATI, SATIS_FIYATI
+Islemler: + - * / ( ) ve ABS(...)
+Karsilastirma: >= > <= < =
+
+Not: Frontend, mevcut Supabase semasina gore yakit_fiyati ve islem_esigi kolonlarini kullanacak sekilde duzeltildi.

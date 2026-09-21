@@ -1,0 +1,2023 @@
+/* =========================================================
+   İRSALİYE EKRANI
+   Uygulama teması açık/koyu olabilir.
+   Belge her zaman beyaz A4 kağıt olarak kalır.
+   ========================================================= */
+
+.irs-screen {
+  --irs-bg: #eef2f6;
+  --irs-panel: rgba(255,255,255,.94);
+  --irs-panel-solid: #fff;
+  --irs-border: #d7dee8;
+  --irs-text: #172033;
+  --irs-muted: #748094;
+  --irs-soft: #f7f9fb;
+  --irs-red: #df2f36;
+
+  min-height: 100%;
+  padding: 18px 22px 28px;
+  overflow: auto;
+  color: var(--irs-text);
+  background:
+    radial-gradient(circle at 82% 0%, rgba(223,47,54,.045), transparent 28%),
+    var(--irs-bg);
+}
+
+html[data-odak-theme="dark"] .irs-screen,
+html[data-theme="dark"] .irs-screen,
+body.dark .irs-screen,
+body.dark-mode .irs-screen,
+.dark .irs-screen {
+  --irs-bg: #071421;
+  --irs-panel: rgba(13,28,43,.95);
+  --irs-panel-solid: #0d1c2b;
+  --irs-border: #274056;
+  --irs-text: #edf4fb;
+  --irs-muted: #91a5b9;
+  --irs-soft: #102234;
+}
+
+/* =========================================================
+   MODERN ÜST KONTROL PANELİ
+   ========================================================= */
+
+.irs-control-panel {
+  width: min(1180px, 100%);
+  margin: 0 auto 14px;
+  padding: 13px 14px;
+  border: 1px solid var(--irs-border);
+  border-radius: 15px;
+  background: var(--irs-panel);
+  box-shadow: 0 12px 30px rgba(15,23,42,.08);
+  backdrop-filter: blur(12px);
+}
+
+.irs-control-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.irs-control-icon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--irs-red);
+  background: rgba(223,47,54,.1);
+}
+
+.irs-control-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.irs-control-copy strong,
+.irs-control-copy span {
+  display: block;
+}
+
+.irs-control-copy strong {
+  color: var(--irs-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.irs-control-copy span {
+  margin-top: 3px;
+  color: var(--irs-muted);
+  font-size: 10.5px;
+}
+
+.irs-control-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.irs-control-stats > span {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--irs-border);
+  border-radius: 999px;
+  background: var(--irs-soft);
+  color: var(--irs-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.irs-control-stats b {
+  color: var(--irs-text);
+  font-size: 12px;
+}
+
+.irs-file-chip {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.irs-toolbar {
+  margin-top: 11px;
+  padding-top: 11px;
+  border-top: 1px solid var(--irs-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.irs-toolbar button {
+  all: unset;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--irs-border);
+  border-radius: 9px;
+  background: var(--irs-panel-solid);
+  color: var(--irs-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 11px Arial, Helvetica, sans-serif;
+  cursor: pointer;
+  transition: .15s ease;
+}
+
+.irs-toolbar button:hover {
+  transform: translateY(-1px);
+}
+
+.irs-toolbar .irs-import-button {
+  background: #172033;
+  border-color: #172033;
+  color: #fff;
+}
+
+html[data-odak-theme="dark"] .irs-toolbar .irs-import-button,
+html[data-theme="dark"] .irs-toolbar .irs-import-button,
+body.dark .irs-toolbar .irs-import-button,
+body.dark-mode .irs-toolbar .irs-import-button,
+.dark .irs-toolbar .irs-import-button {
+  background: #e8eef5;
+  border-color: #e8eef5;
+  color: #071421;
+}
+
+.irs-toolbar .irs-print-button {
+  background: var(--irs-red);
+  border-color: var(--irs-red);
+  color: #fff;
+}
+
+.irs-file-input {
+  display: none !important;
+}
+
+.irs-message {
+  margin-top: 10px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.irs-message--success {
+  color: #147a45;
+  background: rgba(34,197,94,.09);
+  border: 1px solid rgba(34,197,94,.22);
+}
+
+.irs-message--error {
+  color: #c92a2a;
+  background: rgba(239,68,68,.09);
+  border: 1px solid rgba(239,68,68,.22);
+}
+
+.irs-message button {
+  all: unset;
+  margin-left: auto;
+  cursor: pointer;
+}
+
+/* =========================================================
+   A4 KAĞIT
+   ========================================================= */
+
+#irsaliye-print,
+#irsaliye-print *,
+#irsaliye-print *::before,
+#irsaliye-print *::after {
+  box-sizing: border-box;
+}
+
+#irsaliye-print {
+  width: 920px;
+  height: 1301px;
+  margin: 0 auto;
+  padding: 28px 32px 8px;
+  overflow: hidden;
+  background: #fff !important;
+  color: #222 !important;
+  box-shadow: 0 10px 32px rgba(0,0,0,.13);
+  font-family: Arial, Helvetica, sans-serif !important;
+  color-scheme: light !important;
+  forced-color-adjust: none;
+}
+
+/* Global dark / input / table stilini belge içinde tamamen sıfırla */
+#irsaliye-print input,
+#irsaliye-print textarea,
+#irsaliye-print select {
+  all: unset !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+  box-shadow: none !important;
+  caret-color: #222 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+}
+
+#irsaliye-print table,
+#irsaliye-print thead,
+#irsaliye-print tbody,
+#irsaliye-print tr,
+#irsaliye-print th,
+#irsaliye-print td {
+  background: #fff !important;
+  color: #222 !important;
+  box-shadow: none !important;
+}
+
+#irsaliye-print input:focus,
+#irsaliye-print textarea:focus {
+  background: rgba(255,247,191,.38) !important;
+}
+
+/* =========================================================
+   ÜST BLOK — ÜRETİLEN REFERANS GÖRSEL ORANLARI
+   ========================================================= */
+
+.irs-header {
+  height: 236px;
+  display: grid;
+  grid-template-columns: 43% 20% 37%;
+  gap: 12px;
+  align-items: start;
+}
+
+.irs-brand {
+  min-width: 0;
+}
+
+.irs-logo-image {
+  display: block !important;
+  width: 245px !important;
+  height: 104px !important;
+  object-fit: contain !important;
+  object-position: left top !important;
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.irs-company {
+  width: 345px;
+  margin-top: 1px;
+  display: flex;
+  flex-direction: column;
+  color: #222 !important;
+  font-size: 11.1px;
+  line-height: 1.05;
+}
+
+.irs-company strong {
+  margin-bottom: 3px;
+  font-size: 12.3px;
+  line-height: 1.06;
+}
+
+.irs-seal-section {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.irs-official-logo {
+  display: block !important;
+  width: 132px !important;
+  height: 132px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: #fff !important;
+}
+
+.irs-il-code {
+  width: auto !important;
+  margin: 4px auto 0 !important;
+  padding: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 3px !important;
+
+  color: #222 !important;
+  white-space: nowrap !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+}
+
+.irs-il-code > span {
+  display: inline-block !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+
+.irs-il-code .irs-plain-input {
+  display: inline-block !important;
+
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+
+  height: 16px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  flex: 0 0 20px !important;
+
+  text-align: left !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+
+  font-size: 11.5px !important;
+  line-height: 16px !important;
+}
+
+.irs-serial {
+  width: 170px !important;
+  margin: 2px auto 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+
+  text-align: center !important;
+}
+
+.irs-serial > span {
+  margin-bottom: 2px;
+  color: #222 !important;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.irs-serial > span strong {
+  font-size: 12.8px;
+  font-weight: 800;
+}
+
+.irs-serial .irs-plain-input {
+  width: 126px !important;
+  height: 35px !important;
+  padding: 0 !important;
+  text-align: center !important;
+  color: #e04249 !important;
+  -webkit-text-fill-color: #e04249 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 28px !important;
+  font-weight: 400 !important;
+  letter-spacing: 3px !important;
+}
+
+.irs-title-section {
+  min-width: 0;
+  padding-top: 4px;
+}
+
+.irs-title-section h1 {
+  margin: 0 0 25px;
+  color: #222 !important;
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+
+.irs-header-fields {
+  display: grid;
+  gap: 7px;
+}
+
+.irs-line {
+  min-height: 16px;
+  display: grid;
+  grid-template-columns: 132px 8px minmax(0,1fr);
+  align-items: baseline;
+  color: #222 !important;
+  font-size: 10.8px;
+  line-height: 1.04;
+}
+
+.irs-line > span,
+.irs-line > i {
+  color: #222 !important;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.irs-line .irs-plain-input {
+  height: 16px !important;
+}
+
+/* =========================================================
+   ANA TABLO
+   ========================================================= */
+
+.irs-cargo-box {
+  height: 645px;
+  border: 1px solid #444;
+  display: flex;
+  flex-direction: column;
+  background: #fff !important;
+}
+
+.irs-cargo-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.irs-cargo-table th {
+  height: 32px;
+  padding: 0 8px;
+  border: 0 !important;
+  border-right: 1px solid #b7b7b7 !important;
+  border-bottom: 1px solid #444 !important;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 10.2px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.irs-cargo-table th:last-child {
+  border-right: 0 !important;
+}
+
+.irs-cargo-table th:nth-child(1) { width: 17%; }
+.irs-cargo-table th:nth-child(2) { width: 33%; text-align: center; }
+.irs-cargo-table th:nth-child(3) { width: 28%; text-align: center; }
+.irs-cargo-table th:nth-child(4) { width: 13%; text-align: center; }
+.irs-cargo-table th:nth-child(5) { width: 9%; text-align: center; }
+
+.irs-cargo-table td {
+  position: relative;
+  height: 18px;
+  padding: 1px 7px;
+  border: 0 !important;
+  vertical-align: top;
+}
+
+.irs-cargo-table tbody tr:first-child td {
+  padding-top: 24px;
+}
+
+.irs-cargo-table td .irs-plain-input {
+  height: 16px !important;
+  padding: 0 !important;
+  font-size: 9.5px !important;
+}
+
+.irs-qty-wrap {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 20px;
+  gap: 2px;
+}
+
+.irs-qty-wrap > .irs-plain-input:first-child {
+  text-align: right !important;
+}
+
+.irs-unit {
+  text-align: center !important;
+}
+
+.irs-row-remove {
+  all: unset;
+  position: absolute;
+  right: -24px;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #d92f36;
+  color: #fff;
+  cursor: pointer;
+}
+
+.irs-tevdi {
+  margin-top: auto;
+  min-height: 42px;
+  padding: 0 8px 8px;
+  display: grid;
+  grid-template-columns: 310px minmax(0,1fr);
+  gap: 12px;
+  align-items: end;
+  color: #222 !important;
+  font-size: 9.6px;
+}
+
+/* =========================================================
+   İMZA ŞERİDİ
+   ========================================================= */
+
+.irs-signatures {
+  height: 96px;
+  margin-top: 10px;
+  border: 1px solid #444;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr 1.03fr .98fr;
+}
+
+.irs-sign-cell {
+  min-width: 0;
+  overflow: hidden;
+  padding: 7px 8px 5px;
+  border-right: 1px solid #444;
+  display: flex;
+  flex-direction: column;
+  color: #222 !important;
+  font-size: 9.5px;
+  line-height: 1.1;
+}
+
+.irs-sign-cell:last-child {
+  border-right: 0;
+}
+
+.irs-sign-main {
+  flex: 1;
+  min-height: 0 !important;
+}
+
+.irs-note-cell textarea {
+  flex: 1;
+  min-height: 0 !important;
+  margin-top: 4px !important;
+  padding: 0 !important;
+}
+
+/* =========================================================
+   ALT BÜYÜK KUTU
+   ========================================================= */
+
+.irs-bottom {
+  height: 214px;
+  margin-top: 10px;
+  border: 1px solid #444;
+  display: grid;
+  grid-template-columns: minmax(0,72%) minmax(0,28%);
+  overflow: hidden;
+}
+
+.irs-bottom-left {
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1px solid #444;
+  display: grid;
+  grid-template-rows: 78px 30px minmax(0,1fr);
+}
+
+.irs-vehicle-driver {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0,48%) minmax(0,52%);
+}
+
+.irs-vehicle-fields {
+  min-width: 0;
+  overflow: hidden;
+  padding: 7px 8px 0;
+}
+
+.irs-vehicle-fields .irs-line {
+  grid-template-columns: 61px 8px minmax(0,1fr);
+  min-height: 17px;
+  font-size: 9.4px;
+}
+
+.irs-driver-area {
+  min-width: 0;
+  overflow: hidden;
+  border-left: 1px solid #444;
+  display: grid;
+  grid-template-columns: 25px minmax(0,1fr);
+  padding: 6px 6px 0 0;
+}
+
+.irs-driver-side-title {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  padding-top: 3px;
+  text-align: center;
+  font-size: 7.1px;
+}
+
+.irs-driver-fields {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.irs-driver-fields .irs-line {
+  grid-template-columns: 74px 8px minmax(0,1fr);
+  min-height: 19px;
+  font-size: 9.2px;
+}
+
+.irs-legal {
+  padding: 1px 8px 0;
+  color: #222 !important;
+  font-size: 7.3px;
+  line-height: 1.14;
+}
+
+.irs-delivery-grid {
+  min-width: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0,31%) minmax(0,31%) minmax(0,38%);
+}
+
+.irs-delivery-cell,
+.irs-plate-cell {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 8px 5px;
+  border-right: 1px solid #444;
+  color: #222 !important;
+  font-size: 8.7px;
+}
+
+.irs-delivery-title {
+  height: 18px;
+  white-space: nowrap;
+}
+
+.irs-delivery-cell .irs-plain-input {
+  height: calc(100% - 18px) !important;
+  min-height: 0 !important;
+}
+
+.irs-plate-cell {
+  border-right: 0;
+  display: grid;
+  grid-template-rows: repeat(3,minmax(0,1fr));
+}
+
+.irs-plate-cell label {
+  min-width: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 15px minmax(0,1fr);
+}
+
+.irs-finance {
+  min-width: 0;
+  overflow: hidden;
+  padding: 77px 8px 5px;
+}
+
+.irs-finance .irs-line {
+  grid-template-columns: 104px 8px minmax(0,1fr);
+  min-height: 15px;
+  font-size: 9px;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.irs-footer {
+  height: 22px;
+  padding-top: 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  color: #444 !important;
+  font-size: 5.7px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width:1000px) {
+  .irs-control-main {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .irs-control-stats {
+    width: 100%;
+    padding-left: 54px;
+  }
+
+  .irs-toolbar {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width:960px) {
+  .irs-screen {
+    overflow-x: auto;
+  }
+
+  #irsaliye-print {
+    width: 920px;
+    max-width: none;
+  }
+}
+
+/* =========================================================
+   YAZDIRMA
+   ========================================================= */
+
+
+
+
+
+
+/* =========================================================
+   ÜST ALAN SON HİZALAMA
+   Resmi logo orta kolonda tam ortalı.
+   Altında İl Kodu ve Seri A Sıra No aynı eksende.
+   ========================================================= */
+
+.irs-header {
+  height: 236px;
+  display: grid;
+  grid-template-columns: 42% 22% 36%;
+  gap: 0;
+  align-items: start;
+}
+
+.irs-brand {
+  min-width: 0;
+}
+
+.irs-seal-section {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.irs-official-logo {
+  display: block !important;
+  width: 118px !important;
+  height: 118px !important;
+  margin: 0 auto !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.irs-il-code {
+  width: 100%;
+  margin: 7px 0 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px;
+  color: #222 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+  white-space: nowrap;
+}
+
+.irs-il-code > span {
+  display: inline-block;
+  flex: 0 0 auto;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.irs-il-code .irs-plain-input {
+  display: inline-block !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  height: 16px !important;
+  flex: 0 0 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+  font-size: 11.5px !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+}
+
+.irs-serial {
+  width: 100%;
+  margin: 7px 0 0 !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  color: #222 !important;
+}
+
+.irs-serial > span {
+  display: block;
+  width: 100%;
+  margin: 0 !important;
+  color: #222 !important;
+  text-align: center !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+}
+
+.irs-serial > span strong {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+}
+
+.irs-serial .irs-plain-input {
+  display: block !important;
+  width: 130px !important;
+  height: 31px !important;
+  margin: 2px auto 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #df4148 !important;
+  -webkit-text-fill-color: #df4148 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 27px !important;
+  font-weight: 400 !important;
+  letter-spacing: 3px !important;
+  line-height: 31px !important;
+}
+
+.irs-title-section {
+  min-width: 0;
+  padding-top: 4px;
+  padding-left: 5px;
+}
+
+.irs-title-section h1 {
+  margin: 0 0 25px;
+  color: #222 !important;
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+
+
+
+
+/* =========================================================
+   V6 - ÜST ALAN KESİN HİZALAMA
+   Grid yerine sabit/merkezli yerleşim.
+   ========================================================= */
+
+.irs-header {
+  position: relative !important;
+  display: block !important;
+  height: 236px !important;
+  padding: 0 !important;
+}
+
+/* SOL BLOK */
+.irs-brand {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 350px !important;
+  min-width: 350px !important;
+}
+
+.irs-logo-image {
+  width: 245px !important;
+  height: 104px !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+  object-position: left top !important;
+}
+
+.irs-company {
+  width: 345px !important;
+  margin-top: 1px !important;
+}
+
+/* ORTA BLOK - SAYFANIN GERÇEK ORTASI */
+.irs-seal-section {
+  position: absolute !important;
+  left: 50% !important;
+  top: 0 !important;
+  transform: translateX(-50%) !important;
+
+  width: 170px !important;
+  min-width: 170px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+
+  text-align: center !important;
+}
+
+.irs-official-logo {
+  display: block !important;
+
+  width: 108px !important;
+  height: 108px !important;
+
+  margin: 0 auto 7px !important;
+
+  object-fit: contain !important;
+  object-position: center !important;
+
+  background: #fff !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* İL KODU : 34 - tek satır ve logonun tam altında */
+.irs-il-code {
+  width: auto !important;
+  height: 18px !important;
+
+  margin: 0 auto !important;
+  padding: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 4px !important;
+
+  color: #222 !important;
+  white-space: nowrap !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 400 !important;
+  line-height: 18px !important;
+}
+
+.irs-il-code > span {
+  display: inline-block !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: 0 0 auto !important;
+
+  color: #222 !important;
+  white-space: nowrap !important;
+}
+
+.irs-il-code .irs-plain-input {
+  display: inline-block !important;
+
+  width: 22px !important;
+  min-width: 22px !important;
+  max-width: 22px !important;
+  height: 18px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  flex: 0 0 22px !important;
+
+  text-align: left !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+
+  font-size: 11.5px !important;
+  line-height: 18px !important;
+}
+
+/* SERİ A SIRA NO - tam merkez */
+.irs-serial {
+  width: 170px !important;
+
+  margin: 5px auto 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+
+  text-align: center !important;
+}
+
+.irs-serial > span {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  text-align: center !important;
+
+  color: #222 !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+}
+
+.irs-serial > span strong {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+}
+
+.irs-serial .irs-plain-input {
+  display: block !important;
+
+  width: 130px !important;
+  height: 30px !important;
+
+  margin: 2px auto 0 !important;
+  padding: 0 !important;
+
+  text-align: center !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+
+  color: #df4148 !important;
+  -webkit-text-fill-color: #df4148 !important;
+
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 27px !important;
+  font-weight: 400 !important;
+  letter-spacing: 3px !important;
+  line-height: 30px !important;
+}
+
+/* SAĞ BLOK */
+.irs-title-section {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+
+  width: 305px !important;
+  min-width: 305px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.irs-title-section h1 {
+  margin: 0 0 24px !important;
+  padding: 4px 0 0 !important;
+
+  color: #222 !important;
+
+  font-size: 19px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  letter-spacing: .2px !important;
+
+  white-space: nowrap !important;
+}
+
+.irs-title-section .irs-header-fields {
+  display: grid !important;
+  gap: 7px !important;
+}
+
+.irs-title-section .irs-line {
+  grid-template-columns: 132px 8px minmax(0, 1fr) !important;
+  min-height: 16px !important;
+  font-size: 10.8px !important;
+}
+
+/* Printte de aynı hizayı koru */
+
+
+
+/* =========================================================
+   V7 - RESMİ LOGO ALT BİLGİLERİ SON DÜZELTME
+   İL KODU : 34 tek parça görünür ve Seri A Sıra No ile
+   aynı merkez ekseninde kalır.
+   ========================================================= */
+
+.irs-seal-section {
+  position: absolute !important;
+  left: 50% !important;
+  top: 0 !important;
+  transform: translateX(-50%) !important;
+  width: 170px !important;
+  min-width: 170px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: center !important;
+}
+
+.irs-official-logo {
+  display: block !important;
+  width: 108px !important;
+  height: 108px !important;
+  margin: 0 auto 7px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Kritik nokta: container sabit ve küçük; input artık %100 genişleyemez. */
+.irs-il-code {
+  width: 92px !important;
+  min-width: 92px !important;
+  max-width: 92px !important;
+  height: 18px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: max-content 20px !important;
+  column-gap: 3px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #222 !important;
+  font: 400 11.5px/18px Arial, Helvetica, sans-serif !important;
+  white-space: nowrap !important;
+}
+
+.irs-il-code > span {
+  display: block !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #222 !important;
+  font: inherit !important;
+  white-space: nowrap !important;
+}
+
+#irsaliye-print .irs-il-code > input.irs-plain-input {
+  all: unset !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+  box-shadow: none !important;
+  text-align: left !important;
+  font: 400 11.5px/18px Arial, Helvetica, sans-serif !important;
+}
+
+.irs-serial {
+  width: 170px !important;
+  margin: 2px auto 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: center !important;
+}
+
+.irs-serial > span {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #222 !important;
+  text-align: center !important;
+  font: 400 11.5px/16px Arial, Helvetica, sans-serif !important;
+  white-space: nowrap !important;
+}
+
+.irs-serial > span strong {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+}
+
+
+
+
+/* =========================================================
+   V8 - EXCEL ŞABLONU / IMPORT AKIŞI
+   ========================================================= */
+
+.irs-toolbar .irs-template-button {
+  background: rgba(223, 47, 54, 0.08);
+  border-color: rgba(223, 47, 54, 0.24);
+  color: #d92f36;
+}
+
+.irs-toolbar .irs-template-button:hover {
+  background: rgba(223, 47, 54, 0.13);
+  border-color: rgba(223, 47, 54, 0.38);
+}
+
+html[data-odak-theme="dark"] .irs-toolbar .irs-template-button,
+html[data-theme="dark"] .irs-toolbar .irs-template-button,
+body.dark .irs-toolbar .irs-template-button,
+body.dark-mode .irs-toolbar .irs-template-button,
+.dark .irs-toolbar .irs-template-button {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(248, 113, 113, 0.28);
+  color: #ff8f96;
+}
+
+
+/* =========================================================
+   V9 - EXCEL VERİSİ SIĞDIRMA + ALT ALAN TAŞMA DÜZELTMELERİ
+   ========================================================= */
+
+/* Ana irsaliye satırında uzun Excel verileri kutuların dışına taşmasın. */
+#irsaliye-print .irs-cargo-table td {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+#irsaliye-print .irs-cargo-table td .irs-plain-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 18px !important;
+  padding: 0 2px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 9.1px !important;
+  font-weight: 400 !important;
+  line-height: 18px !important;
+}
+
+#irsaliye-print .irs-cargo-table tbody tr:first-child td {
+  padding-top: 18px !important;
+}
+
+/* Alıcı alanına biraz daha fazla, miktara yeterli alan ver. */
+.irs-cargo-table th:nth-child(1) { width: 17% !important; }
+.irs-cargo-table th:nth-child(2) { width: 34% !important; }
+.irs-cargo-table th:nth-child(3) { width: 28% !important; }
+.irs-cargo-table th:nth-child(4) { width: 13% !important; }
+.irs-cargo-table th:nth-child(5) { width: 8% !important; }
+
+/* Sağ üst Excel alanları da uzun veride taşmasın. */
+#irsaliye-print .irs-title-section .irs-line {
+  grid-template-columns: 132px 8px minmax(0, 1fr) !important;
+  overflow: hidden !important;
+}
+
+#irsaliye-print .irs-title-section .irs-line .irs-plain-input {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 9.6px !important;
+}
+
+/* Alt blokta dikey ve yatay taşmaları engelle. */
+.irs-bottom,
+.irs-bottom-left,
+.irs-vehicle-driver,
+.irs-vehicle-fields,
+.irs-driver-area,
+.irs-driver-fields,
+.irs-delivery-grid,
+.irs-delivery-cell,
+.irs-plate-cell,
+.irs-finance {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Sol alttaki araç Plaka alanı artık importtan boş kalır;
+   manuel yazılırsa da kutunun dışına taşmaz. */
+#irsaliye-print .irs-vehicle-fields .irs-line .irs-plain-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 8.8px !important;
+}
+
+/* Şoför adı alanı */
+#irsaliye-print .irs-driver-fields .irs-line .irs-plain-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 8.6px !important;
+}
+
+/* Plaka / römork / teslim alan sürücü alanlarını üç temiz kutuya böl. */
+.irs-plate-cell {
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+}
+
+.irs-plate-cell > label {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+
+  padding: 5px 8px 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+
+  border-bottom: 1px solid #d1d1d1 !important;
+
+  color: #222 !important;
+  font-size: 8.2px !important;
+  line-height: 1.05 !important;
+}
+
+.irs-plate-cell > label:last-child {
+  border-bottom: 0 !important;
+}
+
+.irs-plate-cell > label strong,
+.irs-plate-cell > label span {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: nowrap !important;
+}
+
+#irsaliye-print .irs-plate-cell > label .irs-plain-input {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 13px !important;
+  height: 15px !important;
+  max-height: 15px !important;
+
+  margin: 2px 0 0 !important;
+  padding: 0 !important;
+
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+
+  font-size: 8.2px !important;
+  line-height: 15px !important;
+}
+
+/* TESLİM ALAN - SÜRÜCÜ başlığı ve değer artık üst üste binmez. */
+.irs-plate-cell > label:last-child {
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  grid-template-rows: 13px 16px !important;
+  column-gap: 3px !important;
+  align-content: start !important;
+}
+
+.irs-plate-cell > label:last-child strong {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+}
+
+.irs-plate-cell > label:last-child span {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+}
+
+#irsaliye-print .irs-plate-cell > label:last-child .irs-plain-input {
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+  margin-top: 1px !important;
+}
+
+/* Finans tarafı: rakamlar kendi alanına sığsın. */
+.irs-finance {
+  padding: 74px 8px 5px !important;
+}
+
+.irs-finance .irs-line {
+  grid-template-columns: 99px 7px minmax(0, 1fr) !important;
+  min-height: 15px !important;
+  font-size: 8.6px !important;
+}
+
+#irsaliye-print .irs-finance .irs-line .irs-plain-input {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 8.6px !important;
+}
+
+/* İmza tarih/saat değerleri de kompakt. */
+#irsaliye-print .irs-sign-cell .irs-plain-input {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 8.6px !important;
+}
+
+
+/* =========================================================
+   V10 - ANA İRSALİYE SATIRLARI TAM GÖRÜNÜR
+   Uzun Excel verileri artık kesilmez, gerektiğinde alt satıra geçer.
+   ========================================================= */
+
+#irsaliye-print .irs-cargo-table tbody tr {
+  height: auto !important;
+}
+
+#irsaliye-print .irs-cargo-table td {
+  height: auto !important;
+  min-height: 38px !important;
+  padding: 8px 8px 6px !important;
+  overflow: visible !important;
+  vertical-align: top !important;
+}
+
+#irsaliye-print .irs-cargo-table tbody tr:first-child td {
+  padding-top: 12px !important;
+}
+
+/* Input yerine çok satırlı, kendi içeriğine göre büyüyen textarea */
+#irsaliye-print .irs-cargo-input {
+  all: unset !important;
+  box-sizing: border-box !important;
+
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  min-height: 18px !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  overflow: visible !important;
+  resize: none !important;
+
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+
+  color: #111 !important;
+  -webkit-text-fill-color: #111 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: 9.2px !important;
+  font-weight: 400 !important;
+  line-height: 1.25 !important;
+
+  /* Modern Chromium'da içerik kadar büyür */
+  field-sizing: content;
+}
+
+#irsaliye-print .irs-cargo-input:focus {
+  background: rgba(255, 247, 191, .38) !important;
+}
+
+#irsaliye-print .irs-qty-wrap {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 18px !important;
+  gap: 2px !important;
+  align-items: start !important;
+}
+
+#irsaliye-print .irs-qty-wrap > .irs-cargo-input:first-child {
+  text-align: right !important;
+}
+
+#irsaliye-print .irs-unit {
+  text-align: center !important;
+}
+
+/* Kolon oranları: uzun alıcı ve alıcı/ilçe verisine daha fazla yer */
+.irs-cargo-table th:nth-child(1) { width: 18% !important; }
+.irs-cargo-table th:nth-child(2) { width: 34% !important; }
+.irs-cargo-table th:nth-child(3) { width: 28% !important; }
+.irs-cargo-table th:nth-child(4) { width: 12% !important; }
+.irs-cargo-table th:nth-child(5) { width: 8% !important; }
+
+
+
+
+/* =========================================================
+   V11 - ANA TABLO TEK SATIR / TAM GÖRÜNÜR
+   Scroll yok, alt satıra geçiş yok.
+   Metin alan genişliğine göre JS ile otomatik küçülür.
+   ========================================================= */
+
+/* V10 textarea kurallarını geçersiz kıl */
+#irsaliye-print .irs-cargo-input {
+  display: none !important;
+}
+
+#irsaliye-print .irs-cargo-table tbody tr {
+  height: 38px !important;
+}
+
+#irsaliye-print .irs-cargo-table td {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 10px 8px 6px !important;
+  overflow: hidden !important;
+  vertical-align: middle !important;
+}
+
+#irsaliye-print .irs-cargo-table tbody tr:first-child td {
+  padding-top: 10px !important;
+}
+
+#irsaliye-print .irs-fit-input {
+  all: unset !important;
+  box-sizing: border-box !important;
+
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  height: 18px !important;
+  min-height: 18px !important;
+  max-height: 18px !important;
+
+  margin: 0 !important;
+  padding: 0 1px !important;
+
+  overflow: hidden !important;
+  white-space: nowrap !important;
+
+  color: #111 !important;
+  -webkit-text-fill-color: #111 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-weight: 400 !important;
+  line-height: 18px !important;
+
+  text-overflow: clip !important;
+}
+
+#irsaliye-print .irs-fit-input:focus {
+  background: rgba(255, 247, 191, .38) !important;
+}
+
+#irsaliye-print .irs-qty-wrap {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 17px !important;
+  gap: 2px !important;
+  align-items: center !important;
+  min-width: 0 !important;
+}
+
+#irsaliye-print .irs-qty-wrap > .irs-fit-input:first-child {
+  text-align: right !important;
+}
+
+#irsaliye-print .irs-unit {
+  text-align: center !important;
+}
+
+/* Kullanıcı verisine daha fazla yatay alan */
+.irs-cargo-table th:nth-child(1) { width: 18% !important; }
+.irs-cargo-table th:nth-child(2) { width: 35% !important; }
+.irs-cargo-table th:nth-child(3) { width: 27% !important; }
+.irs-cargo-table th:nth-child(4) { width: 12% !important; }
+.irs-cargo-table th:nth-child(5) { width: 8% !important; }
+
+
+
+
+/* =========================================================
+   V12 - ANA TABLO DAHA KÜÇÜK FONT / KESİNSİZ TAM SIĞDIRMA
+   ========================================================= */
+
+#irsaliye-print .irs-cargo-table td {
+  padding: 8px 5px 5px !important;
+}
+
+#irsaliye-print .irs-cargo-table tbody tr:first-child td {
+  padding-top: 8px !important;
+}
+
+#irsaliye-print .irs-fit-input {
+  height: 16px !important;
+  min-height: 16px !important;
+  max-height: 16px !important;
+
+  padding: 0 !important;
+  line-height: 16px !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-weight: 400 !important;
+
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: clip !important;
+}
+
+/* Kolonları veriye göre yeniden dengele */
+.irs-cargo-table th:nth-child(1) { width: 18% !important; }
+.irs-cargo-table th:nth-child(2) { width: 36% !important; }
+.irs-cargo-table th:nth-child(3) { width: 26% !important; }
+.irs-cargo-table th:nth-child(4) { width: 12% !important; }
+.irs-cargo-table th:nth-child(5) { width: 8% !important; }
+
+/* Başlıklar da biraz kompakt */
+.irs-cargo-table th {
+  padding: 0 5px !important;
+  font-size: 8.8px !important;
+}
+
+/* Miktar tarafında sayı daha rahat sığsın */
+#irsaliye-print .irs-qty-wrap {
+  grid-template-columns: minmax(0, 1fr) 14px !important;
+  gap: 1px !important;
+}
+
+
+
+
+/* =========================================================
+   V13 - GERÇEK SHRINK-TO-FIT
+   Önceki genel input font-size: inherit !important kuralını
+   özellikle eziyoruz. Font JS tarafından !important olarak atanır.
+   ========================================================= */
+
+#irsaliye-print .irs-fit-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  height: 16px !important;
+  min-height: 16px !important;
+  max-height: 16px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: clip !important;
+
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+
+  transform-origin: left center !important;
+}
+
+/* Inputlar aynı satırda kalsın, komşu kolona taşmasın. */
+#irsaliye-print .irs-cargo-table td {
+  overflow: hidden !important;
+}
+
+#irsaliye-print .irs-cargo-table td > .irs-fit-input,
+#irsaliye-print .irs-qty-wrap > .irs-fit-input {
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+
+/* Alıcıya maksimum alan */
+.irs-cargo-table th:nth-child(1) { width: 18% !important; }
+.irs-cargo-table th:nth-child(2) { width: 37% !important; }
+.irs-cargo-table th:nth-child(3) { width: 25% !important; }
+.irs-cargo-table th:nth-child(4) { width: 12% !important; }
+.irs-cargo-table th:nth-child(5) { width: 8% !important; }
+
+
+/* =========================================================
+   V16 - TEVDİ EDEN CÜMLE DEVAMI GİBİ YAN YANA
+   ========================================================= */
+
+.irs-tevdi {
+  margin-top: auto !important;
+  min-height: 42px !important;
+  padding: 0 8px 8px !important;
+
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: flex-start !important;
+  gap: 4px !important;
+
+  color: #222 !important;
+  font-size: 9.6px !important;
+  line-height: 1.15 !important;
+
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+.irs-tevdi-label,
+.irs-tevdi-value {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #222 !important;
+  font: inherit !important;
+  line-height: inherit !important;
+  white-space: nowrap !important;
+}
+
+.irs-tevdi-label {
+  flex: 0 0 auto !important;
+}
+
+.irs-tevdi-value {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+
+
+
+/* =========================================================
+   V17 - OKI NOKTA VURUŞLU / ÖN BASKILI FORM MODU
+   Ekranda tam irsaliye görünür.
+   Yazdırmada sadece dinamik değerler basılır.
+   ========================================================= */
+
+.irs-toolbar .irs-settings-button {
+  background: var(--irs-soft);
+  border-color: var(--irs-border);
+  color: var(--irs-text);
+}
+
+.irs-print-calibration {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--irs-border);
+  border-radius: 12px;
+  background: var(--irs-soft);
+}
+
+.irs-print-calibration-head strong,
+.irs-print-calibration-head span {
+  display: block;
+}
+
+.irs-print-calibration-head strong {
+  color: var(--irs-text);
+  font-size: 11.5px;
+}
+
+.irs-print-calibration-head span {
+  margin-top: 3px;
+  color: var(--irs-muted);
+  font-size: 9.8px;
+}
+
+.irs-print-calibration-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto auto;
+  gap: 9px;
+  align-items: end;
+}
+
+.irs-print-calibration-grid > label {
+  min-width: 0;
+}
+
+.irs-print-calibration-grid > label > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--irs-muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.irs-calibration-control {
+  height: 34px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 24px 32px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--irs-border);
+  border-radius: 9px;
+  background: var(--irs-panel-solid);
+}
+
+.irs-calibration-control button {
+  all: unset;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--irs-text);
+  cursor: pointer;
+  font-size: 17px;
+}
+
+.irs-calibration-control input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 7px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--irs-text);
+  font-size: 11px;
+}
+
+.irs-calibration-control > span {
+  color: var(--irs-muted);
+  font-size: 9px;
+}
+
+.irs-calibration-save,
+.irs-calibration-test {
+  all: unset;
+  box-sizing: border-box;
+  height: 34px;
+  padding: 0 11px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  font: 700 10px Arial, Helvetica, sans-serif;
+}
+
+.irs-calibration-save {
+  border: 1px solid rgba(34,197,94,.25);
+  background: rgba(34,197,94,.09);
+  color: #178148;
+}
+
+.irs-calibration-test {
+  border: 1px solid rgba(223,47,54,.24);
+  background: rgba(223,47,54,.08);
+  color: #d92f36;
+}
+
+/* Normal ekranda baskı katmanı görünmez. */
+.irs-preprinted-print-layer {
+  display: none;
+}
+
+/* =========================================================
+   ÖN BASKILI FORM KOORDİNATLARI
+   Aşağıdaki tüm değerler mm cinsindedir.
+   Kalibrasyon X/Y, tüm katmanı topluca kaydırır.
+   ========================================================= */
+
+
+
+@media (max-width: 1000px) {
+  .irs-print-calibration-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+
+/* =========================================================
+   V18 - OKI FİZİKSEL TEST DÜZELTMESİ
+   Fotoğraftaki ilk baskıya göre:
+   - veri satırı yukarı alındı
+   - nokta vuruşlu baskı koyulaştırıldı
+   - tarayıcı ölçek/marjin etkisi azaltıldı
+   ========================================================= */
+
+
+
+
+
+
+/* =========================================================
+   V19 - BOŞ YAZDIRMA ÖNİZLEMESİ KESİN DÜZELTME
+   Eski CSS'teki "body * { visibility:hidden }" kuralını iptal eder.
+   Sadece OKI veri katmanı bırakılır.
+   ========================================================= */
+
+
+
+
+/* =========================================================
+   V20 - OKI BASKI ARTIK AYRI PENCEREDE YAPILIR
+   Ana uygulamanın layout/sidebar/header CSS'i yazdırmaya girmez.
+   ========================================================= */
+
+.irs-preprinted-print-layer {
+  display: none !important;
+}

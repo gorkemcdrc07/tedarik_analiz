@@ -1,0 +1,37 @@
+const fs=require('fs');
+const assert=require('node:assert/strict');
+(async()=>{
+const source=fs.readFileSync(require('path').join(__dirname, '../src/Irsaliye/dotMatrixPrint.js'),'utf8');
+const m=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const fresh=()=>structuredClone(m.DEFAULT_LAYOUT);
+assert.deepEqual(m.validateLayout(fresh()),[]);
+assert.equal(m.loadLayout({getItem:()=>null}).fontWeight,700);
+assert.equal(m.loadLayout({getItem:()=>null}).inkBoost,0.25);
+const legacy=fresh();delete legacy.fontWeight;delete legacy.inkBoost;
+assert.equal(m.loadLayout({getItem:()=>JSON.stringify(legacy)}).inkBoost,0.25);
+const strong=m.buildPrintDocument({seferNo:'TEST'},[],fresh()).html;
+assert.ok(strong.includes('font:700'));
+assert.ok(strong.includes('-webkit-text-stroke:0.25px #000'));
+
+assert.equal(m.loadLayout({getItem:()=>null}).fontSize,10);
+assert.equal(m.loadLayout({getItem:k=>k==='irsaliyePrintFontSize'?'0':null}).fontSize,10);
+assert.equal(m.loadLayout({getItem:()=>'{bad'}).fontSize,10);
+assert.equal(m.loadLayout({getItem:k=>k==='irsaliyePrintOffsetX'?'1':null}).offsetX,1);
+assert.deepEqual(m.wrapText('İĞŞÇÖÜ <&>',3),['İĞŞ','ÇÖÜ',' <&','>']);
+assert.throws(()=>m.buildPrintDocument({},[],fresh()),/veri yok/);
+assert.throws(()=>m.buildPrintDocument({gonderen:'x'.repeat(500)},[],fresh()),/sığmıyor/);
+let bad=fresh();bad.offsetX=20;assert.ok(m.validateLayout(bad).length);
+bad=fresh();bad.fields[0].y=15;assert.ok(m.validateLayout(bad).some(x=>x.includes('çakışıyor')));
+bad=fresh();bad.fontSize=0;assert.ok(m.validateLayout(bad).length);
+const form={seferNo:'SFR-2026-009',duzenlemeTarihi:'09.09.2026',fiiliSevkTarihiSaati:'09.09.2026 15:30',gonderen:'ÖRNEK LOJİSTİK',surucuAdSoyad:'GÖRKEM ÇAĞRI',plakaNo:'34 ABC 123',nakliyeTutari:'12.500,00',kdv:'2.500,00',toplam:'15.000,00'};
+const rows=Array.from({length:75},(_,i)=>({irsaliyeNo:'IRS-'+String(i+1).padStart(3,'0'),alici:i===0?'UZUN ALICI ADI İSTANBUL ÜMRANİYE DAĞITIM MERKEZİ':'ÖRNEK ALICI '+(i+1),aliciIlce:'ÜMRANİYE',paletTipi:'EURO',miktar:i===1?0:'24',birim:'ADET'}));
+const result=m.buildPrintDocument(form,rows,fresh());assert.ok(result.pageCount>=3);
+for(const row of rows)assert.equal(result.html.split(row.irsaliyeNo).length-1,1);
+assert.equal(result.html.split('SFR-2026-009').length-1,result.pageCount);
+assert.ok(result.html.includes('0 ADET'));assert.ok(!result.html.includes('<img'));
+const escaped=m.buildPrintDocument({seferNo:'<img onerror=x>'},[],fresh()).html;assert.ok(escaped.includes('&lt;img'));assert.ok(!escaped.includes('<img'));
+let selected=fresh();selected.fields.find(f=>f.key==='seferNo').enabled=false;
+assert.throws(()=>m.buildPrintDocument({seferNo:'not printed'},[],selected),/veri yok/);
+assert.equal(m.buildPrintDocument({gonderen:'x'.repeat(500)},rows,fresh(),true).pageCount,1);
+console.log('PASS: defaults, legacy storage, corrupt storage, wrapping, Turkish text, zero quantity, empty output, overflow, bounds, collisions, pagination, field selection, escaping, calibration. Pages: '+result.pageCount);
+})();

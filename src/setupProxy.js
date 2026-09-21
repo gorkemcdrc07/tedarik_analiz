@@ -1,4 +1,4 @@
-﻿const { createProxyMiddleware } = require("http-proxy-middleware");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 
 module.exports = function (app) {
     console.log("[proxy] setupProxy loaded");
@@ -14,6 +14,17 @@ module.exports = function (app) {
         }
         next();
     });
+
+    // Akaryakıt fiyat servisi -> yerel Node backend
+    // app.use(path, proxy) Express tarafından mount path'i düşürdüğü için
+    // backend'e / yerine gerçek /api/fuel-check yolunu göndermek üzere root'ta eşleştiriyoruz.
+    app.use(
+        createProxyMiddleware({
+            target: "http://localhost:5000",
+            changeOrigin: true,
+            pathFilter: "/api/fuel-check",
+        })
+    );
 
     // ----------------------------------------------------------
     // 🟡 2) TEST TMS PROXY

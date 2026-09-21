@@ -1,0 +1,6 @@
+FASDAT V6.3
+- ALIŞ TON/TL küsurat düzeltmesi: 1480.34 artık 148034 yapılmaz; ₺1.480,34 olarak saklanır/gösterilir.
+- XLSX sayısal hücreleri doğrudan Number olarak alınır.
+- TR metin 1.480,34 -> 1480.34; Excel/EN 1480.34 -> 1480.34.
+- YAKIT_FASDAT_V6_3.sql eski V6/V6.1 hatalı ALIŞ TON/TL kayıtlarını bir defaya mahsus /100 düzeltir (148034 -> 1480.34).
+- Migration log sayesinde SQL tekrar çalıştırılırsa ikinci kez /100 yapılmaz.

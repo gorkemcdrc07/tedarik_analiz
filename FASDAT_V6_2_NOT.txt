@@ -1,0 +1,7 @@
+FASDAT V6.2
+- Excel TON/TL sayısal hücre düzeltildi: Excel'in 1480.34 sayısı artık 148034 değil 1480,34 olarak alınır.
+- Türkçe metin formatları desteklenir: 1.480,34 -> 1480.34; ₺1.480,34 -> 1480.34.
+- HAMMADDE MİKTAR(TON) tamamen kaldırıldı.
+- Excel zorunlu başlıkları: İL, İLÇE, KÖY/MAHALLE, TON/TL.
+- FASDAT formülü: (Yeni / Eski) - 1; %7'yi geçerse değişimin yarısı TON/TL'ye uygulanır.
+- YAKIT_FASDAT_V6_2.sql mevcut verileri silmeden kolon/RLS uyumunu düzeltir.

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     BrowserRouter as Router,
     Routes,
@@ -37,11 +37,14 @@ import TestGider from "./GelirGider/TestGider";
 
 // Fiyatlandırma
 import SeferFiyatlandirma from "./fiyatlandirma/seferFiyatlandirma";
+import YakitDegisimMerkezi from "./Finans/YakitDegisimMerkezi";
+import YakitHesaplama from "./Finans/YakitHesaplama";
 
 // Analiz
 import OzetTablo from "./analiz/ozetTablo";
 
 import OdakMuiTheme from "./theme/OdakMuiTheme";
+import { startFuelScheduler } from "./Finans/autoFuelService";
 
 import "./odak-modern.css";
 import "./odak-modern-v3.css";
@@ -172,6 +175,8 @@ export default function App() {
             Boolean(user)
         );
     }, []);
+
+    useEffect(() => startFuelScheduler(), []);
 
     const handleLoginSuccess = () => {
         setIsAuthenticated(true);
@@ -373,6 +378,33 @@ export default function App() {
                         element={
                             <ProtectedPage>
                                 <SeferFiyatlandirma />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/yakit-hesaplama"
+                        element={
+                            <ProtectedPage>
+                                <YakitHesaplama />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/akaryakit-fiyat-takip"
+                        element={
+                            <ProtectedPage>
+                                <YakitDegisimMerkezi />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/yakit-otomasyon-merkezi"
+                        element={
+                            <ProtectedPage>
+                                <YakitDegisimMerkezi />
                             </ProtectedPage>
                         }
                     />

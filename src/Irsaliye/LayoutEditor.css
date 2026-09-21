@@ -1,0 +1,14 @@
+.layout-editor { margin:16px 0; color:#172333; }
+.layout-tools { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:12px 0; }
+.layout-tools button,.layout-tools select { padding:8px 12px; }
+.layout-tools .layout-upload { display:flex; gap:6px; font-size:13px; }
+.layout-note { font-size:13px; color:#475569; }
+.layout-scroll { max-height:720px; overflow:auto; background:#e2e8f0; border:1px solid #94a3b8; padding:12px; }
+.layout-sheet { display:block; max-width:none !important; flex-shrink:0; touch-action:none; box-shadow:0 2px 8px #64748b55; }
+.layout-field { cursor:move; outline:none; }
+.layout-field-box { fill:#dbeafe; fill-opacity:0.3; stroke:#64748b; stroke-width:0.2; }
+.layout-field.selected .layout-field-box,.layout-field:focus .layout-field-box { stroke:#1d4ed8; stroke-width:0.5; fill-opacity:0.5; }
+.layout-handle { fill:#1d4ed8; cursor:nwse-resize; }
+.layout-table-grip { cursor:ns-resize; }
+.layout-errors { padding:12px; margin-top:12px; background:#fff7ed; color:#9a3412; border:1px solid #fb923c; }
+.layout-sheet { position:relative; z-index:1; }

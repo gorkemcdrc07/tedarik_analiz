@@ -1,0 +1,17 @@
+import React,{useEffect,useState} from 'react';
+import {Activity,CheckCircle2,AlertTriangle,RefreshCw,Clock3} from 'lucide-react';
+import './YakitOtomasyonMerkezi.css';
+const pct=v=>Number.isFinite(Number(v))?`${Number(v)>=0?'+':''}%${(Number(v)*100).toFixed(2)}`:'—';
+const money=v=>Number.isFinite(Number(v))?`₺${Number(v).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})}`:'—';
+export default function YakitOtomasyonMerkezi(){
+ const [data,setData]=useState(null),[busy,setBusy]=useState(false),[err,setErr]=useState('');
+ const load=async()=>{try{setErr('');const r=await fetch('/api/fuel-automation/status');const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Durum alınamadı');setData(d)}catch(e){setErr(e.message)}};
+ useEffect(()=>{load();const t=setInterval(load,30000);return()=>clearInterval(t)},[]);
+ const run=async()=>{if(busy)return;setBusy(true);try{const r=await fetch('/api/fuel-automation/run',{method:'POST'});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Çalıştırılamadı');await load()}catch(e){setErr(e.message)}finally{setBusy(false)}};
+ const latest=data?.runs?.[0]; const results=latest?.results||[]; const ok=results.filter(x=>x.ok).length, applied=results.filter(x=>x.tariffUpdated).length, failed=results.filter(x=>!x.ok).length;
+ return <div className="foc-wrap"><div className="foc-head"><div><div className="foc-kicker"><Activity size={16}/> MERKEZİ YAKIT OTOMASYONU</div><h1>Otomasyon Merkezi</h1><p>Her gün 10:00'da yakıt fiyatları alınır, müşteri kuralları değerlendirilir ve uygun tarifeler otomatik güncellenir.</p></div><button onClick={run} disabled={busy}><RefreshCw size={16} className={busy?'spin':''}/>{busy?'Çalışıyor...':'Şimdi Kontrol Et'}</button></div>
+ {err&&<div className="foc-error"><AlertTriangle size={18}/>{err}</div>}
+ <div className="foc-stats"><div><span>Son çalışma</span><b>{latest?.finished_at?new Date(latest.finished_at).toLocaleString('tr-TR'):'Henüz yok'}</b></div><div><span>Başarılı kontrol</span><b>{ok}</b></div><div><span>Tarife güncellendi</span><b>{applied}</b></div><div><span>Hata</span><b>{failed}</b></div><div><span>Sonraki otomatik çalışma</span><b><Clock3 size={16}/> 10:00</b></div></div>
+ <div className="foc-card"><h2>Son çalışma sonuçları</h2>{!results.length?<div className="foc-empty">Henüz otomasyon çalışması yok.</div>:<div className="foc-table"><div className="foc-row foc-th"><span>Müşteri</span><span>Baz</span><span>Güncel</span><span>Değişim</span><span>Sonuç</span></div>{results.map((r,i)=><div className="foc-row" key={r.customer||i}><strong>{r.customer}</strong><span>{r.ok?money(r.base):'—'}</span><span>{r.ok?money(r.current):'—'}</span><span>{r.ok?pct(r.change):'—'}</span><span className={r.ok?(r.tariffUpdated?'good':'neutral'):'bad'}>{r.ok?<><CheckCircle2 size={15}/>{r.tariffUpdated?'Tarife güncellendi':r.passed?'Kural sağlandı / işlem bekliyor':'Eşik sağlanmadı'}</>:<><AlertTriangle size={15}/>{r.error}</>}</span></div>)}</div>}</div>
+ <div className="foc-card"><h2>Aktif müşteri kuralları</h2><div className="foc-table"><div className="foc-row foc-th"><span>Müşteri</span><span>Kaynak</span><span>Referans</span><span>Baz</span><span>Eşik</span></div>{(data?.rules||[]).map(r=><div className="foc-row" key={r.customer}><strong>{r.customer}</strong><span>{r.provider}</span><span>{r.city} / {r.district}</span><span>{money(r.base_price)}</span><span>%{(Number(r.threshold)*100).toFixed(0)}</span></div>)}</div></div></div>
+}

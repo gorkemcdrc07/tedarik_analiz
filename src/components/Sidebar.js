@@ -19,7 +19,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   Headphones,
-  FileText
+  FileText,
+  Fuel
 } from "lucide-react";
 import "./Sidebar.css";
 
@@ -133,6 +134,11 @@ const GROUPS = [
         label: "Sefer Fiyatlandırma",
         route: "/fiyatlandirma/seferFiyatlandirma",
         icon: Calculator
+      },
+      {
+        label: "Yakıt Hesaplama",
+        route: "/finans/yakit-hesaplama",
+        icon: Fuel
       }
     ]
   },

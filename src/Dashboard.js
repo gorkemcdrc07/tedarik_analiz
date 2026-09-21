@@ -41,6 +41,7 @@ const screens = [
     { label: "Test Gider", path: "/GelirGider/TestGider", group: "Gelir / Gider" },
 
     { label: "Sefer Fiyatlandırma", path: "/fiyatlandirma/seferFiyatlandirma", group: "Fiyatlandırma" },
+    { label: "Yakıt Hesaplama", path: "/finans/yakit-hesaplama", group: "Finans" },
     { label: "Özet Tablo", path: "/analiz/ozet", group: "Analiz" },
     { label: "Görsel", path: "/gorsel", group: "Görsel" }
 ];
@@ -129,6 +130,10 @@ const screenButtons = {
         "Görüntüle",
         "Hesapla",
         "Kaydet"
+    ],
+
+    "/finans/yakit-hesaplama": [
+        "Görüntüle"
     ],
 
     "/analiz/ozet": [
