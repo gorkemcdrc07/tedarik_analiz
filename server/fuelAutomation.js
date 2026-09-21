@@ -116,7 +116,9 @@ function installFuelAutomation(app,getPrice){
  // Backend açılır açılmaz eksik müşteri kurallarını otomatik oluştur.
  // Mevcut kayıtların kullanıcı tarafından değiştirilmiş değerlerinin üzerine yazılmaz.
  ensureSeeded().catch(e=>console.error('❌ Yakıt müşteri seed hatası:',e.message));
- cron.schedule('0 * * * *',()=>run('scheduled').catch(e=>console.error('[fuel-v5]',e)),{timezone:'Europe/Istanbul',noOverlap:true});
- console.log('⛽ Yakıt Otomasyon Motoru V5.2: Supabase merkezi mod, her saat başı Europe/Istanbul');return{run,ensureSeeded};
+ cron.schedule('*/5 * * * *',()=>run('scheduled').catch(e=>console.error('[fuel-v58]',e)),{timezone:'Europe/Istanbul',noOverlap:true});
+ // Render yeniden ayağa kalktığında ilk 5 dakikayı beklemeden tüm kaynakları bir kez kontrol et.
+ setTimeout(()=>run('startup').catch(e=>console.error('[fuel-v58-startup]',e)),15000);
+ console.log('⛽ Yakıt Otomasyon Motoru V5.8: Shell + Petrol Ofisi, tüm aktif müşteriler, 5 dakikada bir Europe/Istanbul');return{run,ensureSeeded};
 }
 module.exports={installFuelAutomation,DEFAULTS};

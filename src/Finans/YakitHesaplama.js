@@ -708,9 +708,10 @@ export default function YakitHesaplama() {
     }
   });
   const [eforCaySearch, setEforCaySearch] = useState("");
-  const [eforCayOldFuel, setEforCayOldFuel] = useState("81,42");
-  const [eforCayNewFuel, setEforCayNewFuel] = useState("90,63");
+  const [eforCayOldFuel, setEforCayOldFuel] = useState("90,63");
+  const [eforCayNewFuel, setEforCayNewFuel] = useState("");
   const [eforCayHistoryOpen, setEforCayHistoryOpen] = useState(false);
+  const [eforCayRuleOpen, setEforCayRuleOpen] = useState(false);
   const [bimTarifeler, setBimTarifeler] = useState(() => {
     const keepRawRows = (rows) => (rows || []).map(r => ({...r, fiyatlar: Object.fromEntries(Object.entries(r.fiyatlar || {}).map(([k,v]) => [k, parseTariffNumber(v)]))}));
     try { const x=JSON.parse(localStorage.getItem("bim_yakit_tarifeleri")||"null"); return keepRawRows(Array.isArray(x)&&x.length?x:BIM_TARIFELERI); } catch { return keepRawRows(BIM_TARIFELERI); }
@@ -724,7 +725,7 @@ export default function YakitHesaplama() {
   }, [bimTarifeler]);
   const [bimNewFuel,setBimNewFuel]=useState("70,95");
   const [bimSearch,setBimSearch]=useState("");
-  const [bimFuelOpen,setBimFuelOpen]=useState(true);
+  const [bimFuelOpen,setBimFuelOpen]=useState(false);
   const [bimCalcOpen,setBimCalcOpen]=useState(false);
   const [bimStatusOpen,setBimStatusOpen]=useState(false);
   const [bimHistoryOpen,setBimHistoryOpen]=useState(false);
@@ -2031,6 +2032,34 @@ export default function YakitHesaplama() {
     return () => { cancelled = true; };
   }, [customer]);
 
+  // EFOR ÇAY: Petrol Ofisi / Tokat Erbaa güncel Motorin fiyatını doğrudan çek.
+  // Referans ilk kurulumda 90,63 TL'dir; başarılı tarife güncellemesinden sonra yeni fiyat bir sonraki referans olur.
+  useEffect(() => {
+    if (!customer || !isEforCayCustomer(customer)) return;
+    let cancelled = false;
+    const refreshEforPrice = async () => {
+      try {
+        const qs = new URLSearchParams({ provider: "petrol-ofisi", city: "Tokat", district: "ERBAA", fuel: "Motorin" });
+        const res = await fetch(`/api/fuel-check?${qs.toString()}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) throw new Error(`Yakıt servisi JSON dönmedi (${res.status})`);
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Number.isFinite(Number(data.price))) throw new Error(data?.error || "EFOR ÇAY canlı fiyatı alınamadı");
+        if (cancelled) return;
+        const price = Number(data.price);
+        setEforCayNewFuel(price.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        let all = {}; try { all = JSON.parse(localStorage.getItem("odak_yakit_ui_prices_v1") || "{}"); } catch {}
+        const reference = Number(eforCayHistory?.[0]?.yeni_yakit_fiyati || 90.63);
+        all["EFOR ÇAY"] = { ...(all["EFOR ÇAY"] || {}), old: reference, new: price, source: "Petrol Ofisi • Tokat Erbaa • Motorin", checkedAt: data.checkedAt || new Date().toISOString() };
+        localStorage.setItem("odak_yakit_ui_prices_v1", JSON.stringify(all));
+        window.dispatchEvent(new Event("odak-fuel-updated"));
+      } catch (e) { console.warn("[EFOR ÇAY canlı fiyat]", e.message); }
+    };
+    refreshEforPrice();
+    const timer = setInterval(refreshEforPrice, 5 * 60 * 1000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [customer, eforCayHistory]);
+
   // Akaryakıt Fiyat Takip ekranından gelen canlı fiyatları müşteri kural kartlarına bağlar.
   // old = son kabul edilmiş/referans fiyat, new = takip ekranından gelen güncel fiyat.
   useEffect(() => {
@@ -2041,7 +2070,10 @@ export default function YakitHesaplama() {
       const put = (name, setOld, setNew) => { const x=ui[name]; if(x && Number(x.old)>0) setOld(tr(x.old)); if(x && Number(x.new)>0) setNew(tr(x.new)); };
       put("BİM", setBimOldFuel, setBimNewFuel);
       put("TEVERPAN", setTeverpanOldFuel, setTeverpanNewFuel);
-      put("EFOR ÇAY", setEforCayOldFuel, setEforCayNewFuel);
+      const eforLive = ui["EFOR ÇAY"];
+      if (eforLive && Number(eforLive.new) > 0) setEforCayNewFuel(tr(eforLive.new));
+      if (eforCayHistory?.[0]?.yeni_yakit_fiyati > 0) setEforCayOldFuel(tr(eforCayHistory[0].yeni_yakit_fiyati));
+      else setEforCayOldFuel("90,63");
       put("CORTEVA", setCortevaOldFuel, setCortevaNewFuel);
       put("CMC AGRO", setCmcOldFuel, setCmcNewFuel);
       put("ETİ", setEtiOldFuel, setEtiNewFuel);
@@ -4417,33 +4449,27 @@ export default function YakitHesaplama() {
 
   if(isBimCustomer(customer)){
     const q=norm(bimSearch);const shown=(bimTarifeler||[]).filter(r=>!q||norm(`${r.sira} ${r.cikis}`).includes(q));const bimHistoryRows=getBimHistoryRows();
-    return <div className="fuel-page fuel-full fuel-unified-customer fasdat-page bim-page"><FuelOperationLoader /><FirstPriceArchiveButton /><CustomerUnifiedOverview />
-      <FuelReferenceBanner station="Petrol Ofisi" location="İstanbul Sancaktepe" note="BİM özel fiyat tipi: Petrol Ofisi sayfasındaki ‘KDV dahil fiyatlar gösterilsin’ seçeneği KAPALI. Hesaplamada +KDV olarak yayınlanan KDV hariç V/Max Diesel değeri kullanılır." />
-      <div className="fuel-detail-topbar"><button type="button" className="fuel-back" onClick={goBackCustomers}><ArrowLeft size={17}/> Müşteriler</button><div className="fuel-detail-path"><span>Yakıt Hesaplama</span><span>/</span><b>BİM</b></div></div>
-      <section className="bim-v47-shell">
-        <header className="bim-v47-header">
-          <div className="bim-v47-brand"><img src="/fuel-assets/bim-logo-user.png" alt="BİM"/><div><h1>BİM – Yakıt Hesaplama</h1><p>Yakıt fiyat değişimlerine göre güncel tarife yönetimi ve fiyat geçmişi</p></div></div>
-          <div className="bim-v47-header-actions">
-            <div className="bim-v47-update"><span>SON GÜNCELLEME</span><b>{new Date().toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"})}</b></div>
-            <div className="bim-v47-active"><CheckCircle2 size={18}/><div><b>Sistem Aktif</b><small>Otomatik takipte</small></div></div>
-            <button onClick={undoLastBimUpdate} disabled={!bimHistory.length}><Undo2 size={17}/> Son Yapılan İşlemi Geri Al</button>
-            <button onClick={exportBimExcel}><Download size={17}/> Excel'e Aktar</button>
-            <button onClick={goBackCustomers}><Users size={17}/> Diğer Müşteriler</button>
+    return <div className="fuel-page fuel-full fuel-unified-customer fasdat-page bim-page bim-v56-page"><FuelOperationLoader />
+      <section className="bim-v56-shell">
+        <header className="bim-v56-header">
+          <div className="bim-v56-brand"><img src="/fuel-assets/bim-logo-user.png" alt="BİM"/><div><span>BİM TARİFE YÖNETİMİ</span><h1>BİM – Yakıt Hesaplama</h1><p>Petrol Ofisi • İstanbul Sancaktepe • V/Max Diesel • KDV Hariç (+KDV)</p></div></div>
+          <div className="bim-v56-actions">
+            <button className="icon-btn" title="Son işlemi geri al" onClick={undoLastBimUpdate} disabled={!bimHistory.length}><Undo2 size={18}/><span>Geri Al</span></button>
+            <button className="icon-btn" title="Fiyat geçmişi" onClick={()=>setBimHistoryOpen(true)}><History size={18}/><span>Geçmiş</span></button>
+            <button className="icon-btn excel" title="Excel'e aktar" onClick={exportBimExcel}><Download size={18}/><span>Excel</span></button>
+            <button className="icon-btn" title="Diğer müşteriler" onClick={goBackCustomers}><Users size={18}/><span>Müşteriler</span></button>
+            <button className="icon-btn update" title="Tarifeleri güncelle" disabled={!bimThresholdPassed} onClick={()=>runFuelOperation("BİM tarifeleri güncelleniyor",applyBimUpdate)}><RefreshCw size={18}/><span>Güncelle</span></button>
           </div>
         </header>
-        <nav className="bim-v47-tabs"><button className="active"><BarChart3 size={16}/> Tarife Tablosu</button><button onClick={()=>document.querySelector('.first-price-archive-button')?.click()}><History size={16}/> İlk Fiyatlar</button><button onClick={()=>setBimHistoryOpen(true)}><History size={16}/> Fiyat Geçmişi</button><span className="bim-v47-protected">🔒 İlk Fiyatlar Korunur</span></nav>
-        <section className={`bim-v48-accordion ${bimFuelOpen?"open":""}`}><button className="bim-v48-accordion-head" onClick={()=>setBimFuelOpen(v=>!v)}><span className="bim-v48-head-icon"><Fuel size={20}/></span><div><b>Yakıt Bilgileri</b><small>Referans fiyat, değişim oranı ve yansıtma bilgileri</small></div>{bimFuelOpen?<ChevronUp size={20}/>:<ChevronDown size={20}/>}</button>{bimFuelOpen&&<div className="bim-v48-accordion-body"><section className="bim-v47-overview">
-          <div className="bim-v47-profile"><img src="/fuel-assets/bim-logo-user.png" alt="BİM"/><div><h2>BİM</h2><p>Özel Fiyatlandırma</p></div><div className="bim-v47-meta"><span><Fuel size={17}/><small>Yakıt Kaynağı</small><b>Petrol Ofisi</b></span><span><MapPin size={17}/><small>Referans Lokasyon</small><b>İstanbul Sancaktepe</b></span><span><Fuel size={17}/><small>Yakıt Türü</small><b>V/Max Diesel</b></span><span><BadgeDollarSign size={17}/><small>KDV Durumu</small><b>KDV Hariç (+KDV)</b></span></div></div>
-          <div className="bim-v47-stat blue"><small>Referans Fiyat</small><strong>{bimOldFuel || "—"} ₺</strong><span>Son kabul edilen litre fiyatı</span></div>
-          <div className="bim-v47-stat green"><small>Anlık Fiyat</small><strong>{bimNewFuel || "—"} ₺</strong><span>Petrol Ofisi • Sancaktepe</span><em>Güncel</em></div>
-          <div className="bim-v47-stat purple"><small>Fiyat Değişimi</small><strong>{bimPct(bimFuelRate)}</strong><span>Referans fiyata göre</span></div>
-          <div className="bim-v47-stat orange"><small>Yansıtma Oranı</small><strong>%40</strong><span>BİM'e özel oran</span></div>
-        </section></div>}</section>
-        <section className={`bim-v48-accordion ${bimCalcOpen?"open":""}`}><button className="bim-v48-accordion-head" onClick={()=>setBimCalcOpen(v=>!v)}><span className="bim-v48-head-icon"><SlidersHorizontal size={20}/></span><div><b>Hesaplama Ayarları</b><small>Eşik değeri, yansıtma oranı ve hesaplama özeti</small></div>{bimCalcOpen?<ChevronUp size={20}/>:<ChevronDown size={20}/>}</button>{bimCalcOpen&&<div className="bim-v48-accordion-body"><section className="bim-v47-rulecalc">
-          <div className="bim-v47-rule"><h3><BarChart3 size={18}/>%5 değişimde fiyat etkisi %40</h3><p>Yakıt değişimi ±%5 veya üzerindeyse değişimin %40'ı tüm TIR fiyatlarına uygulanır.</p><div className="bim-v47-progress"><i style={{width:`${Math.min(100,Math.abs(Number(bimFuelRate||0))*100/5*100)}%`}}></i><b>%5</b></div></div>
-          <div className="bim-v47-manual"><h3><Calculator size={18}/> Hesaplama</h3><div className="bim-v47-inputs"><label><span>Eski Yakıt Fiyatı (₺)</span><div>{bimOldFuel || "—"}</div></label><ArrowRight size={20}/><label><span>Yeni Yakıt Fiyatı (₺)</span><div>{bimNewFuel || "—"}</div></label><div className="bim-v47-rate"><span>Değişim Oranı</span><b>{bimPct(bimFuelRate)}</b></div><button disabled={!bimThresholdPassed} onClick={()=>runFuelOperation("BİM tarifeleri güncelleniyor",applyBimUpdate)}><RefreshCw size={16}/>{bimThresholdPassed?"Tarifeleri Güncelle":"Kural Sağlanmadı"}</button></div></div>
-        </section></div>}</section>
-        <section className={`bim-v48-accordion ${bimStatusOpen?"open":""}`}><button className="bim-v48-accordion-head" onClick={()=>setBimStatusOpen(v=>!v)}><span className="bim-v48-head-icon"><BarChart3 size={20}/></span><div><b>Durum ve İşlem Geçmişi</b><small>Son işlem durumu ve özet bilgiler</small></div><em className={bimThresholdPassed?"ready":"idle"}>{bimThresholdPassed?"Güncelleme hazır":"İşlem yok"}</em>{bimStatusOpen?<ChevronUp size={20}/>:<ChevronDown size={20}/>}</button>{bimStatusOpen&&<div className="bim-v48-accordion-body"><section className="bim-v47-status"><CheckCircle2 size={23}/><div><b>{bimThresholdPassed?"Kural sağlandı — tarife güncellenebilir":"İşlem yapıldı — kural sağlanmadı"}</b><span>{bimOldFuel || "—"} → {bimNewFuel || "—"} TL ({bimPct(bimFuelRate)}). {bimThresholdPassed?`Tarifeye ${bimPct(bimAppliedRate)} uygulanacak.`:"Eşik sağlanmadı; tarife değişmedi."}</span></div></section></div>}</section>
+        <div className="bim-v56-summary">
+          <div className="bim-v56-logo"><img src="/fuel-assets/bim-logo-user.png" alt="BİM"/><div><b>BİM</b><span>Özel Fiyatlandırma</span></div></div>
+          <div className="bim-v56-metric old"><span>SON KABUL EDİLEN FİYAT</span><strong>{bimOldFuel || "—"} ₺</strong><small>Referans yakıt fiyatı</small></div>
+          <div className="bim-v56-arrow"><ArrowRight size={22}/></div>
+          <div className="bim-v56-metric current"><span>GÜNCEL YAKIT FİYATI</span><strong>{bimNewFuel || "—"} ₺</strong><small>Petrol Ofisi • Sancaktepe</small></div>
+          <div className={`bim-v56-metric change ${bimThresholdPassed?"passed":""}`}><span>DEĞİŞİM</span><strong>{bimPct(bimFuelRate)}</strong><small>{bimThresholdPassed?"Eşik sağlandı":"%5 eşik altında"}</small></div>
+          <button className="bim-v56-rule-toggle" onClick={()=>setBimCalcOpen(v=>!v)}><span><SlidersHorizontal size={18}/><i>BİM KURALI</i><b>%5 eşik <ArrowRight size={14}/> %40 yansıtma</b></span>{bimCalcOpen?<ChevronUp size={19}/>:<ChevronDown size={19}/>}</button>
+        </div>
+        {bimCalcOpen&&<div className="bim-v56-rule-detail"><div><b>Hesaplama Kuralı</b><p>Yakıt fiyatı değişimi ±%5 veya üzerindeyse değişimin %40'ı tarife fiyatlarına uygulanır. Sonuçlar mevcut standart yuvarlama kuralıyla tam TL'ye çevrilir.</p></div><div className="bim-v56-rule-values"><span>Yakıt değişimi <b>{bimPct(bimFuelRate)}</b></span><span>Yansıtılan oran <b>{bimPct(bimAppliedRate)}</b></span><span>Durum <b>{bimThresholdPassed?"Güncelleme hazır":"Kural sağlanmadı"}</b></span></div></div>}
       </section>
       <section className="eti-tariff-workspace bim-workspace"><div className="eti-workspace-top"><div><span>BİM TARİFE MATRİSİ</span><h2><Table2 size={20}/> Tarife Tablosu</h2><p>39 çıkış bölgesi × 7 teslim bölgesi</p></div><div className="bim-v48-table-actions"><button className="bim-v51-excel-btn" onClick={exportBimExcel}><Download size={16}/> Excel'e Aktar</button><button className="bim-v48-update-btn" disabled={!bimThresholdPassed} onClick={()=>runFuelOperation("BİM tarifeleri güncelleniyor",applyBimUpdate)}><RefreshCw size={16}/> Tarifeleri Güncelle</button></div><label className="eti-search eti-global-search"><Search size={15}/><input value={bimSearch} onChange={e=>setBimSearch(e.target.value)} placeholder="Çıkış bölgesi ara..."/>{bimSearch&&<button type="button" onClick={()=>setBimSearch("")}>×</button>}</label></div><div className="fuel-table-wrap bim-table-wrap"><table className="fuel-table bim-table"><thead><tr><th>SIRA</th><th>ATIK ÇIKIŞ BÖLGESİ</th>{BIM_DESTINATIONS.map(d=><th key={d}>{d}</th>)}</tr></thead><tbody>{shown.map(r=><tr key={r.sira}><td>{r.sira}</td><td><b>{r.cikis}</b></td>{BIM_DESTINATIONS.map(d=><td key={d} className="bim-price">{bimTariffDisplay(r.fiyatlar?.[d]||0)}</td>)}</tr>)}</tbody></table></div></section>
       {bimHistoryOpen&&createPortal(<div className="fuel-modal-backdrop eti-history-backdrop"><div className="fuel-modal history-modal eti-history-modal bim-history-modal"><div className="fasdat-history-hero"><div className="fasdat-history-icon"><History size={21}/></div><div className="fasdat-history-copy"><span>BİM / TARİFE GEÇMİŞİ</span><h2>Yakıt Güncelleme Geçmişi</h2><p>Eski/yeni yakıt, değişim oranı ve tarifeye uygulanan oran.</p></div><div className="fasdat-history-actions"><button className="fuel-excel-button" onClick={exportBimPriceMemoryExcel}><Download size={15}/> Excel'e Aktar</button><button className="fasdat-history-close" onClick={()=>setBimHistoryOpen(false)}>×</button></div></div><div className="bim-history-content">{bimHistoryRows.length?<div className="fuel-table-wrap bim-history-table-wrap"><table className="fuel-table bim-history-table"><thead><tr><th>TARİH</th><th>SIRA</th><th>ATIK ÇIKIŞ BÖLGESİ</th><th>VARIŞ</th><th>ESKİ FİYAT</th><th>YENİ FİYAT</th><th>FARK</th><th>YAKIT DEĞİŞİMİ</th><th>UYGULANAN</th></tr></thead><tbody>{bimHistoryRows.map(r=><tr key={r.id}><td>{new Date(r.created_at).toLocaleString("tr-TR")}</td><td>{r.sira}</td><td><b>{r.cikis}</b></td><td>{r.varis}</td><td>{bimTariffDisplay(r.eski)}</td><td><b>{bimTariffDisplay(r.yeni)}</b></td><td>{bimTariffDisplay(r.fark)}</td><td>{bimPct(r.yakit_orani)}</td><td><b>{bimPct(r.uygulanan_oran)}</b></td></tr>)}</tbody></table></div>:<div className="eti-history-empty"><History size={28}/><h3>Henüz geçmiş kaydı yok</h3><p>BİM tarifeleri güncellendiğinde her çıkış-varış fiyat değişikliği burada satır satır görünür.</p></div>}</div></div></div>,document.body)}
@@ -4944,7 +4970,7 @@ export default function YakitHesaplama() {
   const eforCayApplyRows = (rows, rate) =>
     (rows || []).map((row) => ({
       ...row,
-      tir: Math.round(Number(row.tir || 0) * (1 + Number(rate || 0))),
+      tir: Number(row.tir || 0) * (1 + Number(rate || 0)),
     }));
 
   const applyEforCayUpdate = () => {
@@ -5023,125 +5049,88 @@ export default function YakitHesaplama() {
     return rows;
   };
 
-  const exportEforCayExcel = () => {
-    const wb = XLSX.utils.book_new();
-    const tariffSheet = buildModernHistorySheet({
-      title: "EFOR ÇAY - GÜNCEL TARİFELER",
-      subtitle: "Yükleme / varış bazlı TIR tarifeleri",
-      headers: ["YÜKLEME", "VARIŞ", "ARAÇ TİPİ", "TIR FİYATI"],
-      rows: eforCayTarifeler.map((x) => [x.yukleme, x.varis, x.aracTipi, x.tir]),
-      widths: [30, 30, 18, 20],
-      moneyColumns: [3],
-    });
-    XLSX.utils.book_append_sheet(wb, tariffSheet, "Güncel Tarifeler");
+  const exportEforCayExcel = async () => {
+    const wb = new ExcelJS.Workbook();
+    wb.creator = "ODAK Lojistik";
+    wb.created = new Date();
+    const ws = wb.addWorksheet("EFOR ÇAY Tarife Hafızası", { views: [{ state: "frozen", xSplit: 2, ySplit: 8 }] });
+    ws.properties.defaultRowHeight = 19;
+    ws.showGridLines = false;
 
-    const historyRows = getEforCayHistoryRows();
-    const historySheet = buildModernHistorySheet({
-      title: "EFOR ÇAY - YAKIT GÜNCELLEME GEÇMİŞİ",
-      subtitle: "Yakıt değişiminin %50'si tarife değişimi olarak uygulanır",
-      headers: ["TARİH", "YÜKLEME", "VARIŞ", "ARAÇ TİPİ", "ESKİ FİYAT", "YENİ FİYAT", "YAKIT DEĞİŞİMİ", "UYGULANAN"],
-      rows: historyRows.map((x) => [
-        new Date(x.created_at).toLocaleString("tr-TR"),
-        x.yukleme, x.varis, x.aracTipi, x.eski, x.yeni, x.yakit, x.uygulanan,
-      ]),
-      widths: [22, 30, 30, 16, 18, 18, 18, 18],
-      moneyColumns: [4, 5],
+    const initial = EFOR_CAY_TARIFELERI.map(r => ({...r}));
+    const chronological = [...(eforCayHistory || [])].reverse();
+    const periods = [{ date: "İlk Fiyatlar", fuel: 90.63, rate: null, applied: null, rows: initial }];
+    chronological.forEach(h => periods.push({
+      date: new Date(h.created_at).toLocaleString("tr-TR"),
+      fuel: Number(h.yeni_yakit_fiyati || 0),
+      rate: Number(h.yakit_degisim_orani || 0),
+      applied: Number(h.uygulanan_artis_orani || 0),
+      rows: h.yeni_tarifeler || []
+    }));
+    if (!chronological.length && eforCayNewFuelNum > 0) periods.push({ date: "Güncel Kontrol", fuel: eforCayNewFuelNum, rate: eforCayFuelRate, applied: eforCayAppliedRate, rows: eforCayTarifeler });
+
+    ws.getColumn(1).width = 8; ws.getColumn(2).width = 28;
+    ws.mergeCells("A1:B6");
+    const brand = ws.getCell("A1"); brand.value = "EFOR ÇAY\nTARİFE HAFIZASI"; brand.alignment={vertical:"middle",horizontal:"center",wrapText:true}; brand.font={bold:true,size:16,color:{argb:"FFFFFFFF"}}; brand.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF111827"}};
+    const labels=["TARİH","PETROL OFİSİ • TOKAT ERBAA • MOTORİN","YAKIT DEĞİŞİM ORANI","EFOR ÇAY KURALI","TARİFEYE YANSITILAN ORAN","FİYAT DURUMU"];
+    periods.forEach((period,idx)=>{
+      const c=3+idx; ws.getColumn(c).width=22;
+      labels.forEach((label,r)=>{ const cell=ws.getCell(r+1,c); cell.fill={type:"pattern",pattern:"solid",fgColor:{argb: idx===periods.length-1?"FFEAF8F0":"FFF1F5F9"}}; cell.border={bottom:{style:"thin",color:{argb:"FFD7E0EA"}}}; cell.alignment={horizontal:"center",vertical:"middle",wrapText:true}; });
+      ws.getCell(1,c).value=period.date;
+      ws.getCell(2,c).value=period.fuel||"—"; ws.getCell(2,c).numFmt='#,##0.00 "₺"';
+      ws.getCell(3,c).value=period.rate==null?"—":period.rate; if(period.rate!=null) ws.getCell(3,c).numFmt='0.00%';
+      ws.getCell(4,c).value="%5 eşik → %50 yansıtma";
+      ws.getCell(5,c).value=period.applied==null?"—":period.applied; if(period.applied!=null) ws.getCell(5,c).numFmt='0.00%';
+      ws.getCell(6,c).value=period.rate==null?"Referans":Math.abs(period.rate)>=.05?"Kural sağlandı":"Eşik altında";
+      for(let r=1;r<=6;r++){ws.getCell(r,c).font={bold:r===1||r===2,size:r===2?13:10,color:{argb:"FF17324D"}};}
     });
-    XLSX.utils.book_append_sheet(wb, historySheet, "Geçmiş");
-    XLSX.writeFile(wb, `EFOR_CAY_Yakit_Tarifeleri_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    labels.forEach((label,r)=>{ ws.getCell(r+1,2).value=label; ws.getCell(r+1,2).font={bold:true,color:{argb:"FFFFFFFF"},size:9}; ws.getCell(r+1,2).fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0F3D2E"}}; });
+
+    const headerRow=8; ["SIRA","YÜKLEME / VARIŞ"].forEach((v,i)=>ws.getCell(headerRow,i+1).value=v);
+    periods.forEach((p,idx)=>ws.getCell(headerRow,3+idx).value=idx===0?"TIR FİYATI":p.date);
+    for(let c=1;c<=2+periods.length;c++){ const cell=ws.getCell(headerRow,c); cell.font={bold:true,color:{argb:"FFFFFFFF"},size:10}; cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:c<=2?"FF111827":"FF16815C"}}; cell.alignment={horizontal:"center",vertical:"middle"}; }
+    initial.forEach((base,i)=>{
+      const r=headerRow+1+i; ws.getCell(r,1).value=i+1; ws.getCell(r,2).value=`${base.yukleme} → ${base.varis}`;
+      periods.forEach((p,idx)=>{ const row=(p.rows||[])[i]||{}; const cell=ws.getCell(r,3+idx); cell.value=Number(row.tir||0); cell.numFmt='₺#,##0.00'; cell.alignment={horizontal:"right"}; });
+      for(let c=1;c<=2+periods.length;c++){ const cell=ws.getCell(r,c); cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:i%2?"FFF8FAFC":"FFFFFFFF"}}; cell.border={bottom:{style:"hair",color:{argb:"FFE5E7EB"}}}; }
+    });
+    ws.autoFilter={from:{row:headerRow,column:1},to:{row:headerRow+initial.length,column:2+periods.length}};
+    ws.pageSetup={orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.25,right:.25,top:.4,bottom:.4,header:.2,footer:.2}};
+    const buffer=await wb.xlsx.writeBuffer(); const blob=new Blob([buffer],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=`EFOR_CAY_Tarife_Hafizasi_${new Date().toISOString().slice(0,10)}.xlsx`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
   };
 
   if (isEforCayCustomer(customer)) {
     const q = norm(eforCaySearch);
-    const eforRows = (eforCayTarifeler || []).filter((row) =>
-      !q || norm(`${row.yukleme} ${row.varis} ${row.aracTipi}`).includes(q)
-    );
+    const eforRows = (eforCayTarifeler || []).filter((row) => !q || norm(`${row.yukleme} ${row.varis} ${row.aracTipi}`).includes(q));
     const eforHistoryRows = getEforCayHistoryRows();
-
     return (
-      <div className="fuel-page fuel-full fuel-unified-customer fasdat-page efor-cay-page"><FuelOperationLoader /><FirstPriceArchiveButton /><CustomerUnifiedOverview />
-      <FuelReferenceBanner station="Petrol Ofisi" location="Tokat Erbaa" note="EFOR Çay tarifelerinde kullanılan yakıt referans noktası." />
-        <div className="fuel-detail-topbar">
-          <button type="button" className="fuel-back" onClick={goBackCustomers}><ArrowLeft size={17}/> Müşteriler</button>
-          <div className="fuel-detail-path"><span>Yakıt Hesaplama</span><span>/</span><b>EFOR ÇAY</b></div>
-        </div>
-
-        <div className="fuel-customer-head efor-cay-head">
-          <div className="fuel-customer-identity">
-            <div className="fuel-logo efor-cay-logo"><Building2 size={25}/></div>
-            <div>
-              <span>FİNANS / EFOR ÇAY YAKIT ESKALASYONU</span>
-              <h1>EFOR ÇAY</h1>
-              <p>Yakıt değişimi %5 ve üzerindeyse değişimin %50'si TIR tarifelerine uygulanır.</p>
+      <div className="fuel-page fuel-full fuel-unified-customer fasdat-page efor-cay-page efor-v59-page"><FuelOperationLoader />
+        <section className="bim-v56-shell efor-v59-shell">
+          <header className="bim-v56-header">
+            <div className="bim-v56-brand efor-v59-brand"><img src="/fuel-assets/efor-cay-logo.png" alt="EFOR ÇAY"/><div><span>EFOR ÇAY TARİFE YÖNETİMİ</span><h1>EFOR ÇAY – Yakıt Hesaplama</h1><p>Petrol Ofisi • Tokat Erbaa • Motorin</p></div></div>
+            <div className="bim-v56-actions">
+              <button className="icon-btn" title="Son işlemi geri al" onClick={undoLastEforCayUpdate} disabled={!eforCayHistory.length}><Undo2 size={18}/><span>Geri Al</span></button>
+              <button className="icon-btn" title="Fiyat geçmişi" onClick={()=>setEforCayHistoryOpen(true)}><History size={18}/><span>Geçmiş</span></button>
+              <button className="icon-btn excel" title="Excel'e aktar" onClick={exportEforCayExcel}><Download size={18}/><span>Excel</span></button>
+              <button className="icon-btn" title="Diğer müşteriler" onClick={goBackCustomers}><Users size={18}/><span>Müşteriler</span></button>
+              <button className="icon-btn update" title="Tarifeleri güncelle" disabled={!eforCayThresholdPassed} onClick={()=>runFuelOperation("EFOR ÇAY tarifeleri güncelleniyor",applyEforCayUpdate)}><RefreshCw size={18}/><span>Güncelle</span></button>
             </div>
+          </header>
+          <div className="bim-v56-summary efor-v59-summary">
+            <div className="bim-v56-logo efor-v59-logo"><img src="/fuel-assets/efor-cay-logo.png" alt="EFOR ÇAY"/><div><b>EFOR ÇAY</b><span>TIR Fiyatlandırma</span></div></div>
+            <div className="bim-v56-metric old"><span>REFERANS YAKIT FİYATI</span><strong>{eforCayOldFuel || "90,63"} ₺</strong><small>Son kabul edilen fiyat</small></div>
+            <div className="bim-v56-arrow"><ArrowRight size={22}/></div>
+            <div className="bim-v56-metric current"><span>GÜNCEL YAKIT FİYATI</span><strong>{eforCayNewFuel || "—"} ₺</strong><small>Petrol Ofisi • Tokat Erbaa</small></div>
+            <div className={`bim-v56-metric change ${eforCayThresholdPassed?"passed":""}`}><span>DEĞİŞİM</span><strong>{formatEforCayPercent(eforCayFuelRate)}</strong><small>{eforCayThresholdPassed?"Eşik sağlandı":"%5 eşik altında"}</small></div>
+            <button className="bim-v56-rule-toggle" onClick={()=>setEforCayRuleOpen(v=>!v)}><span><SlidersHorizontal size={18}/><i>EFOR ÇAY KURALI</i><b>%5 eşik <ArrowRight size={14}/> %50 yansıtma</b></span>{eforCayRuleOpen?<ChevronUp size={19}/>:<ChevronDown size={19}/>}</button>
           </div>
-          <div className="eti-head-actions">
-            <button className="eti-action-btn" onClick={()=>setEforCayHistoryOpen(true)}><History size={15}/> Geçmiş</button>
-            <button className="eti-action-btn" onClick={undoLastEforCayUpdate} disabled={!eforCayHistory.length}><Undo2 size={15}/> Geri Al</button>
-            <button className="eti-action-btn primary" onClick={exportEforPriceMemoryExcel}><Download size={15}/> Excel'e Aktar</button>
-          </div>
-        </div>
-
-        <section className="eti-calc-card efor-cay-calc-card">
-          <div className="eti-calc-rule">
-            <div className="eti-rule-icon"><Calculator size={20}/></div>
-            <div>
-              <span>EFOR ÇAY ESKALASYON KURALI</span>
-              <h2>%5 değişimde değişimin %50'si yansır</h2>
-              <p>Yakıt fiyatı en az %5 arttığında veya düştüğünde, değişimin yarısı tüm EFOR ÇAY TIR tarifelerine uygulanır.</p>
-            </div>
-          </div>
-          <div className="eti-calc-fields">
-            <label><span>ESKİ YAKIT FİYATI</span><div className="eti-input-box"><input value={eforCayOldFuel} onChange={e=>setEforCayOldFuel(e.target.value)} placeholder="0,00"/><small>₺</small></div></label>
-            <div className="eti-calc-arrow"><ArrowRight size={17}/></div>
-            <label><span>YENİ YAKIT FİYATI</span><div className="eti-input-box"><input value={eforCayNewFuel} onChange={e=>setEforCayNewFuel(e.target.value)} placeholder="0,00"/><small>₺</small></div></label>
-          </div>
-          <div className={`eti-change-box ${eforCayFuelRate==null?"neutral":eforCayFuelRate>0?"increase":"decrease"}`}>
-            <span>YAKIT DEĞİŞİMİ</span>
-            <b>{eforCayFuelRate==null?"—":formatEforCayPercent(eforCayFuelRate)}</b>
-            <small>{eforCayFuelRate==null?"Fiyatları girin":eforCayThresholdPassed?`Tarifeye ${formatEforCayPercent(eforCayAppliedRate)} uygulanacak`:"%5 eşiği sağlanmadı — tarifeye yansımaz"}</small>
-          </div>
-          <button
-            className={`eti-update-btn ${!eforCayThresholdPassed ? "rule-disabled" : ""}`}
-            onClick={()=>runFuelOperation("EFOR ÇAY tarifeleri güncelleniyor", applyEforCayUpdate)}
-            disabled={!eforCayThresholdPassed}
-            title={!eforCayThresholdPassed ? "EFOR ÇAY kuralı sağlanmadı: yakıt değişimi en az %5 olmalıdır." : ""}
-          >
-            <RefreshCw size={16}/>
-            {eforCayThresholdPassed ? "Tarifeleri Güncelle" : "Kural Sağlanmadı"}
-          </button>
+          {eforCayRuleOpen&&<div className="bim-v56-rule-detail"><div><b>Hesaplama Kuralı</b><p>Yakıt değişimi ±%5 veya üzerindeyse değişimin %50'si TIR tarifelerine uygulanır. EFOR ÇAY tarifelerinde yukarı/aşağı tam TL yuvarlama yapılmaz; hesaplanan değer iki ondalıkla korunur.</p></div><div className="bim-v56-rule-values"><span>Yakıt değişimi <b>{formatEforCayPercent(eforCayFuelRate)}</b></span><span>Yansıtılan oran <b>{formatEforCayPercent(eforCayAppliedRate)}</b></span><span>Durum <b>{eforCayThresholdPassed?"Güncelleme hazır":"Kural sağlanmadı"}</b></span></div></div>}
         </section>
-
-        <section className="eti-tariff-workspace efor-cay-workspace">
-          <div className="eti-workspace-top">
-            <div><span>EFOR ÇAY TARİFE MERKEZİ</span><h2>Güncel Tarifeler</h2><p>Yükleme, varış ve araç tipine göre güncel TIR fiyatları.</p></div>
-            <label className="eti-search eti-global-search"><Search size={15}/><input value={eforCaySearch} onChange={e=>setEforCaySearch(e.target.value)} placeholder="Yükleme, varış veya araç tipi ara..."/>{eforCaySearch&&<button type="button" onClick={()=>setEforCaySearch("")}>×</button>}</label>
-          </div>
-          <div className="fuel-table-wrap efor-cay-table-wrap">
-            <table className="fuel-table efor-cay-table">
-              <thead><tr><th>YÜKLEME</th><th>VARIŞ</th><th>ARAÇ TİPİ</th><th>TIR FİYATI</th></tr></thead>
-              <tbody>{eforRows.map((row,i)=><tr key={i}><td><b>{row.yukleme}</b></td><td>{row.varis}</td><td><span className="cmc-column-badge">{row.aracTipi}</span></td><td className="efor-cay-money">{tariffMoney(row.tir)}</td></tr>)}</tbody>
-            </table>
-          </div>
+        <section className="eti-tariff-workspace efor-cay-workspace efor-v59-workspace">
+          <div className="eti-workspace-top"><div><span>EFOR ÇAY TARİFE MERKEZİ</span><h2><Table2 size={20}/> Güncel TIR Tarifeleri</h2><p>5 rota • fiyatlar kuruşlarıyla birlikte korunur, tam TL yuvarlama uygulanmaz.</p></div><div className="bim-v48-table-actions"><button className="bim-v51-excel-btn" onClick={exportEforCayExcel}><Download size={16}/> Excel'e Aktar</button><button className="bim-v48-update-btn" disabled={!eforCayThresholdPassed} onClick={()=>runFuelOperation("EFOR ÇAY tarifeleri güncelleniyor",applyEforCayUpdate)}><RefreshCw size={16}/> Tarifeleri Güncelle</button></div><label className="eti-search eti-global-search"><Search size={15}/><input value={eforCaySearch} onChange={e=>setEforCaySearch(e.target.value)} placeholder="Yükleme veya varış ara..."/>{eforCaySearch&&<button type="button" onClick={()=>setEforCaySearch("")}>×</button>}</label></div>
+          <div className="fuel-table-wrap efor-cay-table-wrap"><table className="fuel-table efor-cay-table"><thead><tr><th>SIRA</th><th>YÜKLEME</th><th>VARIŞ</th><th>ARAÇ TİPİ</th><th>TIR FİYATI</th></tr></thead><tbody>{eforRows.map((row,i)=><tr key={i}><td>{i+1}</td><td><b>{row.yukleme}</b></td><td>{row.varis}</td><td><span className="cmc-column-badge">{row.aracTipi}</span></td><td className="efor-cay-money"><b>{tariffMoney(row.tir)}</b></td></tr>)}</tbody></table></div>
         </section>
-
-        {eforCayHistoryOpen && createPortal(
-          <div className="fuel-modal-backdrop eti-history-backdrop">
-            <div className="fuel-modal history-modal eti-history-modal efor-cay-history-modal">
-              <div className="fasdat-history-hero">
-                <div className="fasdat-history-icon"><History size={21}/></div>
-                <div className="fasdat-history-copy"><span>EFOR ÇAY / TARİFE GEÇMİŞİ</span><h2>Yakıt Güncelleme Geçmişi</h2><p>Her rotanın eski ve yeni TIR fiyatını, yakıt değişimini ve uygulanan oranı görüntüleyin.</p></div>
-                <div className="fasdat-history-actions"><button className="fuel-excel-button" onClick={exportEforPriceMemoryExcel}><Download size={15}/> Excel'e Aktar</button><button className="fasdat-history-close" onClick={()=>setEforCayHistoryOpen(false)}>×</button></div>
-              </div>
-              <div className="efor-cay-history-content">
-                {eforHistoryRows.length ? <div className="fuel-table-wrap efor-cay-history-table-wrap"><table className="fuel-table efor-cay-history-table">
-                  <thead><tr><th>TARİH</th><th>YÜKLEME</th><th>VARIŞ</th><th>ARAÇ</th><th>ESKİ</th><th>YENİ</th><th>YAKIT</th><th>UYGULANAN</th></tr></thead>
-                  <tbody>{eforHistoryRows.map(row=><tr key={row.id}><td>{new Date(row.created_at).toLocaleString("tr-TR")}</td><td><b>{row.yukleme}</b></td><td>{row.varis}</td><td><span className="cmc-column-badge">{row.aracTipi}</span></td><td>{tariffMoney(row.eski)}</td><td><b>{tariffMoney(row.yeni)}</b></td><td>{formatEforCayPercent(row.yakit)}</td><td><span className="eti-history-rate">{formatEforCayPercent(row.uygulanan)}</span></td></tr>)}</tbody>
-                </table></div> : <div className="eti-history-empty"><History size={28}/><h3>Henüz geçmiş kaydı yok</h3><p>EFOR ÇAY tarifelerini güncellediğinizde değişiklikler burada görünecek.</p></div>}
-              </div>
-            </div>
-          </div>, document.body
-        )}
+        {eforCayHistoryOpen && createPortal(<div className="fuel-modal-backdrop eti-history-backdrop"><div className="fuel-modal history-modal eti-history-modal efor-cay-history-modal"><div className="fasdat-history-hero"><div className="fasdat-history-icon"><History size={21}/></div><div className="fasdat-history-copy"><span>EFOR ÇAY / TARİFE GEÇMİŞİ</span><h2>Yakıt Güncelleme Geçmişi</h2><p>Kuruşlu tarife değerleri yuvarlanmadan saklanır.</p></div><div className="fasdat-history-actions"><button className="fuel-excel-button" onClick={exportEforCayExcel}><Download size={15}/> Excel'e Aktar</button><button className="fasdat-history-close" onClick={()=>setEforCayHistoryOpen(false)}>×</button></div></div><div className="efor-cay-history-content">{eforHistoryRows.length?<div className="fuel-table-wrap efor-cay-history-table-wrap"><table className="fuel-table efor-cay-history-table"><thead><tr><th>TARİH</th><th>YÜKLEME</th><th>VARIŞ</th><th>ARAÇ</th><th>ESKİ</th><th>YENİ</th><th>YAKIT</th><th>UYGULANAN</th></tr></thead><tbody>{eforHistoryRows.map(row=><tr key={row.id}><td>{new Date(row.created_at).toLocaleString("tr-TR")}</td><td><b>{row.yukleme}</b></td><td>{row.varis}</td><td>{row.aracTipi}</td><td>{tariffMoney(row.eski)}</td><td><b>{tariffMoney(row.yeni)}</b></td><td>{formatEforCayPercent(row.yakit)}</td><td>{formatEforCayPercent(row.uygulanan)}</td></tr>)}</tbody></table></div>:<div className="eti-history-empty"><History size={28}/><h3>Henüz geçmiş kaydı yok</h3><p>İlk güncellemeden sonra kayıtlar burada görünecek.</p></div>}</div></div></div>,document.body)}
       </div>
     );
   }
