@@ -2,6 +2,10 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/fuel-automation/(.*)",
+      "destination": "https://tedarik-analiz-backend.onrender.com/api/fuel-automation/$1"
+    },
+    {
       "source": "/reel-auth/(.*)",
       "destination": "https://tedarik-analiz-backend.onrender.com/reel-auth/$1"
     },

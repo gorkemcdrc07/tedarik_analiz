@@ -1,13 +1,15 @@
 import React,{useEffect,useState} from 'react';
 import {Activity,CheckCircle2,AlertTriangle,RefreshCw,Clock3} from 'lucide-react';
 import './YakitOtomasyonMerkezi.css';
+const FUEL_API_BASE=(process.env.REACT_APP_FUEL_API_BASE_URL||process.env.REACT_APP_API_BASE_URL||"").replace(/\/+$/,"");
+const fuelUrl=(path)=>`${FUEL_API_BASE}${path}`;
 const pct=v=>Number.isFinite(Number(v))?`${Number(v)>=0?'+':''}%${(Number(v)*100).toFixed(2)}`:'—';
 const money=v=>Number.isFinite(Number(v))?`₺${Number(v).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})}`:'—';
 export default function YakitOtomasyonMerkezi(){
  const [data,setData]=useState(null),[busy,setBusy]=useState(false),[err,setErr]=useState('');
- const load=async()=>{try{setErr('');const r=await fetch('/api/fuel-automation/status');const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Durum alınamadı');setData(d)}catch(e){setErr(e.message)}};
+ const load=async()=>{try{setErr('');const r=await fetch(fuelUrl('/api/fuel-automation/status'));const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Durum alınamadı');setData(d)}catch(e){setErr(e.message)}};
  useEffect(()=>{load();const t=setInterval(load,30000);return()=>clearInterval(t)},[]);
- const run=async()=>{if(busy)return;setBusy(true);try{const r=await fetch('/api/fuel-automation/run',{method:'POST'});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Çalıştırılamadı');await load()}catch(e){setErr(e.message)}finally{setBusy(false)}};
+ const run=async()=>{if(busy)return;setBusy(true);try{const r=await fetch(fuelUrl('/api/fuel-automation/run'),{method:'POST'});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Çalıştırılamadı');await load()}catch(e){setErr(e.message)}finally{setBusy(false)}};
  const latest=data?.runs?.[0]; const results=latest?.results||[]; const ok=results.filter(x=>x.ok).length, applied=results.filter(x=>x.tariffUpdated).length, failed=results.filter(x=>!x.ok).length;
  return <div className="foc-wrap"><div className="foc-head"><div><div className="foc-kicker"><Activity size={16}/> MERKEZİ YAKIT OTOMASYONU</div><h1>Otomasyon Merkezi</h1><p>Her gün 10:00'da yakıt fiyatları alınır, müşteri kuralları değerlendirilir ve uygun tarifeler otomatik güncellenir.</p></div><button onClick={run} disabled={busy}><RefreshCw size={16} className={busy?'spin':''}/>{busy?'Çalışıyor...':'Şimdi Kontrol Et'}</button></div>
  {err&&<div className="foc-error"><AlertTriangle size={18}/>{err}</div>}

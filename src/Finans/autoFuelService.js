@@ -1,3 +1,6 @@
+const FUEL_API_BASE=(process.env.REACT_APP_FUEL_API_BASE_URL||process.env.REACT_APP_API_BASE_URL||"").replace(/\/+$/,"");
+const fuelUrl=(path)=>`${FUEL_API_BASE}${path}`;
+async function readJson(res){const text=await res.text();try{return JSON.parse(text)}catch{throw new Error(`Yakıt servisi JSON döndürmedi (HTTP ${res.status}). Backend adresi/route kontrol edilmeli.`)}}
 const NOTICE_KEY="odak_sistem_bildirimleri_v1", UI_KEY="odak_yakit_ui_prices_v1", MIG_KEY="odak_yakit_v5_migrated";
 const refs=[
  {customer:"BİM",kind:"bim",key:"bim_yakit_tarifeleri"},{customer:"TEVERPAN",kind:"teverpan",key:"teverpan_yakit_tarifeleri"},{customer:"EFOR ÇAY",kind:"efor",key:"efor_cay_yakit_tarifeleri"},{customer:"CORTEVA",kind:"corteva",key:"corteva_yakit_tarifeleri"},{customer:"CMC AGRO",kind:"cmc",key:"cmc_agro_yakit_tarifeleri"},{customer:"ETİ",kind:"eti",key:"eti_yakit_tarifeleri_v2"},{customer:"KWS",kind:"kws",key:"kws_yakit_tarifeleri"}
@@ -7,7 +10,7 @@ const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 async function migrateOnce(){
  if(localStorage.getItem(MIG_KEY)==="1")return;
  let sent=0;
- for(const r of refs){const payload=read(r.key,null);if(payload==null)continue;const res=await fetch('/api/fuel-automation/migrate-tariff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:r.customer,kind:r.kind,payload})});if(!res.ok){const d=await res.json().catch(()=>({}));throw new Error(d.error||`${r.customer} merkezi tarife aktarımı başarısız`);}sent++;}
+ for(const r of refs){const payload=read(r.key,null);if(payload==null)continue;const res=await fetch(fuelUrl('/api/fuel-automation/migrate-tariff'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:r.customer,kind:r.kind,payload})});if(!res.ok){const d=await readJson(res).catch(()=>({}));throw new Error(d.error||`${r.customer} merkezi tarife aktarımı başarısız`);}sent++;}
  if(sent>0)localStorage.setItem(MIG_KEY,"1");
 }
 function sync(status){
@@ -22,7 +25,7 @@ function sync(status){
  if(status?.notifications?.length)write(NOTICE_KEY,status.notifications.map(n=>({...n,action_path:n.action_path||'/yakit-hesaplama'})));
  window.dispatchEvent(new Event('odak-fuel-updated'));window.dispatchEvent(new Event('odak-notifications-changed'));
 }
-async function status(){const r=await fetch('/api/fuel-automation/status');const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'V5 otomasyon durumu alınamadı');return d;}
-export async function runAutomaticFuelCheck(){await migrateOnce();const r=await fetch('/api/fuel-automation/run',{method:'POST'});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Yakıt otomasyonu çalıştırılamadı');const s=await status();sync(s);return{ok:true,results:d.run?.results||[]};}
+async function status(){const r=await fetch(fuelUrl('/api/fuel-automation/status'));const d=await readJson(r);if(!r.ok||!d.ok)throw new Error(d.error||'V5 otomasyon durumu alınamadı');return d;}
+export async function runAutomaticFuelCheck(){await migrateOnce();const r=await fetch(fuelUrl('/api/fuel-automation/run'),{method:'POST'});const d=await readJson(r);if(!r.ok||!d.ok)throw new Error(d.error||'Yakıt otomasyonu çalıştırılamadı');const s=await status();sync(s);return{ok:true,results:d.run?.results||[]};}
 export function startFuelScheduler(){let stopped=false,timer;const poll=async()=>{try{await migrateOnce();const s=await status();if(!stopped)sync(s);}catch(e){console.warn('[fuel-v5]',e.message)}finally{if(!stopped)timer=setTimeout(poll,60000)}};poll();return()=>{stopped=true;clearTimeout(timer)}}
 export const fuelNotificationKey=NOTICE_KEY;

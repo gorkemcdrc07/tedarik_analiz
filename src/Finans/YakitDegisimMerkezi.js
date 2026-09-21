@@ -2,12 +2,14 @@ import React,{useCallback,useEffect,useMemo,useState} from 'react';
 import {AlertTriangle,BellRing,CheckCircle2,Clock3,Fuel,Mail,MapPin,RefreshCw,TrendingDown,TrendingUp} from 'lucide-react';
 import './YakitDegisimMerkezi.css';
 import {runAutomaticFuelCheck} from './autoFuelService';
+const FUEL_API_BASE=(process.env.REACT_APP_FUEL_API_BASE_URL||process.env.REACT_APP_API_BASE_URL||"").replace(/\/+$/,"");
+const fuelUrl=(path)=>`${FUEL_API_BASE}${path}`;
 const money=v=>Number.isFinite(Number(v))?`${Number(v).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})} ₺`:'—';
 const pct=v=>Number.isFinite(Number(v))?`${Number(v)>=0?'+':''}%${(Number(v)*100).toFixed(2)}`:'—';
 export default function YakitDegisimMerkezi(){
  const [prices,setPrices]=useState([]),[status,setStatus]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[msg,setMsg]=useState('');
- const loadStatus=useCallback(async()=>{const r=await fetch('/api/fuel-automation/status');const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Otomasyon durumu alınamadı');setStatus(d);return d},[]);
- const loadLive=useCallback(async()=>{const r=await fetch('/api/fuel-automation/live');const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Anlık yakıt fiyatları alınamadı');setPrices(d.prices||[])},[]);
+ const loadStatus=useCallback(async()=>{const r=await fetch(fuelUrl('/api/fuel-automation/status'));const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Otomasyon durumu alınamadı');setStatus(d);return d},[]);
+ const loadLive=useCallback(async()=>{const r=await fetch(fuelUrl('/api/fuel-automation/live'));const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'Anlık yakıt fiyatları alınamadı');setPrices(d.prices||[])},[]);
  const refresh=useCallback(async()=>{setBusy(true);setError('');setMsg('');try{await Promise.all([loadLive(),loadStatus()]);setMsg('Referans yakıt fiyatları güncellendi.')}catch(e){setError(e.message)}finally{setBusy(false)}},[loadLive,loadStatus]);
  useEffect(()=>{refresh();const t=setInterval(()=>{loadLive().catch(()=>{});loadStatus().catch(()=>{})},5*60*1000);return()=>clearInterval(t)},[refresh,loadLive,loadStatus]);
  const apply=async()=>{setBusy(true);setError('');setMsg('');try{const x=await runAutomaticFuelCheck();await Promise.all([loadLive(),loadStatus()]);const n=(x.results||[]).filter(r=>r.tariffUpdated).length;setMsg(n?`${n} müşterinin fiyat tarifesi güncellendi. Sistem bildirimi oluşturuldu ve e-posta gönderimi tetiklendi.`:'Kontrol tamamlandı. Eşiği geçen yeni bir müşteri fiyat değişikliği yok.')}catch(e){setError(e.message)}finally{setBusy(false)}};

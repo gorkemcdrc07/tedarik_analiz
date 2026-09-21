@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 
 import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import supabase from "../supabaseClient";
 import "./YakitHesaplama.css";
 
@@ -1935,13 +1936,18 @@ export default function YakitHesaplama() {
 
   const runFuelOperation = (label, fn) => {
     setFuelOperationLoading(label);
+    const bimOperation = isBimCustomer(customer);
+    // V51: BİM yakıt animasyonu gözle görülür biçimde tamamen dolsun.
+    // Hesaplama animasyonun son bölümünde uygulanır, ardından kısa bir tamamlanma süresi bırakılır.
+    const executeAfter = bimOperation ? 3200 : 180;
+    const closeAfter = bimOperation ? 650 : 650;
     window.setTimeout(() => {
       try {
         fn();
       } finally {
-        window.setTimeout(() => setFuelOperationLoading(null), 650);
+        window.setTimeout(() => setFuelOperationLoading(null), closeAfter);
       }
-    }, 180);
+    }, executeAfter);
   };
 
   const goBackCustomers = () => {
@@ -4140,17 +4146,209 @@ export default function YakitHesaplama() {
     });
     return rows;
   };
-  const exportBimPriceMemoryExcel = () => exportCustomerPriceMemoryWorkbook({
-    filePrefix:"BIM_Fiyat_Hafizasi", customerTitle:"BİM",
-    categories:[{
-      title:"TIR",sheet:"TIR Fiyat Hafızası",hero:"B51F2E",accent:"B51F2E",
-      initialRows:BIM_TARIFELERI,history:bimHistory,fields:BIM_DESTINATIONS.map(d=>[`fiyatlar.${d}`,d]),
-      route:r=>`${r.sira || "-"} • ${r.cikis || "-"}`,
-      before:h=>(h.eski_tarifeler||[]).map(r=>({...r,...Object.fromEntries(BIM_DESTINATIONS.map(d=>[`fiyatlar.${d}`,r.fiyatlar?.[d]]))})),
-      after:h=>(h.yeni_tarifeler||[]).map(r=>({...r,...Object.fromEntries(BIM_DESTINATIONS.map(d=>[`fiyatlar.${d}`,r.fiyatlar?.[d]]))})),
-      routeHeader:"ATIK ÇIKIŞ BÖLGESİ"
-    }]
-  });
+  const exportBimPriceMemoryExcel = async () => {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = "ODAK Lojistik";
+      workbook.created = new Date();
+      workbook.modified = new Date();
+
+      const sheet = workbook.addWorksheet("BİM Tarife Matrisi", {
+        views: [{ state: "frozen", ySplit: 9, xSplit: 2, showGridLines: false }],
+        properties: { defaultRowHeight: 20 },
+      });
+
+      const historyItems = (bimHistory || []).slice().sort(
+        (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
+      );
+      const initialMatrix = historyItems[0]?.eski_tarifeler || BIM_TARIFELERI;
+      const initialFuel = Number(historyItems[0]?.eski_yakit || 0);
+      const snapshots = [
+        {
+          title: "İLK TARİFE",
+          date: historyItems[0]?.created_at ? new Date(historyItems[0].created_at) : null,
+          fuel: initialFuel,
+          fuelRate: null,
+          appliedRate: null,
+          matrix: initialMatrix,
+          initial: true,
+        },
+        ...historyItems.map((h, i) => ({
+          title: `${i + 1}. GÜNCELLEME`,
+          date: h?.created_at ? new Date(h.created_at) : null,
+          fuel: Number(h?.yeni_yakit || 0),
+          fuelRate: Number(h?.yakit_orani || 0) * 100,
+          appliedRate: Number(h?.uygulanan_oran || 0) * 100,
+          matrix: h?.yeni_tarifeler || [],
+          initial: false,
+        })),
+      ];
+
+      const COLORS = {
+        navy: "0B2D5C", navy2: "123F78", blue: "2563EB", cyan: "EAF4FF",
+        red: "E31E24", redSoft: "FFF0F1", green: "0F9F6E", greenSoft: "EAF8F2",
+        orange: "F59E0B", orangeSoft: "FFF6DF", purple: "7C3AED", purpleSoft: "F3EEFF",
+        text: "14263D", muted: "6C7F96", border: "CBD8E6", white: "FFFFFF",
+        soft: "F7FAFD", stripe: "F4F8FC", black: "111827"
+      };
+      const fill = (argb) => ({ type: "pattern", pattern: "solid", fgColor: { argb } });
+      const border = {
+        top: { style: "thin", color: { argb: COLORS.border } },
+        left: { style: "thin", color: { argb: COLORS.border } },
+        bottom: { style: "thin", color: { argb: COLORS.border } },
+        right: { style: "thin", color: { argb: COLORS.border } },
+      };
+      const fmtPct = (v) => v == null ? "—" : `%${Number(v).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      const fmtFuel = (v) => Number(v) > 0 ? `${Number(v).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺/L` : "—";
+      const fmtDate = (d) => d ? d.toLocaleDateString("tr-TR") : "BAŞLANGIÇ";
+
+      const metaRows = [
+        ["TARİH", s => fmtDate(s.date)],
+        ["PETROL OFİSİ • İSTANBUL SANCAKTEPE • V/MAX DIESEL", s => fmtFuel(s.fuel)],
+        ["YAKIT DEĞİŞİM ORANI", s => fmtPct(s.fuelRate)],
+        ["BİM EŞİK KURALI", s => s.initial ? "%5" : "%5"],
+        ["TARİFEYE YANSITILAN ORAN", s => fmtPct(s.appliedRate)],
+        ["FİYAT DEĞİŞİM ORANI", s => fmtPct(s.appliedRate)],
+      ];
+
+      const fixedCols = 2;
+      const groupWidth = BIM_DESTINATIONS.length;
+      const totalCols = fixedCols + snapshots.length * groupWidth;
+      const endCol = sheet.getColumn(totalCols).letter;
+
+      sheet.getColumn(1).width = 8;
+      sheet.getColumn(2).width = 28;
+      for (let c = 3; c <= totalCols; c += 1) sheet.getColumn(c).width = 14;
+
+      // Kurumsal üst başlık
+      sheet.mergeCells(`A1:${endCol}1`);
+      const title = sheet.getCell("A1");
+      title.value = "BİM • TARİFE MATRİSİ DEĞİŞİM RAPORU";
+      title.fill = fill(COLORS.navy);
+      title.font = { bold: true, size: 18, color: { argb: COLORS.white } };
+      title.alignment = { vertical: "middle", horizontal: "left" };
+      sheet.getRow(1).height = 34;
+
+      // Sol bilgi etiketleri + tarihe göre yatay bloklar (örnekteki düzen)
+      metaRows.forEach(([label, getValue], idx) => {
+        const rowNo = idx + 2;
+        sheet.mergeCells(rowNo, 1, rowNo, 2);
+        const labelCell = sheet.getCell(rowNo, 1);
+        labelCell.value = label;
+        labelCell.fill = fill(idx === 0 ? COLORS.navy2 : COLORS.navy);
+        labelCell.font = { bold: true, size: idx === 1 ? 9 : 10, color: { argb: COLORS.white } };
+        labelCell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+        labelCell.border = border;
+
+        snapshots.forEach((snap, sIndex) => {
+          const startCol = fixedCols + 1 + sIndex * groupWidth;
+          const finishCol = startCol + groupWidth - 1;
+          sheet.mergeCells(rowNo, startCol, rowNo, finishCol);
+          const cell = sheet.getCell(rowNo, startCol);
+          cell.value = getValue(snap);
+          let bg = COLORS.soft, fg = COLORS.text;
+          if (idx === 0) { bg = sIndex === snapshots.length - 1 ? COLORS.greenSoft : COLORS.cyan; fg = COLORS.navy; }
+          if (idx === 2 && snap.fuelRate != null) { bg = snap.fuelRate >= 0 ? COLORS.greenSoft : COLORS.redSoft; fg = snap.fuelRate >= 0 ? COLORS.green : COLORS.red; }
+          if (idx === 3) { bg = COLORS.orangeSoft; fg = COLORS.orange; }
+          if ((idx === 4 || idx === 5) && snap.appliedRate != null) { bg = COLORS.purpleSoft; fg = COLORS.purple; }
+          cell.fill = fill(bg);
+          cell.font = { bold: true, size: idx === 0 ? 11 : 10, color: { argb: fg } };
+          cell.alignment = { vertical: "middle", horizontal: "center" };
+          cell.border = border;
+        });
+        sheet.getRow(rowNo).height = idx === 1 ? 26 : 23;
+      });
+
+      // Grup başlığı: her tarih için TIR FİYAT
+      sheet.mergeCells("A8:B8");
+      sheet.getCell("A8").value = "TARİFE MATRİSİ";
+      sheet.getCell("A8").fill = fill(COLORS.soft);
+      sheet.getCell("A8").font = { bold: true, color: { argb: COLORS.navy } };
+      sheet.getCell("A8").alignment = { horizontal: "center", vertical: "middle" };
+      sheet.getCell("A8").border = border;
+      snapshots.forEach((snap, sIndex) => {
+        const startCol = fixedCols + 1 + sIndex * groupWidth;
+        const finishCol = startCol + groupWidth - 1;
+        sheet.mergeCells(8, startCol, 8, finishCol);
+        const cell = sheet.getCell(8, startCol);
+        cell.value = snap.initial ? "TIR FİYAT • İLK TARİFE" : `TIR FİYAT • ${fmtDate(snap.date)}`;
+        cell.fill = fill(sIndex === snapshots.length - 1 ? COLORS.greenSoft : COLORS.cyan);
+        cell.font = { bold: true, size: 11, color: { argb: sIndex === snapshots.length - 1 ? COLORS.green : COLORS.navy } };
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+        cell.border = border;
+      });
+      sheet.getRow(8).height = 25;
+
+      // Alt başlıklar: aynı başlıklar her tarih bloğunda tekrar eder.
+      const headerRow = sheet.getRow(9);
+      headerRow.getCell(1).value = "SIRA";
+      headerRow.getCell(2).value = "ATIK ÇIKIŞ BÖLGESİ";
+      snapshots.forEach((_, sIndex) => {
+        BIM_DESTINATIONS.forEach((dest, dIndex) => {
+          headerRow.getCell(fixedCols + 1 + sIndex * groupWidth + dIndex).value = dest;
+        });
+      });
+      for (let c = 1; c <= totalCols; c += 1) {
+        const cell = headerRow.getCell(c);
+        cell.fill = fill(c <= 2 ? COLORS.navy : COLORS.navy2);
+        cell.font = { bold: true, size: 9, color: { argb: COLORS.white } };
+        cell.alignment = { horizontal: c === 2 ? "left" : "center", vertical: "middle" };
+        cell.border = border;
+      }
+      headerRow.height = 28;
+
+      // Satırlar: her tarihin aynı rota satırı yan yana.
+      const baseRows = initialMatrix || [];
+      baseRows.forEach((base, rowIndex) => {
+        const excelRow = sheet.getRow(10 + rowIndex);
+        excelRow.getCell(1).value = Number(base?.sira || rowIndex + 1);
+        excelRow.getCell(2).value = base?.cikis || "-";
+        snapshots.forEach((snap, sIndex) => {
+          const sourceRow = (snap.matrix || [])[rowIndex] || {};
+          BIM_DESTINATIONS.forEach((dest, dIndex) => {
+            const c = fixedCols + 1 + sIndex * groupWidth + dIndex;
+            const cell = excelRow.getCell(c);
+            cell.value = Number(sourceRow?.fiyatlar?.[dest] || 0);
+            cell.numFmt = '#,##0.00';
+          });
+        });
+        for (let c = 1; c <= totalCols; c += 1) {
+          const cell = excelRow.getCell(c);
+          const sIndex = c > 2 ? Math.floor((c - 3) / groupWidth) : -1;
+          const isLatest = sIndex === snapshots.length - 1;
+          const bg = isLatest ? (rowIndex % 2 === 0 ? "F1FBF6" : "E9F7F0") : (rowIndex % 2 === 0 ? COLORS.white : COLORS.stripe);
+          cell.fill = fill(bg);
+          cell.font = { bold: c === 2 || isLatest, size: 9.5, color: { argb: isLatest ? "0D684A" : COLORS.text } };
+          cell.alignment = { horizontal: c === 2 ? "left" : c === 1 ? "center" : "right", vertical: "middle" };
+          cell.border = border;
+        }
+        excelRow.height = 22;
+      });
+
+      const lastDataRow = 9 + baseRows.length;
+      sheet.autoFilter = { from: "A9", to: `${endCol}${lastDataRow}` };
+      sheet.pageSetup = { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9, margins: { left: 0.2, right: 0.2, top: 0.4, bottom: 0.4, header: 0.2, footer: 0.2 } };
+      sheet.headerFooter.oddFooter = "&L BİM Tarife Matrisi&C Sayfa &P / &N&R ODAK Lojistik";
+
+      // Sekme rengi ve yazdırma alanı
+      sheet.properties.tabColor = { argb: COLORS.red };
+      sheet.pageSetup.printArea = `A1:${endCol}${lastDataRow}`;
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `BIM_Modern_Tarife_Matrisi_${new Date().toISOString().slice(0,10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("BİM Excel raporu oluşturulamadı:", e);
+      setError("BİM Excel raporu oluşturulamadı.");
+    }
+  };
 
   const exportTeverpanPriceMemoryExcel = () => exportCustomerPriceMemoryWorkbook({
     filePrefix:"TEVERPAN_Fiyat_Hafizasi",customerTitle:"TEVERPAN",
@@ -4213,20 +4411,9 @@ export default function YakitHesaplama() {
     exportCustomerPriceMemoryWorkbook({filePrefix:"ETI_Fiyat_Hafizasi",customerTitle:"ETİ",categories});
   };
 
-  const exportBimExcel=()=>{
-    const wb=XLSX.utils.book_new();
-    const sh=XLSX.utils.aoa_to_sheet([["SIRA","ATIK ÇIKIŞ BÖLGESİ",...BIM_DESTINATIONS],...(bimTarifeler||[]).map(r=>[r.sira,r.cikis,...BIM_DESTINATIONS.map(d=>r.fiyatlar?.[d]??"")])]);
-    XLSX.utils.book_append_sheet(wb,sh,"Güncel Tarifeler");
-    const historyRows=getBimHistoryRows();
-    const hs=XLSX.utils.aoa_to_sheet([
-      ["TARİH","SIRA","ATIK ÇIKIŞ BÖLGESİ","VARIŞ","ESKİ FİYAT","YENİ FİYAT","FARK","ESKİ YAKIT","YENİ YAKIT","YAKIT DEĞİŞİMİ","UYGULANAN"],
-      ...historyRows.map(r=>[
-        new Date(r.created_at).toLocaleString("tr-TR"),r.sira,r.cikis,r.varis,r.eski,r.yeni,r.fark,r.eski_yakit,r.yeni_yakit,r.yakit_orani,r.uygulanan_oran
-      ])
-    ]);
-    XLSX.utils.book_append_sheet(wb,hs,"Geçmiş");
-    XLSX.writeFile(wb,`BIM_Yakit_Tarifeleri_${new Date().toISOString().slice(0,10)}.xlsx`);
-  };
+  // BİM ana Excel butonları artık doğrudan modern yatay tarih-bloklu raporu üretir.
+  // Eski/Yeni kolonlu karşılaştırma exportu kaldırıldı.
+  const exportBimExcel = exportBimPriceMemoryExcel;
 
   if(isBimCustomer(customer)){
     const q=norm(bimSearch);const shown=(bimTarifeler||[]).filter(r=>!q||norm(`${r.sira} ${r.cikis}`).includes(q));const bimHistoryRows=getBimHistoryRows();
@@ -4240,7 +4427,7 @@ export default function YakitHesaplama() {
             <div className="bim-v47-update"><span>SON GÜNCELLEME</span><b>{new Date().toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"})}</b></div>
             <div className="bim-v47-active"><CheckCircle2 size={18}/><div><b>Sistem Aktif</b><small>Otomatik takipte</small></div></div>
             <button onClick={undoLastBimUpdate} disabled={!bimHistory.length}><Undo2 size={17}/> Son Yapılan İşlemi Geri Al</button>
-            <button onClick={exportBimPriceMemoryExcel}><Download size={17}/> Geçmiş Kayıtları Excel'e Aktar</button>
+            <button onClick={exportBimExcel}><Download size={17}/> Excel'e Aktar</button>
             <button onClick={goBackCustomers}><Users size={17}/> Diğer Müşteriler</button>
           </div>
         </header>
@@ -4258,7 +4445,7 @@ export default function YakitHesaplama() {
         </section></div>}</section>
         <section className={`bim-v48-accordion ${bimStatusOpen?"open":""}`}><button className="bim-v48-accordion-head" onClick={()=>setBimStatusOpen(v=>!v)}><span className="bim-v48-head-icon"><BarChart3 size={20}/></span><div><b>Durum ve İşlem Geçmişi</b><small>Son işlem durumu ve özet bilgiler</small></div><em className={bimThresholdPassed?"ready":"idle"}>{bimThresholdPassed?"Güncelleme hazır":"İşlem yok"}</em>{bimStatusOpen?<ChevronUp size={20}/>:<ChevronDown size={20}/>}</button>{bimStatusOpen&&<div className="bim-v48-accordion-body"><section className="bim-v47-status"><CheckCircle2 size={23}/><div><b>{bimThresholdPassed?"Kural sağlandı — tarife güncellenebilir":"İşlem yapıldı — kural sağlanmadı"}</b><span>{bimOldFuel || "—"} → {bimNewFuel || "—"} TL ({bimPct(bimFuelRate)}). {bimThresholdPassed?`Tarifeye ${bimPct(bimAppliedRate)} uygulanacak.`:"Eşik sağlanmadı; tarife değişmedi."}</span></div></section></div>}</section>
       </section>
-      <section className="eti-tariff-workspace bim-workspace"><div className="eti-workspace-top"><div><span>BİM TARİFE MATRİSİ</span><h2><Table2 size={20}/> Tarife Tablosu</h2><p>39 çıkış bölgesi × 7 teslim bölgesi</p></div><div className="bim-v48-table-actions"><button className="bim-v48-update-btn" disabled={!bimThresholdPassed} onClick={()=>runFuelOperation("BİM tarifeleri güncelleniyor",applyBimUpdate)}><RefreshCw size={16}/> Tarifeleri Güncelle</button></div><label className="eti-search eti-global-search"><Search size={15}/><input value={bimSearch} onChange={e=>setBimSearch(e.target.value)} placeholder="Çıkış bölgesi ara..."/>{bimSearch&&<button type="button" onClick={()=>setBimSearch("")}>×</button>}</label></div><div className="fuel-table-wrap bim-table-wrap"><table className="fuel-table bim-table"><thead><tr><th>SIRA</th><th>ATIK ÇIKIŞ BÖLGESİ</th>{BIM_DESTINATIONS.map(d=><th key={d}>{d}</th>)}</tr></thead><tbody>{shown.map(r=><tr key={r.sira}><td>{r.sira}</td><td><b>{r.cikis}</b></td>{BIM_DESTINATIONS.map(d=><td key={d} className="bim-price">{bimTariffDisplay(r.fiyatlar?.[d]||0)}</td>)}</tr>)}</tbody></table></div></section>
+      <section className="eti-tariff-workspace bim-workspace"><div className="eti-workspace-top"><div><span>BİM TARİFE MATRİSİ</span><h2><Table2 size={20}/> Tarife Tablosu</h2><p>39 çıkış bölgesi × 7 teslim bölgesi</p></div><div className="bim-v48-table-actions"><button className="bim-v51-excel-btn" onClick={exportBimExcel}><Download size={16}/> Excel'e Aktar</button><button className="bim-v48-update-btn" disabled={!bimThresholdPassed} onClick={()=>runFuelOperation("BİM tarifeleri güncelleniyor",applyBimUpdate)}><RefreshCw size={16}/> Tarifeleri Güncelle</button></div><label className="eti-search eti-global-search"><Search size={15}/><input value={bimSearch} onChange={e=>setBimSearch(e.target.value)} placeholder="Çıkış bölgesi ara..."/>{bimSearch&&<button type="button" onClick={()=>setBimSearch("")}>×</button>}</label></div><div className="fuel-table-wrap bim-table-wrap"><table className="fuel-table bim-table"><thead><tr><th>SIRA</th><th>ATIK ÇIKIŞ BÖLGESİ</th>{BIM_DESTINATIONS.map(d=><th key={d}>{d}</th>)}</tr></thead><tbody>{shown.map(r=><tr key={r.sira}><td>{r.sira}</td><td><b>{r.cikis}</b></td>{BIM_DESTINATIONS.map(d=><td key={d} className="bim-price">{bimTariffDisplay(r.fiyatlar?.[d]||0)}</td>)}</tr>)}</tbody></table></div></section>
       {bimHistoryOpen&&createPortal(<div className="fuel-modal-backdrop eti-history-backdrop"><div className="fuel-modal history-modal eti-history-modal bim-history-modal"><div className="fasdat-history-hero"><div className="fasdat-history-icon"><History size={21}/></div><div className="fasdat-history-copy"><span>BİM / TARİFE GEÇMİŞİ</span><h2>Yakıt Güncelleme Geçmişi</h2><p>Eski/yeni yakıt, değişim oranı ve tarifeye uygulanan oran.</p></div><div className="fasdat-history-actions"><button className="fuel-excel-button" onClick={exportBimPriceMemoryExcel}><Download size={15}/> Excel'e Aktar</button><button className="fasdat-history-close" onClick={()=>setBimHistoryOpen(false)}>×</button></div></div><div className="bim-history-content">{bimHistoryRows.length?<div className="fuel-table-wrap bim-history-table-wrap"><table className="fuel-table bim-history-table"><thead><tr><th>TARİH</th><th>SIRA</th><th>ATIK ÇIKIŞ BÖLGESİ</th><th>VARIŞ</th><th>ESKİ FİYAT</th><th>YENİ FİYAT</th><th>FARK</th><th>YAKIT DEĞİŞİMİ</th><th>UYGULANAN</th></tr></thead><tbody>{bimHistoryRows.map(r=><tr key={r.id}><td>{new Date(r.created_at).toLocaleString("tr-TR")}</td><td>{r.sira}</td><td><b>{r.cikis}</b></td><td>{r.varis}</td><td>{bimTariffDisplay(r.eski)}</td><td><b>{bimTariffDisplay(r.yeni)}</b></td><td>{bimTariffDisplay(r.fark)}</td><td>{bimPct(r.yakit_orani)}</td><td><b>{bimPct(r.uygulanan_oran)}</b></td></tr>)}</tbody></table></div>:<div className="eti-history-empty"><History size={28}/><h3>Henüz geçmiş kaydı yok</h3><p>BİM tarifeleri güncellendiğinde her çıkış-varış fiyat değişikliği burada satır satır görünür.</p></div>}</div></div></div>,document.body)}
     </div>;
   }
