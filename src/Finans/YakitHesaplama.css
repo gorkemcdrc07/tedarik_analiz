@@ -5887,3 +5887,21 @@ html[data-odak-theme="dark"] .bim-v56-shell{background:#0d1e29;border-color:#263
 /* V59 — EFOR ÇAY sade ekran */
 .efor-v59-page{padding-top:18px!important}.efor-v59-shell{border-color:#d9e7df}.efor-v59-brand img{width:92px!important;height:58px!important;object-fit:contain;mix-blend-mode:multiply}.efor-v59-logo img{width:112px!important;height:64px!important;object-fit:contain;mix-blend-mode:multiply}.efor-v59-page .bim-v56-brand>div>span{color:#16815c}.efor-v59-page .bim-v56-actions .update{background:linear-gradient(135deg,#16815c,#0f6749);border-color:#16815c;box-shadow:0 7px 18px rgba(22,129,92,.18)}.efor-v59-page .bim-v56-rule-toggle{background:#f4fbf7}.efor-v59-page .bim-v56-rule-toggle:hover{background:#edf8f2}.efor-v59-page .bim-v56-rule-toggle svg{color:#16815c}.efor-v59-page .bim-v56-rule-toggle i{color:#16815c}.efor-v59-page .efor-cay-money{font-variant-numeric:tabular-nums;color:#123b2d;font-size:12px}.efor-v59-workspace{margin-top:0!important}.efor-v59-page>.ops-smart-summary,.efor-v59-page>.fuel-customer-overview,.efor-v59-page>.fuel-reference-banner,.efor-v59-page>.fuel-detail-topbar{display:none!important}
 html[data-odak-theme="dark"] .efor-v59-brand img,html[data-odak-theme="dark"] .efor-v59-logo img{mix-blend-mode:normal;background:#fff;border-radius:10px;padding:4px}
+
+
+/* V60 — EFOR ÇAY tablo görünümü + kuruşlu fiyatlar */
+.efor-v60-workspace{overflow:hidden!important;border-radius:16px!important}
+.efor-v60-workspace .eti-workspace-top{padding:18px 20px 14px!important;display:grid!important;grid-template-columns:minmax(280px,1fr) auto!important;gap:14px 20px!important;align-items:start!important}
+.efor-v60-workspace .eti-global-search{grid-column:1/-1!important;max-width:520px!important;margin:0!important}
+.efor-v60-workspace .fuel-table-wrap{border-top:1px solid #e5edf5!important;overflow-x:hidden!important;max-height:none!important}
+.efor-v60-workspace .efor-cay-table{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:separate!important;border-spacing:0!important}
+.efor-v60-workspace .efor-cay-table th{height:42px!important;padding:0 16px!important;background:#f7f9fc!important;color:#6b7f96!important;font-size:10px!important;font-weight:800!important;letter-spacing:.06em!important;border-bottom:1px solid #dce6f0!important}
+.efor-v60-workspace .efor-cay-table td{height:56px!important;padding:0 16px!important;border-bottom:1px solid #edf2f7!important;color:#17324d!important;font-size:12px!important}
+.efor-v60-workspace .efor-cay-table tbody tr:hover td{background:#f8fcfa!important}
+.efor-v60-workspace .efor-cay-table th:nth-child(1),.efor-v60-workspace .efor-cay-table td:nth-child(1){width:7%!important;text-align:center!important;color:#7b8da1!important}
+.efor-v60-workspace .efor-cay-table th:nth-child(2),.efor-v60-workspace .efor-cay-table td:nth-child(2){width:32%!important;text-align:left!important}
+.efor-v60-workspace .efor-cay-table th:nth-child(3),.efor-v60-workspace .efor-cay-table td:nth-child(3){width:27%!important;text-align:left!important}
+.efor-v60-workspace .efor-cay-table th:nth-child(4),.efor-v60-workspace .efor-cay-table td:nth-child(4){width:14%!important;text-align:center!important}
+.efor-v60-workspace .efor-cay-table th:nth-child(5),.efor-v60-workspace .efor-cay-table td:nth-child(5){width:20%!important;text-align:right!important}
+.efor-v60-workspace .efor-cay-money b{display:inline-flex!important;justify-content:flex-end!important;min-width:112px!important;font-size:14px!important;font-weight:800!important;color:#0f6749!important;font-variant-numeric:tabular-nums!important}
+@media(max-width:900px){.efor-v60-workspace .eti-workspace-top{grid-template-columns:1fr!important}.efor-v60-workspace .bim-v48-table-actions{justify-content:flex-start!important}.efor-v60-workspace .fuel-table-wrap{overflow-x:auto!important}.efor-v60-workspace .efor-cay-table{min-width:760px!important}}
