@@ -42,6 +42,8 @@ const screens = [
 
     { label: "Sefer Fiyatlandırma", path: "/fiyatlandirma/seferFiyatlandirma", group: "Fiyatlandırma" },
     { label: "Yakıt Hesaplama", path: "/finans/yakit-hesaplama", group: "Finans" },
+    { label: "Yakıt Onayları", path: "/finans/yakit-onaylar", group: "Finans" },
+    { label: "Tarife Kontrol Merkezi", path: "/finans/yakit-kontrol-merkezi", group: "Finans" },
     { label: "Özet Tablo", path: "/analiz/ozet", group: "Analiz" },
     { label: "Görsel", path: "/gorsel", group: "Görsel" }
 ];

@@ -2,6 +2,10 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/auth/2fa/(.*)",
+      "destination": "https://tedarik-analiz-backend.onrender.com/api/auth/2fa/$1"
+    },
+    {
       "source": "/api/fuel-automation/(.*)",
       "destination": "https://tedarik-analiz-backend.onrender.com/api/fuel-automation/$1"
     },

@@ -20,7 +20,8 @@ import {
   ChevronsLeft,
   Headphones,
   FileText,
-  Fuel
+  Fuel,
+  FileSpreadsheet
 } from "lucide-react";
 import "./Sidebar.css";
 
@@ -139,6 +140,26 @@ const GROUPS = [
         label: "Yakıt Hesaplama",
         route: "/finans/yakit-hesaplama",
         icon: Fuel
+      },
+      {
+        label: "Müşteri Kurulum",
+        route: "/finans/musteri-kurulum",
+        icon: FileSpreadsheet
+      },
+      {
+        label: "Yakıt Onayları",
+        route: "/finans/yakit-onaylar",
+        icon: ShieldCheck
+      },
+            {
+        label: "Yakıt Yönetim V3",
+        route: "/finans/yakit-yonetim-v3",
+        icon: ShieldCheck,
+      },
+{
+        label: "Tarife Kontrol Merkezi",
+        route: "/finans/yakit-kontrol-merkezi",
+        icon: ShieldCheck
       }
     ]
   },
@@ -163,6 +184,8 @@ const GROUPS = [
 export default function Sidebar({
   isOpen,
   closeSidebar,
+  openSidebarOnHover,
+  closeSidebarOnHover,
   isMobile
 }) {
   const location = useLocation();
@@ -221,6 +244,8 @@ export default function Sidebar({
       ]
         .filter(Boolean)
         .join(" ")}
+      onMouseEnter={openSidebarOnHover}
+      onMouseLeave={closeSidebarOnHover}
     >
       <div className="od-sidebar-brand">
         <NavLink

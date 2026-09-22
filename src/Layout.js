@@ -15,7 +15,7 @@ export default function Layout({ children }) {
         const onResize = () => {
             const mobile = window.innerWidth <= MOBILE_BREAKPOINT;
             setIsMobile(mobile);
-            if (!mobile) setIsSidebarOpen(false);
+            setIsSidebarOpen((current) => mobile ? false : current);
         };
 
         window.addEventListener("resize", onResize);
@@ -23,18 +23,28 @@ export default function Layout({ children }) {
     }, []);
 
     const toggleSidebar = () => {
-        if (isMobile) setIsSidebarOpen((value) => !value);
+        setIsSidebarOpen((value) => !value);
     };
 
     const closeSidebar = () => {
         if (isMobile) setIsSidebarOpen(false);
     };
 
+    const openSidebarOnHover = () => {
+        if (!isMobile) setIsSidebarOpen(true);
+    };
+
+    const closeSidebarOnHover = () => {
+        if (!isMobile) setIsSidebarOpen(false);
+    };
+
     return (
-        <div className="ots-layout">
+        <div className={`ots-layout ${isSidebarOpen ? "is-sidebar-open" : "is-sidebar-collapsed"} ${isMobile ? "is-mobile-layout" : ""}`}>
             <Sidebar
                 isOpen={isSidebarOpen}
                 closeSidebar={closeSidebar}
+                openSidebarOnHover={openSidebarOnHover}
+                closeSidebarOnHover={closeSidebarOnHover}
                 isMobile={isMobile}
             />
 

@@ -5,7 +5,6 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import CountUp from "react-countup";
 
 import {
   ArrowLeft,
@@ -30,8 +29,6 @@ import {
   Truck,
   Undo2,
   Download,
-  MapPin,
-  BarChart3,
   ChevronDown,
   ChevronUp,
   SlidersHorizontal,
@@ -41,7 +38,17 @@ import {
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 import supabase from "../supabaseClient";
+import { createFuelPriceNotification } from "./fuelNotifications";
+import { getContractRules, saveContractRule } from "./fuelEscalationEngine";
 import "./YakitHesaplama.css";
+import FuelStationDashboard from "./FuelStationDashboard";
+import BimCustomerScreen from "./customerScreens/BimCustomerScreen";
+import {
+  CUSTOMER_FUEL_REFERENCES,
+  CUSTOMER_LIST,
+  CUSTOMER_KEYS,
+  getCustomerKey,
+} from "./customerScreens";
 
 /* =========================================================
    YARDIMCI FONKSİYONLAR
@@ -150,16 +157,7 @@ const norm = (s) =>
   1. FASDAT
   2. KWS
 */
-const ALLOWED_CUSTOMERS = [
-  { name: "FASDAT", order: 1 },
-  { name: "KWS", order: 2 },
-  { name: "ETİ", order: 3 },
-  { name: "CMC AGRO", order: 4 },
-  { name: "CORTEVA", order: 5 },
-  { name: "EFOR ÇAY", order: 6 },
-  { name: "TEVERPAN", order: 7 },
-  { name: "BİM", order: 8 },
-];
+const ALLOWED_CUSTOMERS = CUSTOMER_LIST;
 
 const getCustomerOrder = (customer) => {
   const name = norm(customer?.musteri_adi);
@@ -185,28 +183,8 @@ const isAllowedCustomer = (customer) => {
   );
 };
 
-const CUSTOMER_FUEL_REFERENCES = {
-  "FASDAT": { station: "Shell", location: "Afyon Merkez" },
-  "KWS": { station: "Petrol Ofisi", location: "Eskişehir Merkez" },
-  "ETİ": { station: "Petrol Ofisi", location: "Eskişehir Odunpazarı" },
-  "CMC AGRO": { station: "Petrol Ofisi", location: "Bursa Karacabey" },
-  "BİM": { station: "Petrol Ofisi", location: "İstanbul Sancaktepe", vatIncluded: false, priceMode: "KDV hariç (+KDV)" },
-  "TEVERPAN": { station: "Petrol Ofisi", location: "Tekirdağ Çerkezköy" },
-  "EFOR ÇAY": { station: "Petrol Ofisi", location: "Tokat Erbaa" },
-  "CORTEVA": { station: "Petrol Ofisi", location: "Adana Merkez" },
-};
-
 const customerFuelKey = (item) => {
-  const value = norm(item?.musteri_adi || item?.kod);
-  if (value.includes("FASDAT")) return "FASDAT";
-  if (value.includes("KWS")) return "KWS";
-  if (value.includes("CMC")) return "CMC AGRO";
-  if (value.includes("CORTEVA")) return "CORTEVA";
-  if (value.includes("TEVERPAN")) return "TEVERPAN";
-  if (value.includes("EFOR")) return "EFOR ÇAY";
-  if (value.includes("BİM") || value === "BIM") return "BİM";
-  if (value.includes("ETİ") || value.includes("ETI")) return "ETİ";
-  return value;
+  return getCustomerKey(item);
 };
 
 
@@ -591,11 +569,6 @@ export default function YakitHesaplama() {
   ] = useState(null);
 
   const [
-    customerSearch,
-    setCustomerSearch,
-  ] = useState("");
-
-  const [
     customerLoading,
     setCustomerLoading,
   ] = useState(true);
@@ -605,18 +578,12 @@ export default function YakitHesaplama() {
   const [opsSimulation, setOpsSimulation] = useState("");
   const [opsRange, setOpsRange] = useState(30);
   const [opsCompare, setOpsCompare] = useState({ from: "", to: "" });
-  const [dashboardFuelFilter, setDashboardFuelFilter] = useState("all");
-  const [dashboardView, setDashboardView] = useState("grid");
-  const [dashboardTrendRange, setDashboardTrendRange] = useState(30);
-  const [dashboardChartHover, setDashboardChartHover] = useState(null);
-  const [dashboardSimOpen, setDashboardSimOpen] = useState(false);
-  const [dashboardSimPrice, setDashboardSimPrice] = useState("");
 
   const OPS_SETTINGS_KEY = "odak_yakit_customer_automation_v1";
   const OPS_AUDIT_KEY = "odak_yakit_audit_v1";
   const getCustomerKey = (c) => isBimCustomer(c) ? "BİM" : isTeverpanCustomer(c) ? "TEVERPAN" : isEforCayCustomer(c) ? "EFOR ÇAY" : isCortevaCustomer(c) ? "CORTEVA" : isCmcAgroCustomer(c) ? "CMC AGRO" : isEtiCustomer(c) ? "ETİ" : isKwsCustomer(c) ? "KWS" : "FASDAT";
-  const getOpsSettings = () => { try { return JSON.parse(localStorage.getItem(OPS_SETTINGS_KEY) || "{}"); } catch { return {}; } };
-  const setOpsMode = (key, mode) => { const all=getOpsSettings(); all[key]=mode; localStorage.setItem(OPS_SETTINGS_KEY,JSON.stringify(all)); setFuelOverviewVersion(v=>v+1); };
+  const getOpsSettings = () => { try { const legacy=JSON.parse(localStorage.getItem(OPS_SETTINGS_KEY) || "{}"); const rules=getContractRules(); return Object.fromEntries(Object.keys(rules).map(key=>[key,rules[key]?.mode||legacy[key]||"approval"])); } catch { return {}; } };
+  const setOpsMode = (key, mode) => { const all=getOpsSettings(); all[key]=mode; localStorage.setItem(OPS_SETTINGS_KEY,JSON.stringify(all)); saveContractRule(key,{mode}); setFuelOverviewVersion(v=>v+1); };
   const getOpsAudit = () => { try { return JSON.parse(localStorage.getItem(OPS_AUDIT_KEY) || "[]"); } catch { return []; } };
   const addOpsAudit = (row) => { const all=getOpsAudit(); const seq=String(all.length+1).padStart(3,"0"); const d=new Date(); const id=`YK-${String(d.getFullYear()).slice(-2)}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}-${seq}`; const next=[{...row,id,created_at:d.toISOString()},...all].slice(0,500); localStorage.setItem(OPS_AUDIT_KEY,JSON.stringify(next)); return id; };
 
@@ -708,7 +675,10 @@ export default function YakitHesaplama() {
     }
   });
   const [eforCaySearch, setEforCaySearch] = useState("");
-  const [eforCayOldFuel, setEforCayOldFuel] = useState("90,63");
+  const [eforCayOldFuel, setEforCayOldFuel] = useState(() => {
+    const saved = Number(localStorage.getItem("efor_cay_kabul_edilen_yakit_v1"));
+    return Number.isFinite(saved) && saved > 0 ? saved.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "90,63";
+  });
   const [eforCayNewFuel, setEforCayNewFuel] = useState("");
   const [eforCayHistoryOpen, setEforCayHistoryOpen] = useState(false);
   const [eforCayRuleOpen, setEforCayRuleOpen] = useState(false);
@@ -1383,6 +1353,47 @@ export default function YakitHesaplama() {
     );
   };
 
+  const FasdatFuelMonitor = () => {
+    let live = null;
+    try {
+      const allUi = JSON.parse(localStorage.getItem("odak_yakit_ui_prices_v1") || "{}");
+      live = allUi.FASDAT || null;
+    } catch {}
+    const oldPrice = Number(live?.old ?? live?.baseline ?? 0);
+    const currentPrice = Number(live?.new ?? 0);
+    const change = oldPrice > 0 && currentPrice > 0 ? ((currentPrice - oldPrice) / oldPrice) * 100 : 0;
+    const appliedPercent = Number(applied || 0) * 100;
+    const price = (value) => Number(value || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const bars = [42, 47, 45, 55, 58, 66, 63, 73, 81, 76, 88, 94];
+    return (
+      <section className="fasdat-fuel-monitor" aria-label="FASDAT canlı motorin fiyat takibi">
+        <div className="fasdat-monitor-title">
+          <span className="fasdat-live-dot" />
+          <div><small>CANLI YAKIT TAKİBİ</small><h2>Motorin fiyat hareketi</h2><p>Shell Afyon Merkez · litre bazında güncel takip</p></div>
+          <span className="fasdat-live-badge"><span /> Canlı takip</span>
+        </div>
+        <div className="fasdat-monitor-grid">
+          <div className="fasdat-gauge-card">
+            <div className="fasdat-gauge-ring"><div><Fuel size={22} /><b>{currentPrice ? price(currentPrice) : "—"} ₺</b><small>/ litre</small></div></div>
+            <span className="fasdat-gauge-caption">GÜNCEL MOTORİN FİYATI</span>
+          </div>
+          <div className="fasdat-price-flow">
+            <div className="fasdat-flow-label"><span>ÖNCEKİ</span><b>{oldPrice ? `${price(oldPrice)} ₺` : "—"}</b></div>
+            <div className="fasdat-flow-line"><i /><ArrowRight size={18} /></div>
+            <div className="fasdat-flow-label current"><span>ŞİMDİ</span><b>{currentPrice ? `${price(currentPrice)} ₺` : "—"}</b></div>
+            <div className={`fasdat-change-pill ${change >= 0 ? "up" : "down"}`}>{change >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />} %{Math.abs(change).toFixed(2)}</div>
+          </div>
+          <div className="fasdat-mini-chart-card">
+            <div><span>FİYAT TRENDİ</span><b>{change >= 0 ? "Yükseliş" : "Düşüş"}</b></div>
+            <div className="fasdat-mini-bars">{bars.map((height, index) => <i key={index} style={{ height: `${height}%`, animationDelay: `${index * 45}ms` }} />)}</div>
+            <small>Son 12 fiyat kontrolü</small>
+          </div>
+          <div className="fasdat-impact-card"><span>TARİFE ETKİSİ</span><strong>{appliedPercent ? `%${Math.abs(appliedPercent).toFixed(2)}` : "%0,00"}</strong><small>{update ? "Güncelleme hazır" : "Eşik altında"}</small></div>
+        </div>
+      </section>
+    );
+  };
+
   const FuelOpsEnhancements = () => {
     if (!customer) return null;
     const key=getCustomerKey(customer), allUi=(()=>{try{return JSON.parse(localStorage.getItem("odak_yakit_ui_prices_v1")||"{}")}catch{return {}}})();
@@ -1416,12 +1427,14 @@ export default function YakitHesaplama() {
     const setManualFuelPrice=(value)=>{
       let all={}; try{all=JSON.parse(localStorage.getItem("odak_yakit_ui_prices_v1")||"{}")}catch{}
       const parsed=Number(String(value).replace(",","."));
+      const previous=Number(all[key]?.new);
       all[key]={...(all[key]||{}),new:Number.isFinite(parsed)?parsed:value,source:"Manuel giriş",updatedAt:new Date().toISOString()};
       localStorage.setItem("odak_yakit_ui_prices_v1",JSON.stringify(all));
+      if(Number.isFinite(parsed))createFuelPriceNotification({customer:key,oldPrice:previous,newPrice:parsed,referencePrice:oldP,threshold:ruleThreshold,source:"Manuel giriş"});
       window.dispatchEvent(new Event("odak-fuel-updated"));
     };
     const openPreview=()=>{ const base=[...(rows?.alis||[]),...(rows?.satis||[])]; const values=base.map(r=>Number(r.ton_tl??r.fiyat??r.tlTon??r.tir??0)).filter(Number.isFinite); const total=values.reduce((a,b)=>a+b,0); const rate=applied/100; setOpsPreview({key,affected:values.length||affected,total,next:total*(1+rate),diff:total*rate,rate,oldP,newP}); };
-    const approve=()=>{ if(!opsPreview)return; const id=addOpsAudit({customer:key,oldFuel:opsPreview.oldP,newFuel:opsPreview.newP,appliedRate:opsPreview.rate,affected:opsPreview.affected,status:"Onaylandı",mode}); const notices=(()=>{try{return JSON.parse(localStorage.getItem("odak_sistem_bildirimleri_v1")||"[]")}catch{return []}})(); localStorage.setItem("odak_sistem_bildirimleri_v1",JSON.stringify([{id,title:`${key} yakıt eskalasyonu onaylandı`,message:`${id} • ${opsPreview.affected} fiyat için onay verildi.`,type:"success",created_at:new Date().toISOString(),action_path:"/yakit-hesaplama"},...notices])); window.dispatchEvent(new Event("odak-notifications-changed")); setOpsPreview(null); setInfo(`${id} numaralı eskalasyon onayı kaydedildi. Mevcut müşteri güncelleme butonuyla tarifeye uygulayabilirsiniz.`); };
+    const approve=()=>{ if(!opsPreview)return; const id=addOpsAudit({customer:key,oldFuel:opsPreview.oldP,newFuel:opsPreview.newP,appliedRate:opsPreview.rate,affected:opsPreview.affected,status:"Onaylandı",mode}); const notices=(()=>{try{return JSON.parse(localStorage.getItem("odak_sistem_bildirimleri_v1")||"[]")}catch{return []}})(); localStorage.setItem("odak_sistem_bildirimleri_v1",JSON.stringify([{id,title:`${key} yakıt eskalasyonu onaylandı`,message:`${id} • ${opsPreview.affected} fiyat için onay verildi.`,type:"success",read:false,created_at:new Date().toISOString(),action_path:"/finans/yakit-hesaplama"},...notices])); window.dispatchEvent(new Event("odak-notifications-changed")); setOpsPreview(null); setInfo(`${id} numaralı eskalasyon onayı kaydedildi. Mevcut müşteri güncelleme butonuyla tarifeye uygulayabilirsiniz.`); };
     const exportAudit=()=>{ const audit=getOpsAudit().filter(x=>x.customer===key); const data=audit.map(x=>({"İşlem No":x.id,"Müşteri":x.customer,"Eski Yakıt":x.oldFuel,"Yeni Yakıt":x.newFuel,"Uygulanan Oran":x.appliedRate,"Etkilenen":x.affected,"Durum":x.status,"Tarih":x.created_at})); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(data.length?data:[{"Bilgi":"Henüz işlem yok"}]),"Değişiklik Raporu"); XLSX.writeFile(wb,`${key}_Yakit_Denetim_Raporu.xlsx`); };
     return <>
       <section className={`ops-smart-summary ${passed?"danger":remain<=1?"warning":"normal"}`}><div><b>{passed?"Eskalasyon kuralı tetiklendi":remain<=1?"Eşiğe yaklaşılıyor":"Yakıt değişimi kontrol altında"}</b><p>{smartText}</p></div><span>{passed?"Güncelleme Gerekli":remain<=1?"Eşiğe Yakın":"Normal"}</span></section>
@@ -1443,7 +1456,7 @@ export default function YakitHesaplama() {
       <section className="ops-grid legacy-ops-grid">
         <div className="ops-card ops-chart"><div className="ops-head"><div><b>Yakıt Fiyat Grafiği</b><small>Referans fiyat hareketi ve eşik takibi</small></div><div className="ops-seg"><button className={opsRange===30?"active":""} onClick={()=>setOpsRange(30)}>30 Gün</button><button className={opsRange===90?"active":""} onClick={()=>setOpsRange(90)}>90 Gün</button></div></div><div className="ops-chart-area">{vals.length>1?points.map((x,i)=><i key={i} style={{height:`${20+((Number(x.price)-min)/span)*70}%`}} title={`${new Date(x.date).toLocaleDateString("tr-TR")} • ${money(x.price)}`}/>):<div className="ops-empty-chart">Fiyat geçmişi biriktikçe grafik burada oluşacak.</div>}<em style={{bottom:`${Math.min(92,20+(threshold/Math.max(threshold+3,10))*70)}%`}}>Eşik %{threshold}</em></div></div>
         <div className="ops-card"><div className="ops-head"><div><b>Simülasyon Modu</b><small>Gerçek tarifeyi değiştirmeden test edin</small></div><span className="ops-badge">TEST</span></div><label className="ops-input-label">Motorin fiyatı kaç TL olursa?</label><div className="ops-sim-row"><input value={opsSimulation} onChange={e=>setOpsSimulation(e.target.value)} placeholder="105,00"/><div className={simPassed?"sim-result hit":"sim-result"}>{simChange==null?"Fiyat girin":`${simChange>=0?"+":""}%${Math.abs(simChange).toFixed(2)} • ${simPassed?"Eşik tetiklenir":"Eşik tetiklenmez"}`}</div></div></div>
-        <div className="ops-card"><div className="ops-head"><div><b>Otomasyon Modu</b><small>Müşteri bazlı çalışma şekli</small></div></div><div className="ops-mode">{[["manual","Manuel"],["approval","Onaylı Otomatik"],["auto","Tam Otomatik"]].map(([v,l])=><button key={v} className={mode===v?"active":""} onClick={()=>setOpsMode(key,v)}>{l}</button>)}</div><div className="ops-actions"><button onClick={exportAudit}><Download size={14}/> Denetim Excel'i</button>{passed&&<button className="primary" onClick={openPreview}>Önizle ve Onayla</button>}</div></div>
+        <div className="ops-card"><div className="ops-head"><div><b>Otomasyon Modu</b><small>Müşteri bazlı çalışma şekli</small></div></div><div className="ops-mode">{[["notify","Sadece Bildir"],["approval","Onay İste"],["auto","Otomatik Uygula"]].map(([v,l])=><button key={v} className={mode===v?"active":""} onClick={()=>setOpsMode(key,v)}>{l}</button>)}</div><div className="ops-actions"><button onClick={exportAudit}><Download size={14}/> Denetim Excel'i</button>{passed&&<button className="primary" onClick={openPreview}>Önizle ve Onayla</button>}</div></div>
       </section>
       <section className="ops-compare legacy-ops-compare"><div><b>Değişiklik Karşılaştırması</b><span>İki tarih arasındaki tarife hareketlerini karşılaştırın.</span></div><input type="date" value={opsCompare.from} onChange={e=>setOpsCompare(v=>({...v,from:e.target.value}))}/><span>↔</span><input type="date" value={opsCompare.to} onChange={e=>setOpsCompare(v=>({...v,to:e.target.value}))}/><button onClick={()=>setInfo(opsCompare.from&&opsCompare.to?`${opsCompare.from} ↔ ${opsCompare.to} karşılaştırması hazır. Geçmiş kayıtlarındaki değişimler filtrelendi.`:"Karşılaştırma için iki tarih seçin.")}>Karşılaştır</button></section>
       {opsPreview&&createPortal(<div className="ops-modal-backdrop"><div className="ops-modal"><div className="ops-modal-head"><div><small>UYGULAMADAN ÖNCE KONTROL</small><h2>{opsPreview.key} Eskalasyon Önizlemesi</h2></div><button onClick={()=>setOpsPreview(null)}>×</button></div><div className="ops-preview-stats"><div><small>DEĞİŞECEK SATIR</small><b>{opsPreview.affected}</b></div><div><small>MEVCUT TOPLAM</small><b>{money(opsPreview.total)}</b></div><div><small>YENİ TOPLAM</small><b>{money(opsPreview.next)}</b></div><div><small>FARK</small><b className="green">+{money(opsPreview.diff)}</b></div></div><div className="ops-preview-note">Eski fiyatlar korunur. Onay kaydı işlem numarasıyla denetim geçmişine yazılır; mevcut müşteri güncelleme fonksiyonu fiyatları uygular.</div><div className="ops-modal-actions"><button onClick={()=>setOpsPreview(null)}>Vazgeç</button><button className="primary" onClick={approve}><CheckCircle2 size={16}/> Onayla ve Uygula</button></div></div></div>,document.body)}
@@ -1458,6 +1471,7 @@ export default function YakitHesaplama() {
     if (isBimCustomer(customer)) return <FuelOpsEnhancements />;
     const latest = getLatestFuelOperation();
     const customerName = customer.musteri_adi || customer.kod || "Müşteri";
+    const isFasdat = norm(customerName) === "FASDAT";
     const money = (v) =>
       Number(v || 0).toLocaleString("tr-TR", {
         minimumFractionDigits: 2,
@@ -1495,13 +1509,13 @@ export default function YakitHesaplama() {
           <b>{customerName}</b>
         </div>
 
-        <div className="fuel-v5-titlebar">
+        <div className={`fuel-v5-titlebar ${isFasdat ? "fasdat-fuel-hero" : ""}`}>
           <div className="fuel-v5-brand">
-            <div className="fuel-v5-brandmark">{customerName.slice(0, 2).toUpperCase()}</div>
+            <div className="fuel-v5-brandmark">{isFasdat ? <Fuel size={27} strokeWidth={2.4} /> : customerName.slice(0, 2).toUpperCase()}</div>
             <div>
-              <span>YAKIT HESAPLAMA / MÜŞTERİ</span>
-              <h1>{customerName} – Yakıt Hesaplama</h1>
-              <p>Yakıt fiyat değişimlerine göre güncel tarife yönetimi ve fiyat geçmişi</p>
+              <span>{isFasdat ? "FASDAT / MOTORİN FİYAT HESAPLAMA" : "YAKIT HESAPLAMA / MÜŞTERİ"}</span>
+              <h1>{isFasdat ? "FASDAT Yakıt Eskalasyon Merkezi" : `${customerName} – Yakıt Hesaplama`}</h1>
+              <p>{isFasdat ? "Motorin fiyatını kontrol edin, değişimi hesaplayın ve TON/TL tarifesine yansıtın." : "Yakıt fiyat değişimlerine göre güncel tarife yönetimi ve fiyat geçmişi"}</p>
             </div>
           </div>
           <div className="fuel-v5-title-actions">
@@ -1563,7 +1577,7 @@ export default function YakitHesaplama() {
           </div>
         )}
 
-        <FuelOpsEnhancements />
+        {!isFasdat && <FuelOpsEnhancements />}
 
         <div className="fuel-v5-tabs">
           <div className="fuel-v5-tab active">▦ <span>Tarife Tablosu</span></div>
@@ -2049,7 +2063,10 @@ export default function YakitHesaplama() {
         const price = Number(data.price);
         setEforCayNewFuel(price.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
         let all = {}; try { all = JSON.parse(localStorage.getItem("odak_yakit_ui_prices_v1") || "{}"); } catch {}
-        const reference = Number(eforCayHistory?.[0]?.yeni_yakit_fiyati || 90.63);
+        const storedReference = Number(localStorage.getItem("efor_cay_kabul_edilen_yakit_v1"));
+        const reference = Number.isFinite(storedReference) && storedReference > 0
+          ? storedReference
+          : Number(eforCayHistory?.[0]?.yeni_yakit_fiyati || 90.63);
         all["EFOR ÇAY"] = { ...(all["EFOR ÇAY"] || {}), old: reference, new: price, source: "Petrol Ofisi • Tokat Erbaa • Motorin", checkedAt: data.checkedAt || new Date().toISOString() };
         localStorage.setItem("odak_yakit_ui_prices_v1", JSON.stringify(all));
         window.dispatchEvent(new Event("odak-fuel-updated"));
@@ -2072,7 +2089,9 @@ export default function YakitHesaplama() {
       put("TEVERPAN", setTeverpanOldFuel, setTeverpanNewFuel);
       const eforLive = ui["EFOR ÇAY"];
       if (eforLive && Number(eforLive.new) > 0) setEforCayNewFuel(tr(eforLive.new));
-      if (eforCayHistory?.[0]?.yeni_yakit_fiyati > 0) setEforCayOldFuel(tr(eforCayHistory[0].yeni_yakit_fiyati));
+      const storedEforReference = Number(localStorage.getItem("efor_cay_kabul_edilen_yakit_v1"));
+      if (Number.isFinite(storedEforReference) && storedEforReference > 0) setEforCayOldFuel(tr(storedEforReference));
+      else if (eforCayHistory?.[0]?.yeni_yakit_fiyati > 0) setEforCayOldFuel(tr(eforCayHistory[0].yeni_yakit_fiyati));
       else setEforCayOldFuel("90,63");
       put("CORTEVA", setCortevaOldFuel, setCortevaNewFuel);
       put("CMC AGRO", setCmcOldFuel, setCmcNewFuel);
@@ -2097,40 +2116,6 @@ export default function YakitHesaplama() {
     window.addEventListener("odak-fuel-updated", syncFuelCards);
     return () => window.removeEventListener("odak-fuel-updated", syncFuelCards);
   }, [customer]);
-
-  /* =======================================================
-     MÜŞTERİ ARAMA
-  ======================================================= */
-
-  const filteredCustomers =
-    useMemo(() => {
-      const query =
-        norm(customerSearch);
-
-      if (!query) {
-        return customers;
-      }
-
-      return customers.filter(
-        (item) => {
-          const name =
-            norm(
-              item.musteri_adi
-            );
-
-          const code =
-            norm(item.kod);
-
-          return (
-            name.includes(query) ||
-            code.includes(query)
-          );
-        }
-      );
-    }, [
-      customers,
-      customerSearch,
-    ]);
 
   /* =======================================================
      YAKIT HESAPLAMA
@@ -3715,109 +3700,16 @@ export default function YakitHesaplama() {
       return { key, ref, live, oldPrice, currentPrice, change };
     };
 
-    const compactPrice = (value) => Number.isFinite(value) && value > 0
-      ? `${value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`
-      : "—";
-
-    const dashboardRows = filteredCustomers.map((item) => {
+    const dashboardRows = customers.map((item) => {
       const fuel = getOverviewFuel(item);
-      const thresholdMap = { FASDAT: 7, KWS: 5, "ETİ": 10, "CMC AGRO": 5, CORTEVA: 5, "EFOR ÇAY": 5, TEVERPAN: 5, "BİM": 5 };
-      const threshold = Number(fuel.live?.thresholdPct ?? fuel.live?.threshold ?? thresholdMap[fuel.key] ?? 5);
+      const defaults = { FASDAT: 7, KWS: 5, "ETİ": 10, "CMC AGRO": 5, CORTEVA: 5, "EFOR ÇAY": 5, TEVERPAN: 5, "BİM": 5 };
+      const candidate = Number(fuel.live?.thresholdPct ?? fuel.live?.threshold);
+      const threshold = Number.isFinite(candidate) && candidate > 0 ? candidate : (defaults[fuel.key] || 5);
       const absChange = Math.abs(fuel.change || 0);
       const status = fuel.change == null ? "waiting" : absChange >= threshold ? "need" : absChange >= threshold * .85 ? "near" : "ok";
       return { item, fuel, threshold, status };
     });
-    const visibleDashboardRows = dashboardRows.filter((x) => dashboardFuelFilter === "all" || (dashboardFuelFilter === "shell" ? x.fuel.ref.station === "Shell" : x.fuel.ref.station === "Petrol Ofisi"));
-    const shellRow = dashboardRows.find((x) => x.fuel.ref.station === "Shell");
-    const poRow = dashboardRows.find((x) => x.fuel.ref.station === "Petrol Ofisi" && Number.isFinite(x.fuel.currentPrice));
-    const needsUpdate = dashboardRows.filter((x) => x.status === "need").length;
-    const latestCheck = dashboardRows.map(x => x.fuel.live?.checkedAt || x.fuel.live?.updatedAt).filter(Boolean).sort().at(-1);
-    const trendSeed = (base, wave) => Array.from({length: 14}, (_, i) => Number.isFinite(base) ? base - (13-i)*wave + Math.sin(i*1.35)*wave*.8 : 90+i*.3);
-    const shellTrend = trendSeed(shellRow?.fuel.currentPrice, .34);
-    const poTrend = trendSeed(poRow?.fuel.currentPrice, .28);
-    const linePoints = (vals) => {
-      const all=[...shellTrend,...poTrend], min=Math.min(...all)-1, max=Math.max(...all)+1, span=Math.max(1,max-min);
-      return vals.map((v,i)=>`${(i/(vals.length-1))*100},${92-((v-min)/span)*78}`).join(" ");
-    };
-
-    return (
-      <div className="fuel-page fuel-full fuel-customer-select-page fuel-figma-dashboard"><FuelOperationLoader /><FirstPriceArchiveButton />
-
-        <section className="fd-main-row">
-          <div className="fd-hero fd-price-showcase">
-            <div className="fd-price-panels">
-              {[{type:"shell", name:"Shell", logo:"/fuel-assets/shell-logo.png", row:shellRow},{type:"po", name:"Petrol Ofisi", logo:"/fuel-assets/petrol-ofisi-logo.svg", row:poRow}].map(({type,name,logo,row}) => {
-                const price = Number(row?.fuel.currentPrice);
-                const change = row?.fuel.change;
-                const rising = Number(change) >= 0;
-                return <div className={`fd-price-panel ${type}`} key={type}>
-                  <div className="fd-price-brand"><span className="fd-price-logo"><img src={logo} alt=""/></span><b>{name}</b></div>
-                  <div className="fd-digital-price">{Number.isFinite(price) && price > 0 ? <><CountUp start={0} end={price} duration={1.8} decimals={2} decimal="," separator="." useEasing preserveValue/><span className="fd-lira">₺</span></> : "—"}</div>
-                  <div className={`fd-price-change ${change == null ? "neutral" : rising ? "up" : "down"}`}>{change == null ? <><Minus size={18}/> Veri bekleniyor</> : rising ? <><TrendingUp size={21}/> %{Math.abs(change).toFixed(2).replace(".",",")}</> : <><TrendingDown size={21}/> %{Math.abs(change).toFixed(2).replace(".",",")}</>}</div>
-                  <svg className="fd-price-wave" viewBox="0 0 320 48" preserveAspectRatio="none" aria-hidden="true"><path className="wave-fill" d="M0 38 C42 36 48 20 82 23 S135 41 171 25 S222 8 251 25 S293 35 320 26 L320 48 L0 48 Z"/><path className="wave-line" d="M0 38 C42 36 48 20 82 23 S135 41 171 25 S222 8 251 25 S293 35 320 26"/></svg>
-                </div>
-              })}
-            </div>
-          </div>
-          <div className="fd-trend fd-trend-modern">
-            <div className="fd-trend-title-row">
-              <div className="fd-trend-heading"><span className="fd-trend-icon"><BarChart3 size={20}/></span><div><h3>Motorin fiyat trendi</h3><p>Yılbaşından bugüne · litre başına ₺</p></div></div>
-              <div className="fd-trend-tabs"><button className={dashboardTrendRange===30?"active":""} onClick={()=>setDashboardTrendRange(30)}>Son 30 gün</button><button className={dashboardTrendRange===90?"active":""} onClick={()=>setDashboardTrendRange(90)}>Son 90 gün</button><button className={dashboardTrendRange===365?"active":""} onClick={()=>setDashboardTrendRange(365)}>Yılbaşından bugüne</button></div>
-            </div>
-            <div className="fd-trend-head"><div className="fd-legend"><span className="shell">Shell</span><span className="po">Petrol Ofisi</span><small>dönem başına göre</small></div><div className="fd-trend-summary"><TrendingUp size={15}/><b>Canlı trend</b></div></div>
-            <div className="fd-chart-wrap" onMouseLeave={()=>setDashboardChartHover(null)} onMouseMove={(e)=>{const r=e.currentTarget.getBoundingClientRect(); const x=Math.max(0,Math.min(r.width,e.clientX-r.left)); setDashboardChartHover(Math.round((x/r.width)*(shellTrend.length-1)));}}>
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-                <defs><linearGradient id="shellTrendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ffb800" stopOpacity=".22"/><stop offset="100%" stopColor="#ffb800" stopOpacity="0"/></linearGradient><linearGradient id="poTrendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ff3347" stopOpacity=".16"/><stop offset="100%" stopColor="#ff3347" stopOpacity="0"/></linearGradient></defs>
-                <line x1="0" y1="25" x2="100" y2="25"/><line x1="0" y1="50" x2="100" y2="50"/><line x1="0" y1="75" x2="100" y2="75"/>
-                <polygon className="shell-area" points={`0,100 ${linePoints(shellTrend)} 100,100`}/><polygon className="po-area" points={`0,100 ${linePoints(poTrend)} 100,100`}/>
-                <polyline className="shell-line" points={linePoints(shellTrend)}/><polyline className="po-line" points={linePoints(poTrend)}/>
-                {dashboardChartHover!=null && <line className="fd-hover-line" x1={(dashboardChartHover/(shellTrend.length-1))*100} y1="5" x2={(dashboardChartHover/(shellTrend.length-1))*100} y2="96"/>}
-              </svg>
-              {dashboardChartHover!=null && <div className="fd-chart-tooltip" style={{left:`${Math.min(82,Math.max(5,(dashboardChartHover/(shellTrend.length-1))*100))}%`}}><b>{dashboardChartHover < 4 ? "21 Ağu" : dashboardChartHover < 8 ? "4 Eyl" : dashboardChartHover < 11 ? "11 Eyl" : "21 Eyl"}</b><span className="shell"><i/>Shell <strong>{compactPrice(shellTrend[dashboardChartHover])}</strong></span><span className="po"><i/>Petrol Ofisi <strong>{compactPrice(poTrend[dashboardChartHover])}</strong></span></div>}
-              <div className="fd-end-value shell">{compactPrice(shellRow?.fuel.currentPrice)}</div><div className="fd-end-value po">{compactPrice(poRow?.fuel.currentPrice)}</div>
-            </div>
-            <div className="fd-chart-dates"><span>21 Ağu</span><span>4 Eyl</span><span>11 Eyl</span><span>21 Eyl</span></div>
-          </div>
-        </section>
-
-        <section className="fd-kpis">
-          <div className="fd-kpi"><span className="fd-kpi-icon blue"><Fuel size={22}/></span><div><small>Güncel Motorin (Shell)</small><b>{compactPrice(shellRow?.fuel.currentPrice)}</b><em>{shellRow?.fuel.change == null ? "Veri bekleniyor" : `↗ %${Math.abs(shellRow.fuel.change).toFixed(2)}`}</em><p>Son güncelleme: {latestCheck ? new Date(latestCheck).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}) : "—"}</p></div></div>
-          <div className="fd-kpi"><span className="fd-kpi-icon red"><Fuel size={22}/></span><div><small>Güncel Motorin (PO)</small><b>{compactPrice(poRow?.fuel.currentPrice)}</b><em>{poRow?.fuel.change == null ? "Veri bekleniyor" : `↗ %${Math.abs(poRow.fuel.change).toFixed(2)}`}</em><p>Petrol Ofisi referansı</p></div></div>
-          <div className="fd-kpi"><span className="fd-kpi-icon blue"><Users size={22}/></span><div><small>Aktif Müşteri</small><b>{customers.length}</b><p>{needsUpdate} müşteri güncelleme bekliyor</p></div></div>
-          <div className="fd-kpi"><span className="fd-kpi-icon purple"><BadgeDollarSign size={22}/></span><div><small>Tarife Yönetimi</small><b>{dashboardRows.length}</b><p>Aktif müşteri tarifeleri</p></div></div>
-          <div className="fd-kpi"><span className="fd-kpi-icon amber"><AlertTriangle size={22}/></span><div><small>Eşiğe yaklaşan</small><b>{dashboardRows.filter(x=>x.status==="near"||x.status==="need").length}</b><p>Eşiğin %75'ini geçenler</p></div></div>
-          <div className="fd-kpi fd-system"><span className="fd-kpi-icon green"><CheckCircle2 size={22}/></span><div><small>Sistem Durumu</small><b>Aktif</b><p>Otomasyon çalışıyor</p></div></div>
-        </section>
-
-        <section className="fd-customers">
-          <div className="fd-section-head"><div><h2>Müşteriler</h2><p>Tüm müşterileri, güncel yakıt fiyatlarını ve eskalasyon durumlarını görüntüleyin.</p></div><div className="fd-filters"><button className={dashboardFuelFilter==="all"?"active":""} onClick={()=>setDashboardFuelFilter("all")}>Tümü ({customers.length})</button><button className={dashboardFuelFilter==="shell"?"active":""} onClick={()=>setDashboardFuelFilter("shell")}>● Shell</button><button className={dashboardFuelFilter==="po"?"active":""} onClick={()=>setDashboardFuelFilter("po")}>● Petrol Ofisi</button><div className="fd-customer-search"><Search size={15}/><input value={customerSearch} onChange={(e)=>setCustomerSearch(e.target.value)} placeholder="Müşteri ara..."/></div><button className={`icon ${dashboardView==="grid"?"active":""}`} onClick={()=>setDashboardView("grid")}>▦</button><button className={`icon ${dashboardView==="list"?"active":""}`} onClick={()=>setDashboardView("list")}>☷</button></div></div>
-          {error && <div className="fuel-error">{error}</div>}
-          {customerLoading ? <div className="fuel-loading"><RefreshCw className="spin" size={18}/> Müşteriler yükleniyor...</div> : <div className={`fd-customer-grid ${dashboardView==="list"?"list-view":""}`}>
-            {visibleDashboardRows.map(({item,fuel,threshold,status}) => { const checkedAt=fuel.live?.checkedAt||fuel.live?.updatedAt; const logo=fuel.ref.station==="Shell"?"/fuel-assets/shell-logo.png":"/fuel-assets/petrol-ofisi-logo.svg"; return <button type="button" key={item.id} className={`fd-customer-card ${status}`} onClick={()=>openCustomer(item)}><div className="fd-card-head"><img src={logo} alt=""/><div><b>{item.kod||item.musteri_adi}</b><span>{fuel.ref.station} · {fuel.ref.location}</span></div><ArrowRight size={17}/></div><div className="fd-card-price"><strong>{compactPrice(fuel.currentPrice)}</strong><em>{fuel.change==null?"—":`${fuel.change>=0?"↗":"↘"} %${Math.abs(fuel.change).toFixed(2)}`}</em></div><div className="fd-progress"><i style={{width:`${Math.min(100,(Math.abs(fuel.change||0)/threshold)*100)}%`}}/></div><div className="fd-card-foot"><span>Eşik %{threshold}</span><b>{status==="need"?"Güncelleme Gerekli":status==="near"?"Eşiğe Yakın":status==="waiting"?"Veri Bekleniyor":"Normal"}</b></div><small className="fd-last">Son kontrol: {checkedAt?new Date(checkedAt).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}):"—"}</small></button>})}
-          </div>}
-        </section>
-
-        <aside className="fd-right-rail">
-          <section className="fd-rail-card fd-attention">
-            <div className="fd-rail-title"><span>●</span><div><h3>Dikkat gerektirenler</h3><p>Eşiğin %75’ini geçen müşteriler</p></div></div>
-            {dashboardRows.filter(x => x.status === "near" || x.status === "need").slice(0,3).map(x => { const pct=Math.min(100,(Math.abs(x.fuel.change||0)/x.threshold)*100); return <div className="fd-alert-item" key={x.item.id}><div><b>{x.item.kod||x.item.musteri_adi}</b><em>%{Math.round(pct)} dolu</em></div><div className="fd-alert-bar"><i style={{width:`${pct}%`}}/></div><p>{x.fuel.ref.location} · yakıt %{Math.abs(x.fuel.change||0).toFixed(2)} değişti, eşik %{x.threshold}.</p><button onClick={()=>openCustomer(x.item)}>İncele <ArrowRight size={13}/></button></div>})}
-            {!dashboardRows.some(x=>x.status === "near" || x.status === "need") && <div className="fd-empty-alert">Şu an eşik yaklaşan müşteri yok.</div>}
-          </section>
-          <section className="fd-rail-card fd-quick-sim">
-            <h3>Hızlı simülasyon</h3><p>Yakıt fiyatı değişirse hangi müşterilerin tarifesi güncellenir?</p>
-            <div className="fd-sim-range-head"><span>Ek fiyat değişimi</span><b>%{Number(dashboardSimPrice||3).toFixed(1)}</b></div>
-            <input type="range" min="-10" max="10" step="0.5" value={dashboardSimPrice || 3} onChange={e=>setDashboardSimPrice(e.target.value)}/>
-            <div className="fd-sim-summary"><strong>{dashboardRows.filter(x=>Math.abs(Number(dashboardSimPrice||3))>=x.threshold).length ? `${dashboardRows.filter(x=>Math.abs(Number(dashboardSimPrice||3))>=x.threshold).length} müşteri eşiği aşar` : "Eşik aşan müşteri yok"}</strong><small>Tahmini etki · müşteri kurallarına göre</small></div>
-            <button className="fd-open-sim" onClick={()=>setDashboardSimOpen(true)}>Detaylı simülasyon <ArrowRight size={13}/></button>
-          </section>
-          <section className="fd-rail-card fd-recent">
-            <h3>Son işlemler</h3>
-            <div className="fd-timeline"><p><i className="ok"/><b>Fiyatlar güncellendi</b><span>Bugün · Shell ve Petrol Ofisi</span></p><p><i className="ok"/><b>{dashboardRows.length} müşteri kontrol edildi</b><span>Otomatik eşik kontrolü</span></p>{dashboardRows.filter(x=>x.status==="near"||x.status==="need").slice(0,2).map(x=><p key={x.item.id}><i className="warn"/><b>{x.item.kod||x.item.musteri_adi} eşiğe yaklaştı</b><span>{x.fuel.ref.location}</span></p>)}<p><i className="info"/><b>Operasyon paneli hazır</b><span>Canlı yakıt takibi aktif</span></p></div>
-          </section>
-        </aside>
-        {dashboardSimOpen && createPortal(<div className="fd-sim-backdrop" onMouseDown={(e)=>{if(e.target===e.currentTarget)setDashboardSimOpen(false)}}><div className="fd-sim-modal"><div className="fd-sim-head"><div><small>SENARYO ANALİZİ</small><h2>Motorin fiyat simülasyonu</h2><p>Gerçek tarifeleri değiştirmeden tüm müşterilerde sonucu görün.</p></div><button onClick={()=>setDashboardSimOpen(false)}>×</button></div><label>Simüle edilecek motorin fiyatı</label><div className="fd-sim-input"><Fuel size={18}/><input autoFocus value={dashboardSimPrice} onChange={e=>setDashboardSimPrice(e.target.value)} placeholder="Örn. 105,00"/><span>TL/L</span></div><div className="fd-sim-results">{dashboardRows.map(x=>{const val=num(dashboardSimPrice); const base=x.fuel.oldPrice; const ch=Number.isFinite(val)&&base>0?((val-base)/base)*100:null; const hit=ch!=null&&Math.abs(ch)>=x.threshold; return <div key={x.item.id} className={hit?"hit":""}><b>{x.item.kod||x.item.musteri_adi}</b><span>{ch==null?"Fiyat girin":`${ch>=0?"+":""}%${ch.toFixed(2)}`}</span><em>{ch==null?`Eşik %${x.threshold}`:hit?"Eşik tetiklenir":"Eşik tetiklenmez"}</em></div>})}</div><div className="fd-sim-actions"><button onClick={()=>setDashboardSimOpen(false)}>Kapat</button></div></div></div>,document.body)}
-      </div>
-    );
+    return <FuelStationDashboard rows={dashboardRows} loading={customerLoading} error={error} onOpenCustomer={openCustomer} onReload={loadCustomers}/>;
   }
 
   /* =======================================================
@@ -4112,6 +4004,9 @@ export default function YakitHesaplama() {
         currentPrice: newValue,
         updatedAt: new Date().toISOString(),
       };
+      if (customerKey === "EFOR ÇAY" && oldValue > 0) {
+        localStorage.setItem("efor_cay_kabul_edilen_yakit_v1", String(oldValue));
+      }
       localStorage.setItem("odak_yakit_ui_prices_v1", JSON.stringify(allUi));
       window.dispatchEvent(new Event("odak-fuel-updated"));
     } catch {}
@@ -4447,34 +4342,36 @@ export default function YakitHesaplama() {
   // Eski/Yeni kolonlu karşılaştırma exportu kaldırıldı.
   const exportBimExcel = exportBimPriceMemoryExcel;
 
-  if(isBimCustomer(customer)){
-    const q=norm(bimSearch);const shown=(bimTarifeler||[]).filter(r=>!q||norm(`${r.sira} ${r.cikis}`).includes(q));const bimHistoryRows=getBimHistoryRows();
-    return <div className="fuel-page fuel-full fuel-unified-customer fasdat-page bim-page bim-v56-page"><FuelOperationLoader />
-      <section className="bim-v56-shell">
-        <header className="bim-v56-header">
-          <div className="bim-v56-brand"><img src="/fuel-assets/bim-logo-user.png" alt="BİM"/><div><span>BİM TARİFE YÖNETİMİ</span><h1>BİM – Yakıt Hesaplama</h1><p>Petrol Ofisi • İstanbul Sancaktepe • V/Max Diesel • KDV Hariç (+KDV)</p></div></div>
-          <div className="bim-v56-actions">
-            <button className="icon-btn" title="Son işlemi geri al" onClick={undoLastBimUpdate} disabled={!bimHistory.length}><Undo2 size={18}/><span>Geri Al</span></button>
-            <button className="icon-btn" title="Fiyat geçmişi" onClick={()=>setBimHistoryOpen(true)}><History size={18}/><span>Geçmiş</span></button>
-            <button className="icon-btn excel" title="Excel'e aktar" onClick={exportBimExcel}><Download size={18}/><span>Excel</span></button>
-            <button className="icon-btn" title="Diğer müşteriler" onClick={goBackCustomers}><Users size={18}/><span>Müşteriler</span></button>
-            <button className="icon-btn update" title="Tarifeleri güncelle" disabled={!bimThresholdPassed} onClick={()=>runFuelOperation("BİM tarifeleri güncelleniyor",applyBimUpdate)}><RefreshCw size={18}/><span>Güncelle</span></button>
-          </div>
-        </header>
-        <div className="bim-v56-summary">
-          <div className="bim-v56-logo"><img src="/fuel-assets/bim-logo-user.png" alt="BİM"/><div><b>BİM</b><span>Özel Fiyatlandırma</span></div></div>
-          <div className="bim-v56-metric old"><span>SON KABUL EDİLEN FİYAT</span><strong>{bimOldFuel || "—"} ₺</strong><small>Referans yakıt fiyatı</small></div>
-          <div className="bim-v56-arrow"><ArrowRight size={22}/></div>
-          <div className="bim-v56-metric current"><span>GÜNCEL YAKIT FİYATI</span><strong>{bimNewFuel || "—"} ₺</strong><small>Petrol Ofisi • Sancaktepe</small></div>
-          <div className={`bim-v56-metric change ${bimThresholdPassed?"passed":""}`}><span>DEĞİŞİM</span><strong>{bimPct(bimFuelRate)}</strong><small>{bimThresholdPassed?"Eşik sağlandı":"%5 eşik altında"}</small></div>
-          <button className="bim-v56-rule-toggle" onClick={()=>setBimCalcOpen(v=>!v)}><span><SlidersHorizontal size={18}/><i>BİM KURALI</i><b>%5 eşik <ArrowRight size={14}/> %40 yansıtma</b></span>{bimCalcOpen?<ChevronUp size={19}/>:<ChevronDown size={19}/>}</button>
-        </div>
-        {bimCalcOpen&&<div className="bim-v56-rule-detail"><div><b>Hesaplama Kuralı</b><p>Yakıt fiyatı değişimi ±%5 veya üzerindeyse değişimin %40'ı tarife fiyatlarına uygulanır. Sonuçlar mevcut standart yuvarlama kuralıyla tam TL'ye çevrilir.</p></div><div className="bim-v56-rule-values"><span>Yakıt değişimi <b>{bimPct(bimFuelRate)}</b></span><span>Yansıtılan oran <b>{bimPct(bimAppliedRate)}</b></span><span>Durum <b>{bimThresholdPassed?"Güncelleme hazır":"Kural sağlanmadı"}</b></span></div></div>}
-      </section>
-      <section className="eti-tariff-workspace bim-workspace"><div className="eti-workspace-top"><div><span>BİM TARİFE MATRİSİ</span><h2><Table2 size={20}/> Tarife Tablosu</h2><p>39 çıkış bölgesi × 7 teslim bölgesi</p></div><div className="bim-v48-table-actions"><button className="bim-v51-excel-btn" onClick={exportBimExcel}><Download size={16}/> Excel'e Aktar</button><button className="bim-v48-update-btn" disabled={!bimThresholdPassed} onClick={()=>runFuelOperation("BİM tarifeleri güncelleniyor",applyBimUpdate)}><RefreshCw size={16}/> Tarifeleri Güncelle</button></div><label className="eti-search eti-global-search"><Search size={15}/><input value={bimSearch} onChange={e=>setBimSearch(e.target.value)} placeholder="Çıkış bölgesi ara..."/>{bimSearch&&<button type="button" onClick={()=>setBimSearch("")}>×</button>}</label></div><div className="fuel-table-wrap bim-table-wrap"><table className="fuel-table bim-table"><thead><tr><th>SIRA</th><th>ATIK ÇIKIŞ BÖLGESİ</th>{BIM_DESTINATIONS.map(d=><th key={d}>{d}</th>)}</tr></thead><tbody>{shown.map(r=><tr key={r.sira}><td>{r.sira}</td><td><b>{r.cikis}</b></td>{BIM_DESTINATIONS.map(d=><td key={d} className="bim-price">{bimTariffDisplay(r.fiyatlar?.[d]||0)}</td>)}</tr>)}</tbody></table></div></section>
-      {bimHistoryOpen&&createPortal(<div className="fuel-modal-backdrop eti-history-backdrop"><div className="fuel-modal history-modal eti-history-modal bim-history-modal"><div className="fasdat-history-hero"><div className="fasdat-history-icon"><History size={21}/></div><div className="fasdat-history-copy"><span>BİM / TARİFE GEÇMİŞİ</span><h2>Yakıt Güncelleme Geçmişi</h2><p>Eski/yeni yakıt, değişim oranı ve tarifeye uygulanan oran.</p></div><div className="fasdat-history-actions"><button className="fuel-excel-button" onClick={exportBimPriceMemoryExcel}><Download size={15}/> Excel'e Aktar</button><button className="fasdat-history-close" onClick={()=>setBimHistoryOpen(false)}>×</button></div></div><div className="bim-history-content">{bimHistoryRows.length?<div className="fuel-table-wrap bim-history-table-wrap"><table className="fuel-table bim-history-table"><thead><tr><th>TARİH</th><th>SIRA</th><th>ATIK ÇIKIŞ BÖLGESİ</th><th>VARIŞ</th><th>ESKİ FİYAT</th><th>YENİ FİYAT</th><th>FARK</th><th>YAKIT DEĞİŞİMİ</th><th>UYGULANAN</th></tr></thead><tbody>{bimHistoryRows.map(r=><tr key={r.id}><td>{new Date(r.created_at).toLocaleString("tr-TR")}</td><td>{r.sira}</td><td><b>{r.cikis}</b></td><td>{r.varis}</td><td>{bimTariffDisplay(r.eski)}</td><td><b>{bimTariffDisplay(r.yeni)}</b></td><td>{bimTariffDisplay(r.fark)}</td><td>{bimPct(r.yakit_orani)}</td><td><b>{bimPct(r.uygulanan_oran)}</b></td></tr>)}</tbody></table></div>:<div className="eti-history-empty"><History size={28}/><h3>Henüz geçmiş kaydı yok</h3><p>BİM tarifeleri güncellendiğinde her çıkış-varış fiyat değişikliği burada satır satır görünür.</p></div>}</div></div></div>,document.body)}
-    </div>;
+  // Müşteri ekranları artık ayrı modüllere taşınıyor. BİM ekranı ilk ayrıştırılan modüldür.
+  if (isBimCustomer(customer)) {
+    return <BimCustomerScreen
+      FuelOperationLoader={FuelOperationLoader}
+      bimSearch={bimSearch}
+      setBimSearch={setBimSearch}
+      bimTarifeler={bimTarifeler}
+      getBimHistoryRows={getBimHistoryRows}
+      bimHistory={bimHistory}
+      undoLastBimUpdate={undoLastBimUpdate}
+      setBimHistoryOpen={setBimHistoryOpen}
+      exportBimExcel={exportBimExcel}
+      goBackCustomers={goBackCustomers}
+      bimThresholdPassed={bimThresholdPassed}
+      runFuelOperation={runFuelOperation}
+      applyBimUpdate={applyBimUpdate}
+      bimOldFuel={bimOldFuel}
+      bimNewFuel={bimNewFuel}
+      bimPct={bimPct}
+      bimFuelRate={bimFuelRate}
+      bimCalcOpen={bimCalcOpen}
+      setBimCalcOpen={setBimCalcOpen}
+      bimAppliedRate={bimAppliedRate}
+      BIM_DESTINATIONS={BIM_DESTINATIONS}
+      bimTariffDisplay={bimTariffDisplay}
+      bimHistoryOpen={bimHistoryOpen}
+      exportBimPriceMemoryExcel={exportBimPriceMemoryExcel}
+    />;
   }
+
 
   /* =======================================================
      TEVERPAN - YAKIT ESKALASYONU
@@ -4710,6 +4607,20 @@ export default function YakitHesaplama() {
               onClick={exportTeverpanPriceMemoryExcel}
             >
               <Download size={15} /> Excel'e Aktar
+            </button>
+            <button
+              className="eti-action-btn"
+              onClick={goBackCustomers}
+            >
+              <Users size={15} /> Müşteriler
+            </button>
+            <button
+              className="eti-action-btn primary"
+              onClick={() => runFuelOperation("TEVERPAN tarifeleri güncelleniyor", applyTeverpanUpdate)}
+              disabled={!teverpanThresholdPassed || busy}
+              title={!teverpanThresholdPassed ? "TEVERPAN kuralı sağlanmadı." : "Tarifeleri güncelle"}
+            >
+              <RefreshCw size={15} /> Güncelle
             </button>
           </div>
         </div>
@@ -5008,6 +4919,8 @@ export default function YakitHesaplama() {
 
     setEforCayTarifeler(after);
     localStorage.setItem("efor_cay_yakit_tarifeleri", JSON.stringify(after));
+    // Güncelleme sonrası yeni fiyat artık kabul edilen referans fiyattır.
+    localStorage.setItem("efor_cay_kabul_edilen_yakit_v1", String(eforCayNewFuelNum));
     setEforCayHistory((prev) => {
       const next = [item, ...prev];
       localStorage.setItem("efor_cay_yakit_gecmisi", JSON.stringify(next));
@@ -5333,6 +5246,8 @@ export default function YakitHesaplama() {
             <button className="eti-action-btn" onClick={()=>setCortevaHistoryOpen(true)}><History size={15}/> Geçmiş</button>
             <button className="eti-action-btn" onClick={undoLastCortevaUpdate} disabled={!cortevaHistory.length}><Undo2 size={15}/> Geri Al</button>
             <button className="eti-action-btn primary" onClick={exportCortevaPriceMemoryExcel}><Download size={15}/> Excel'e Aktar</button>
+            <button className="eti-action-btn" onClick={goBackCustomers}><Users size={15}/> Müşteriler</button>
+            <button className="eti-action-btn primary" onClick={()=>runFuelOperation("CORTEVA tarifeleri güncelleniyor",applyCortevaUpdate)} disabled={!cortevaThresholdPassed || busy} title={!cortevaThresholdPassed ? "CORTEVA kuralı sağlanmadı." : "Tarifeleri güncelle"}><RefreshCw size={15}/> Güncelle</button>
           </div>
         </div>
 
@@ -5612,6 +5527,8 @@ export default function YakitHesaplama() {
             <button className="eti-action-btn" onClick={() => setCmcHistoryOpen(true)}><History size={15}/> Geçmiş</button>
             <button className="eti-action-btn" onClick={undoLastCmcUpdate} disabled={!cmcHistory.length}><Undo2 size={15}/> Geri Al</button>
             <button className="eti-action-btn primary" onClick={exportCmcPriceMemoryExcel}><Download size={15}/> Excel'e Aktar</button>
+            <button className="eti-action-btn" onClick={goBackCustomers}><Users size={15}/> Müşteriler</button>
+            <button className="eti-action-btn primary" onClick={()=>runFuelOperation("CMC AGRO tarifeleri güncelleniyor",applyCmcUpdate)} disabled={!cmcThresholdPassed || busy} title={!cmcThresholdPassed ? "CMC AGRO kuralı sağlanmadı." : "Tarifeleri güncelle"}><RefreshCw size={15}/> Güncelle</button>
           </div>
         </div>
 
@@ -5732,7 +5649,7 @@ export default function YakitHesaplama() {
       <div className="fuel-detail-topbar"><button type="button" className="fuel-back" onClick={goBackCustomers}><ArrowLeft size={17}/> Müşteriler</button><div className="fuel-detail-path"><span>Yakıt Hesaplama</span><span>/</span><b>ETİ</b></div></div>
       <div className="fuel-customer-head eti-modern-head">
         <div className="fuel-customer-identity"><div className="fuel-logo eti-logo"><Building2 size={25}/></div><div><span>FİNANS / ETİ YAKIT ESKALASYONU</span><h1>ETİ</h1><p>Alış ve satış tarifeleri ayrı yönetilir · %10 eşik · değişimin %50'si uygulanır.</p></div></div>
-        <div className="eti-head-actions"><button className="eti-action-btn" onClick={()=>setEtiHistoryOpen(true)}><History size={15}/> Geçmiş</button><button className="eti-action-btn" onClick={undoLastEtiUpdate} disabled={!etiHistory.length}><Undo2 size={15}/> Geri Al</button><button className="eti-action-btn primary" onClick={exportEtiPriceMemoryExcel}><Download size={15}/> Excel'e Aktar</button></div>
+        <div className="eti-head-actions"><button className="eti-action-btn" onClick={()=>setEtiHistoryOpen(true)}><History size={15}/> Geçmiş</button><button className="eti-action-btn" onClick={undoLastEtiUpdate} disabled={!etiHistory.length}><Undo2 size={15}/> Geri Al</button><button className="eti-action-btn primary" onClick={exportEtiPriceMemoryExcel}><Download size={15}/> Excel'e Aktar</button><button className="eti-action-btn" onClick={goBackCustomers}><Users size={15}/> Müşteriler</button><button className="eti-action-btn primary" onClick={()=>runFuelOperation("ETİ tarifeleri güncelleniyor",applyEtiUpdate)} disabled={!etiThresholdPassed || busy} title={!etiThresholdPassed ? "ETİ kuralı sağlanmadı." : "Tarifeleri güncelle"}><RefreshCw size={15}/> Güncelle</button></div>
       </div>
 
       <section className="eti-calc-card">
@@ -5942,12 +5859,53 @@ export default function YakitHesaplama() {
             Müşteriler
           </button>
 
-          <div className="fuel-detail-path">
+        <div className="fuel-detail-path">
             <span>Yakıt Hesaplama</span>
             <span>/</span>
             <b>KWS</b>
           </div>
         </div>
+
+        <section className="bim-v56-shell efor-v59-shell kws-efor-shell">
+          <header className="bim-v56-header">
+            <div className="bim-v56-brand">
+              <img src="/fuel-assets/petrol-ofisi-logo.svg" alt="Petrol Ofisi" />
+              <div>
+                <span>KWS TARİFE YÖNETİMİ</span>
+                <h1>KWS – Yakıt Hesaplama</h1>
+                <p>Petrol Ofisi • Eskişehir Merkez • Motorin</p>
+              </div>
+            </div>
+            <div className="bim-v56-actions">
+              <button type="button" className="icon-btn" onClick={undoLastKwsUpdate} disabled={!kwsHistory.length}>
+                <Undo2 size={15} />Geri Al
+              </button>
+              <button type="button" className="icon-btn" onClick={() => showKwsHistory("alis")}>
+                <History size={15} />Geçmiş
+              </button>
+              <button type="button" className="icon-btn excel" onClick={exportAllKwsHistoryExcel}>
+                <Download size={15} />Excel
+              </button>
+              <button type="button" className="icon-btn" onClick={goBackCustomers}>
+                <Users size={15} />Müşteriler
+              </button>
+              <button type="button" className="icon-btn update" disabled={busy || !kwsUpdate} onClick={() => runFuelOperation("KWS tarifeleri güncelleniyor", applyKwsUpdate)}>
+                <RefreshCw size={15} />Güncelle
+              </button>
+            </div>
+          </header>
+          <div className="bim-v56-summary">
+            <div className="bim-v56-logo">
+              <img src="/fuel-assets/petrol-ofisi-logo.svg" alt="Petrol Ofisi" />
+              <div><b>KWS</b><span>TIR ve Lowbed tarifeleri</span></div>
+            </div>
+            <div className="bim-v56-metric old"><span>REFERANS YAKIT FİYATI</span><strong>{calc.eski || "—"} ₺</strong><small>Son kabul edilen fiyat</small></div>
+            <div className="bim-v56-arrow"><ArrowRight size={22} /></div>
+            <div className="bim-v56-metric current"><span>GÜNCEL YAKIT FİYATI</span><strong>{calc.yeni || "—"} ₺</strong><small>Petrol Ofisi • Eskişehir Merkez</small></div>
+            <div className={`bim-v56-metric change ${kwsUpdate ? "passed" : ""}`}><span>DEĞİŞİM</span><strong>{pct == null ? "—" : `%${Math.abs(pct).toFixed(2)}`}</strong><small>{kwsUpdate ? "Eşik sağlandı" : "±%12 eşik altında"}</small></div>
+            <div className="bim-v56-rule-toggle kws-rule-summary"><span><SlidersHorizontal size={17} /><i>KWS KURALI</i><b>±%12 eşik <ArrowRight size={13} /> %30 yansıtma</b></span><span className="kws-rule-status">{kwsUpdate ? `%${Math.abs(kwsAppliedPct).toFixed(2)}` : "%0,00"}</span></div>
+          </div>
+        </section>
 
         <div className="fuel-customer-head kws-head">
           <div className="fuel-customer-identity">
@@ -6429,8 +6387,69 @@ export default function YakitHesaplama() {
      MÜŞTERİ DETAY EKRANI
   ======================================================= */
 
+  // FASDAT, EFOR ÇAY ekranındaki ortak sade müşteri şablonunu kullanır.
+  // Hesaplama state'i ve mevcut tarife işlemleri aynı kalır; yalnızca ekran iskeleti ayrıdır.
+  if (customerFuelKey(customer) === "FASDAT") {
+    const latestFuel = getLatestFuelOperation();
+    const oldFuelText = calc.eski || latestFuel?.oldFuel || "—";
+    const newFuelText = calc.yeni || latestFuel?.newFuel || "—";
+    const changeText = pct == null ? "%0,00" : `%${Math.abs(pct).toFixed(2)}`;
+    const appliedText = `%${(Math.abs(applied) * 100).toFixed(2)}`;
+    return (
+      <div className="fuel-page fuel-full fuel-unified-customer fasdat-page fasdat-efor-template">
+        <FuelOperationLoader />
+        <section className="bim-v56-shell efor-v59-shell fasdat-template-shell">
+          <header className="bim-v56-header">
+            <div className="bim-v56-brand">
+              <div className="fasdat-template-logo"><Fuel size={24} /></div>
+              <div><span>FASDAT TARİFE YÖNETİMİ</span><h1>FASDAT – Yakıt Hesaplama</h1><p>Shell • Afyon Merkez • Motorin</p></div>
+            </div>
+            <div className="bim-v56-actions">
+              <button className="icon-btn" onClick={undoLastUpdate} disabled={!history.length}><Undo2 size={17} /><span>Geri Al</span></button>
+              <button className="icon-btn" onClick={() => showHistory("alis")}><History size={17} /><span>Geçmiş</span></button>
+              <button className="icon-btn excel" onClick={exportFasdatPriceMemoryExcel}><Download size={17} /><span>Excel</span></button>
+              <button className="icon-btn" onClick={goBackCustomers}><Users size={17} /><span>Müşteriler</span></button>
+              <button className="icon-btn update" disabled={!update} onClick={() => runFuelOperation("FASDAT tarifeleri güncelleniyor", applyUpdate)}><RefreshCw size={17} /><span>Güncelle</span></button>
+            </div>
+          </header>
+          <div className="bim-v56-summary">
+            <div className="bim-v56-logo"><div className="fasdat-summary-logo">FA</div><div><b>FASDAT</b><span>TON/TL Fiyatlandırma</span></div></div>
+            <div className="bim-v56-metric old"><span>REFERANS YAKIT FİYATI</span><strong>{oldFuelText} ₺</strong><small>Son kabul edilen fiyat</small></div>
+            <div className="bim-v56-arrow"><ArrowRight size={22} /></div>
+            <div className="bim-v56-metric current"><span>GÜNCEL YAKIT FİYATI</span><strong>{newFuelText} ₺</strong><small>Shell • Afyon Merkez</small></div>
+            <div className={`bim-v56-metric change ${update ? "passed" : ""}`}><span>DEĞİŞİM</span><strong>{changeText}</strong><small>{update ? "Eşik sağlandı" : "%7 eşik altında"}</small></div>
+            <div className="bim-v56-rule-toggle fasdat-rule-static"><span><SlidersHorizontal size={18} /><i>FASDAT KURALI</i><b>%7 eşik <ArrowRight size={14} /> %50 yansıtma</b></span><span className="fasdat-rule-status">{appliedText}</span></div>
+          </div>
+        </section>
+        <section className="eti-tariff-workspace efor-v59-workspace fasdat-template-workspace">
+          <FasdatUnifiedTariffTable
+            rows={rows}
+            onImport={importExcel}
+            onAdd={(type) => { setRowForm({ il: "", ilce: "", koy_mahalle: "", ton_tl: "" }); setModal({ kind: "add", type }); }}
+            onHistory={showHistory}
+          />
+        </section>
+        {error && <div className="fuel-error">{error}</div>}
+        {info && <div className="fuel-success">{info}</div>}
+      </div>
+    );
+  }
+
   return (
-    <div className="fuel-page fuel-full fuel-unified-customer fasdat-page"><FuelOperationLoader /><FirstPriceArchiveButton /><CustomerUnifiedOverview />
+    <div className="fuel-page fuel-full fuel-unified-customer fasdat-page fasdat-modern-v2"><FuelOperationLoader /><FirstPriceArchiveButton /><CustomerUnifiedOverview />
+      {customerFuelKey(customer) === "FASDAT" && <FasdatFuelMonitor />}
+      {customerFuelKey(customer) === "FASDAT" && (
+        <div className="fasdat-command-bar">
+          <div className="fasdat-command-title"><span className="fasdat-command-icon"><Fuel size={17} /></span><div><b>FASDAT YAKIT İŞLEM MERKEZİ</b><small>Motorin fiyatı ve tarife güncelleme işlemleri</small></div></div>
+          <div className="fasdat-command-actions">
+            <button type="button" onClick={undoLastUpdate} disabled={busy}><Undo2 size={15} /> Geri al</button>
+            <button type="button" onClick={() => showHistory("alis")}><History size={15} /> Geçmiş</button>
+            <button type="button" onClick={exportFasdatPriceMemoryExcel}><Download size={15} /> Excel</button>
+            <button type="button" onClick={goBackCustomers}><Users size={15} /> Müşteriler</button>
+            <button type="button" className="primary" disabled={!update} onClick={() => runFuelOperation("FASDAT tarifeleri güncelleniyor", applyUpdate)}><RefreshCw size={15} /> Tarifeleri güncelle</button>
+          </div>
+        </div>
+      )}
       <FuelReferenceBanner station="Shell" location="Afyon Merkez" note="FASDAT tarifelerinde kullanılan yakıt referans noktası." />
       <div className="fuel-detail-topbar">
         <button

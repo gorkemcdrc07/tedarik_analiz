@@ -1,4 +1,6 @@
 .ots-layout {
+    --ots-sidebar-open-width: 286px;
+    --ots-sidebar-rail-width: 84px;
     width: 100%;
     min-height: 100vh;
     background: var(--ots-bg);
@@ -8,9 +10,12 @@
     width: auto;
     min-width: 0;
     min-height: 100vh;
-    margin-left: var(--ots-sidebar-collapsed-width);
-    transition: margin-left .22s cubic-bezier(.4, 0, .2, 1);
+    margin-left: var(--ots-sidebar-rail-width);
+    transition: margin-left .28s cubic-bezier(.2, .8, .2, 1), width .28s cubic-bezier(.2, .8, .2, 1);
 }
+
+.ots-layout.is-sidebar-open:not(.is-mobile-layout) .ots-layout-main { margin-left: var(--ots-sidebar-open-width); }
+.ots-layout.is-sidebar-collapsed:not(.is-mobile-layout) .ots-layout-main { margin-left: var(--ots-sidebar-rail-width); }
 
 .ots-layout-content {
     width: 100%;
@@ -48,6 +53,11 @@
     }
 
     .ots-layout-content { padding: 18px 16px 26px; }
+}
+
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .ots-layout { --ots-sidebar-open-width: 252px; --ots-sidebar-rail-width: 76px; }
+    .ots-layout-content { padding-inline: 18px; }
 }
 
 @media (max-width: 640px) {

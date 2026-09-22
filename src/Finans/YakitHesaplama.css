@@ -4306,6 +4306,130 @@ button.fuel-v5-tab{cursor:pointer}
   }
 }
 
+/* V24 — Açık, ferah ve canlı pompa arayüzü */
+.fuel-figma-dashboard{
+  --fd-bg:#f4f7fb!important;--fd-card:rgba(255,255,255,.9)!important;
+  --fd-card2:#f8fafc!important;--fd-line:#dfe7ef!important;
+  --fd-text:#102a43!important;--fd-muted:#74879a!important;
+  --fd-shadow:0 14px 38px rgba(34,65,93,.075)!important;
+  background:
+    radial-gradient(circle at 2% 2%,rgba(255,190,0,.08),transparent 24%),
+    radial-gradient(circle at 95% 8%,rgba(78,132,255,.08),transparent 25%),
+    linear-gradient(180deg,#f8fbfd 0%,#f2f6fa 100%)!important;
+  color:var(--fd-text)!important;
+}
+.fuel-figma-dashboard .fd-main-row{gap:18px!important}
+.fuel-figma-dashboard .fd-price-showcase{
+  padding:16px!important;background:rgba(255,255,255,.55)!important;
+  border:1px solid rgba(255,255,255,.9)!important;border-radius:22px!important;
+  box-shadow:0 18px 45px rgba(31,61,88,.07),inset 0 1px 0 #fff!important;
+  backdrop-filter:blur(20px) saturate(135%);
+}
+.fuel-figma-dashboard .fd-price-panel{
+  min-height:160px!important;padding:14px 16px!important;
+  grid-template-columns:145px minmax(210px,1fr) auto!important;
+  grid-template-rows:1fr auto!important;
+  background:
+    linear-gradient(120deg,rgba(var(--fuel-rgb),.065),transparent 30%),
+    rgba(255,255,255,.94)!important;
+  border:1px solid rgba(var(--fuel-rgb),.20)!important;border-radius:18px!important;
+  box-shadow:0 10px 30px rgba(33,65,94,.075),inset 0 1px 0 #fff!important;
+}
+.fuel-figma-dashboard .fd-price-panel:hover{
+  transform:translateY(-4px) scale(1.006);
+  box-shadow:0 18px 42px rgba(33,65,94,.12),0 0 0 4px rgba(var(--fuel-rgb),.055)!important;
+}
+.fuel-figma-dashboard .fd-price-panel:before{
+  inset:auto -30px -52px auto;width:170px;height:110px;
+  background:radial-gradient(circle,rgba(var(--fuel-rgb),.14),transparent 68%);
+  animation:fdPumpAura 4.5s ease-in-out infinite;
+}
+.fuel-figma-dashboard .fd-price-panel:after{border-color:rgba(var(--fuel-rgb),.10)}
+.fuel-figma-dashboard .fd-price-brand b{color:#17324b!important;font-size:15px!important}
+.fuel-figma-dashboard .fd-price-brand small{color:#8a9aaa!important;font-size:6px!important}
+.fuel-figma-dashboard .fd-price-logo{
+  width:50px!important;height:50px!important;min-width:50px!important;
+  border:1px solid #e6edf3!important;border-radius:14px!important;
+  box-shadow:0 9px 24px rgba(var(--fuel-rgb),.13)!important;
+  transition:transform .3s cubic-bezier(.2,.9,.2,1),box-shadow .3s ease;
+}
+.fuel-figma-dashboard .fd-price-panel:hover .fd-price-logo{transform:translateY(-2px) rotate(-3deg) scale(1.06);box-shadow:0 13px 28px rgba(var(--fuel-rgb),.2)!important}
+.fuel-figma-dashboard .fd-price-display{
+  background:
+    radial-gradient(circle at 75% 28%,rgba(var(--fuel-rgb),.10),transparent 38%),
+    linear-gradient(155deg,#10232d,#071219 62%,#030a0f)!important;
+  border:1px solid #203842!important;border-radius:12px!important;
+  box-shadow:inset 0 0 0 4px rgba(0,0,0,.24),inset 0 0 32px rgba(0,0,0,.52),0 10px 22px rgba(20,43,57,.19)!important;
+}
+.fuel-figma-dashboard .fd-price-display:before,
+.fuel-figma-dashboard .fd-price-display:after{
+  position:absolute;top:8px;width:4px;height:4px;background:#314752;border-radius:50%;content:"";box-shadow:0 0 0 1px #02070a;
+}
+.fuel-figma-dashboard .fd-price-display:before{left:8px}.fuel-figma-dashboard .fd-price-display:after{right:8px}
+.fuel-figma-dashboard .fd-display-meta{color:#78909c!important}
+.fuel-figma-dashboard .fd-digital-price{font-size:52px!important;letter-spacing:.085em!important;animation:fdPriceBreathe 3.4s ease-in-out infinite}
+.fuel-figma-dashboard .fd-price-change{border-radius:999px!important;background:#f7fafc!important;border:1px solid #e3eaf1!important;box-shadow:0 5px 14px rgba(35,66,93,.055)}
+.fuel-figma-dashboard .fd-price-change.up{color:#ec4050!important}.fuel-figma-dashboard .fd-price-change.down{color:#0aa774!important}
+.fuel-figma-dashboard .fd-price-wave{display:none}
+.fd-pump-product{
+  position:relative;z-index:2;grid-column:1;grid-row:2;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 7px;
+  padding:8px 9px;margin-top:5px;border-top:1px solid rgba(var(--fuel-rgb),.14);color:#8a9aa8;
+}
+.fd-pump-product span{font-size:6px;font-weight:900;letter-spacing:.12em;color:var(--fuel-accent)}
+.fd-pump-product b{font-size:8px;color:#566c7d;white-space:nowrap}
+.fd-pump-product>div{grid-column:1/3;display:flex;gap:3px;margin-top:3px}
+.fd-pump-product i{display:block;width:17px;height:2px;border-radius:9px;background:rgba(var(--fuel-rgb),.18);animation:fdFlow 1.5s ease-in-out infinite}
+.fd-pump-product i:nth-child(2){animation-delay:.18s}.fd-pump-product i:nth-child(3){animation-delay:.36s}
+
+.fuel-figma-dashboard .fd-trend,
+.fuel-figma-dashboard .fd-customers,
+.fuel-figma-dashboard .fd-rail-card,
+.fuel-figma-dashboard .fd-kpi{
+  color:var(--fd-text)!important;background:rgba(255,255,255,.86)!important;
+  border:1px solid rgba(219,229,238,.86)!important;
+  box-shadow:0 12px 34px rgba(33,65,94,.055)!important;
+  backdrop-filter:blur(16px);
+}
+.fuel-figma-dashboard .fd-trend{border-radius:22px!important}
+.fuel-figma-dashboard .fd-trend-title-row h3,
+.fuel-figma-dashboard .fd-section-head h2,
+.fuel-figma-dashboard .fd-rail-card h3{color:#142f48!important}
+.fuel-figma-dashboard .fd-trend-title-row p,
+.fuel-figma-dashboard .fd-section-head p,
+.fuel-figma-dashboard .fd-rail-title p{color:#7b8ea1!important}
+.fuel-figma-dashboard .fd-trend-icon{background:linear-gradient(145deg,#edf5ff,#dbeaff)!important;color:#347fe0!important;box-shadow:none!important}
+.fuel-figma-dashboard .fd-trend-tabs{background:#f3f6f9!important}
+.fuel-figma-dashboard .fd-trend-tabs button{color:#72879a!important}
+.fuel-figma-dashboard .fd-trend-tabs button.active{color:#1d5fae!important;background:#fff!important;border-color:#d8e4ef!important;box-shadow:0 4px 12px rgba(35,68,98,.08)}
+.fuel-figma-dashboard .fd-trend svg line{stroke:#dce6ee!important}
+.fuel-figma-dashboard .fd-legend small{color:#8b9baa!important}
+.fuel-figma-dashboard .fd-trend-summary{background:#eaf9f3!important;color:#0a9f70!important;border-color:#c7ecdf!important}
+.fuel-figma-dashboard .fd-customer-card{
+  color:#153149!important;background:rgba(250,252,254,.95)!important;border-color:#e2e9f0!important;
+  box-shadow:none!important;
+}
+.fuel-figma-dashboard .fd-customer-card:hover{background:#fff!important;border-color:#cbdbe8!important;box-shadow:0 15px 32px rgba(38,72,103,.09)!important}
+.fuel-figma-dashboard .fd-card-head b,.fuel-figma-dashboard .fd-card-price strong{color:#18334c!important}
+.fuel-figma-dashboard .fd-card-head span,.fuel-figma-dashboard .fd-card-foot span,.fuel-figma-dashboard .fd-last{color:#8295a6!important}
+.fuel-figma-dashboard .fd-filters button,.fuel-figma-dashboard .fd-customer-search{background:#f7f9fb!important;border-color:#dfe7ee!important;color:#60778b!important}
+.fuel-figma-dashboard .fd-customer-search input{color:#18344e!important}
+.fuel-figma-dashboard .fd-rail-card{border-radius:18px!important}
+.fuel-figma-dashboard .fd-alert-item,.fuel-figma-dashboard .fd-sim-summary{background:#f8fafc!important;border-color:#e1e8ef!important;color:#18334c!important}
+.fuel-figma-dashboard .fd-kpi small,.fuel-figma-dashboard .fd-kpi p{color:#7a8ea0!important}
+.fuel-figma-dashboard .fd-kpi b{color:#18334c!important}
+.fuel-figma-dashboard .fd-kpi.fd-system{background:linear-gradient(135deg,#effbf6,#e9f8f1)!important;border-color:#c9e9db!important}
+
+@keyframes fdPumpAura{0%,100%{opacity:.55;transform:scale(.88)}50%{opacity:1;transform:scale(1.08)}}
+@keyframes fdPriceBreathe{0%,100%{filter:brightness(.92)}50%{filter:brightness(1.18)}}
+@keyframes fdFlow{0%,100%{background:rgba(var(--fuel-rgb),.15);transform:scaleX(.65)}50%{background:rgba(var(--fuel-rgb),.85);transform:scaleX(1)}}
+
+@media(max-width:1180px){.fuel-figma-dashboard .fd-digital-price{font-size:44px!important}}
+@media(max-width:720px){
+  .fuel-figma-dashboard .fd-price-panel{grid-template-columns:1fr auto!important}
+  .fd-pump-product{grid-column:1;grid-row:3}
+  .fuel-figma-dashboard .fd-price-change{grid-column:2;grid-row:3}
+}
+
 
 /* FIRST PRICE FULL TIMELINE V9 */
 .first-price-modal{
@@ -5747,6 +5871,120 @@ html[data-odak-theme="light"] .fd-chart-tooltip{background:rgba(255,255,255,.96)
 @media(max-width:1100px){.fuel-figma-dashboard .fd-customer-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.fuel-figma-dashboard .fd-main-row{grid-template-columns:1fr!important}.fuel-figma-dashboard .fd-price-showcase,.fuel-figma-dashboard .fd-trend{height:auto!important}}
 @media(max-width:680px){.fuel-figma-dashboard .fd-customer-grid{grid-template-columns:1fr!important}.fuel-figma-dashboard .fd-section-head{align-items:flex-start!important;flex-direction:column!important}.fuel-figma-dashboard .fd-filters{flex-wrap:wrap!important}}
 
+/* V23 — Akaryakıt istasyonu dijital fiyat panosu */
+.fuel-figma-dashboard{
+  background-color:var(--fd-bg)!important;
+  background-image:
+    linear-gradient(rgba(92,126,151,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(92,126,151,.025) 1px,transparent 1px)!important;
+  background-size:24px 24px!important;
+}
+.fuel-figma-dashboard .fd-price-showcase{
+  padding:14px!important;
+  background:rgba(8,22,33,.24)!important;
+  border:1px solid rgba(101,137,161,.13)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+  backdrop-filter:blur(14px);
+}
+.fuel-figma-dashboard .fd-price-panels{gap:12px!important}
+.fuel-figma-dashboard .fd-price-panel{
+  min-height:158px!important;
+  padding:14px 15px!important;
+  grid-template-columns:minmax(145px,.62fr) minmax(210px,1.3fr) auto!important;
+  grid-template-rows:1fr auto!important;
+  column-gap:15px!important;
+  border-radius:12px!important;
+  border:1px solid rgba(var(--fuel-rgb),.20)!important;
+  background:
+    linear-gradient(115deg,rgba(var(--fuel-rgb),.055),transparent 38%),
+    rgba(7,20,30,.88)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 12px 30px rgba(0,0,0,.13)!important;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s ease,box-shadow .25s ease;
+}
+.fuel-figma-dashboard .fd-price-panel:hover{
+  transform:translateY(-2px);
+  border-color:rgba(var(--fuel-rgb),.42)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 16px 36px rgba(0,0,0,.2),0 0 28px rgba(var(--fuel-rgb),.07)!important;
+}
+.fuel-figma-dashboard .fd-price-panel:after{
+  position:absolute;inset:7px;z-index:0;pointer-events:none;
+  border:1px solid rgba(255,255,255,.025);content:"";
+  clip-path:polygon(0 0,18px 0,18px 1px,1px 1px,1px 18px,0 18px,0 100%,18px 100%,18px calc(100% - 1px),1px calc(100% - 1px),1px calc(100% - 18px),0 calc(100% - 18px),100% calc(100% - 18px),calc(100% - 1px) calc(100% - 18px),calc(100% - 1px) calc(100% - 1px),calc(100% - 18px) calc(100% - 1px),calc(100% - 18px) 100%,100% 100%,100% 0,calc(100% - 18px) 0,calc(100% - 18px) 1px,calc(100% - 1px) 1px,calc(100% - 1px) 18px,100% 18px);
+}
+.fuel-figma-dashboard .fd-price-brand{gap:11px!important}
+.fuel-figma-dashboard .fd-price-brand>span:last-child{display:flex;min-width:0;flex-direction:column}
+.fuel-figma-dashboard .fd-price-brand b{font-size:14px!important;color:#eef4f7!important}
+.fuel-figma-dashboard .fd-price-brand small{margin-top:5px;color:#5f788a;font-size:6.5px;font-weight:850;letter-spacing:.11em;white-space:nowrap}
+.fuel-figma-dashboard .fd-price-logo{
+  width:46px!important;height:46px!important;min-width:46px!important;
+  border:1px solid rgba(var(--fuel-rgb),.24);border-radius:10px!important;
+  box-shadow:0 8px 22px rgba(var(--fuel-rgb),.12)!important;
+}
+.fd-price-display{
+  position:relative;z-index:2;grid-column:2;grid-row:1/3;align-self:stretch;
+  min-width:0;padding:10px 14px 9px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;
+  background:
+    radial-gradient(circle at 78% 35%,rgba(var(--fuel-rgb),.09),transparent 36%),
+    linear-gradient(180deg,#03090d,#071116 52%,#030a0e);
+  border:1px solid rgba(var(--fuel-rgb),.23);border-radius:8px;
+  box-shadow:inset 0 0 0 3px rgba(0,0,0,.34),inset 0 0 28px rgba(0,0,0,.7),0 5px 13px rgba(0,0,0,.2);
+}
+.fd-display-meta{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;color:#607785;font:800 6.5px/1 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.12em}
+.fd-display-meta span{display:flex;align-items:center;gap:6px}
+.fd-display-meta i{width:5px;height:5px;background:var(--fuel-accent);border-radius:50%;box-shadow:0 0 8px rgba(var(--fuel-rgb),.9);animation:fdFuelLed 1.8s ease-in-out infinite}
+.fd-display-meta small{font:inherit;color:#49606e}
+.fuel-figma-dashboard .fd-digital-price{
+  position:relative;z-index:2;align-self:flex-end!important;margin-top:8px;
+  color:var(--fuel-accent)!important;
+  font-family:"Roboto Mono","SFMono-Regular",Consolas,"Liberation Mono",monospace!important;
+  font-size:50px!important;font-weight:900!important;line-height:.92!important;
+  letter-spacing:.075em!important;font-variant-numeric:tabular-nums slashed-zero;
+  text-shadow:0 0 4px rgba(var(--fuel-rgb),.75),0 0 13px rgba(var(--fuel-rgb),.38),0 0 30px rgba(var(--fuel-rgb),.13)!important;
+  filter:none!important;
+}
+.fuel-figma-dashboard .fd-digital-price .fd-lira{margin-left:7px!important;color:rgba(var(--fuel-rgb),.78);font-size:20px!important;letter-spacing:0!important;vertical-align:top}
+.fd-display-scan{
+  position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.22;
+  background:repeating-linear-gradient(180deg,transparent 0,transparent 3px,rgba(255,255,255,.04) 4px);
+  animation:fdDisplayScan 6s linear infinite;
+}
+.fuel-figma-dashboard .fd-price-change{
+  align-self:center!important;height:auto!important;min-height:34px;padding:7px 10px!important;
+  border-radius:7px!important;font-size:11px!important;background:transparent!important;
+}
+.fuel-figma-dashboard .fd-price-wave{grid-column:1;grid-row:2;height:29px!important;opacity:.72}
+.fuel-figma-dashboard .fd-price-panel.shell{--fuel-accent:#ffc400;--fuel-rgb:255,196,0}
+.fuel-figma-dashboard .fd-price-panel.po{--fuel-accent:#ff3447;--fuel-rgb:255,52,71}
+
+.fuel-figma-dashboard .fd-trend,
+.fuel-figma-dashboard .fd-customers,
+.fuel-figma-dashboard .fd-rail-card,
+.fuel-figma-dashboard .fd-kpi{
+  background:rgba(10,27,39,.82)!important;
+  border-color:rgba(95,130,154,.16)!important;
+  backdrop-filter:blur(12px);
+}
+.fuel-figma-dashboard .fd-customer-card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease!important}
+.fuel-figma-dashboard .fd-customer-card:hover{border-color:rgba(82,134,255,.36)!important;box-shadow:0 12px 28px rgba(0,0,0,.14)!important}
+.fuel-figma-dashboard .fd-card-price strong{font-family:ui-monospace,SFMono-Regular,Consolas,monospace!important;letter-spacing:.025em}
+
+@keyframes fdFuelLed{0%,100%{opacity:.45;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes fdDisplayScan{from{transform:translateY(-8px)}to{transform:translateY(8px)}}
+
+@media(max-width:1180px){
+  .fuel-figma-dashboard .fd-price-panel{grid-template-columns:130px minmax(190px,1fr) auto!important}
+  .fuel-figma-dashboard .fd-digital-price{font-size:42px!important}
+}
+@media(max-width:720px){
+  .fuel-figma-dashboard .fd-price-panel{grid-template-columns:1fr auto!important;grid-template-rows:auto auto auto!important}
+  .fuel-figma-dashboard .fd-price-brand{grid-column:1/3;grid-row:1}
+  .fd-price-display{grid-column:1/3;grid-row:2;min-height:104px}
+  .fuel-figma-dashboard .fd-price-change{grid-column:2;grid-row:3}
+  .fuel-figma-dashboard .fd-price-wave{grid-column:1;grid-row:3}
+  .fuel-figma-dashboard .fd-digital-price{font-size:40px!important}
+}
+
 /* V28 — shared customer rule + automatic price workflow */
 .customer-rule-command{display:grid;grid-template-columns:1.15fr 1.6fr .9fr 44px .95fr 1.15fr;gap:14px;align-items:stretch;margin:14px 0;padding:16px;border:1px solid var(--border,#dfe7ef);border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(247,250,253,.96));box-shadow:0 12px 32px rgba(25,55,85,.07)}
 .crc-provider,.crc-rule,.crc-price,.crc-result{border:1px solid #e4eaf0;border-radius:16px;padding:17px;background:#fff;min-width:0}.crc-provider{display:flex;gap:14px;align-items:center;position:relative;overflow:hidden}.crc-provider:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:#ef3340}.is-shell .crc-provider:before{background:#f5b400}.crc-logo{width:58px;height:58px;flex:0 0 58px;border-radius:15px;background:#fff;display:grid;place-items:center;box-shadow:0 6px 18px rgba(20,45,70,.1)}.crc-logo img{max-width:46px;max-height:46px;object-fit:contain}.crc-provider small,.crc-rule small,.crc-price small,.crc-result small{display:block;font-size:9px;font-weight:800;letter-spacing:.08em;color:#718399}.crc-provider h3,.crc-rule h3{margin:5px 0 2px;font-size:17px;color:#102a43}.crc-provider p,.crc-rule p,.crc-price p,.crc-result p{margin:4px 0;font-size:10px;color:#667b8f}.crc-provider span{font-size:9px;font-weight:700;color:#079669}.crc-rule{background:linear-gradient(135deg,#f7fbff,#fff)}.crc-rule h3{font-size:19px}.crc-rule h3 i{font-style:normal;color:#7f92a5;margin:0 5px}.crc-rule-tags{display:flex;gap:7px;margin-top:10px}.crc-rule-tags b,.crc-rule-tags span{font-size:9px;border-radius:999px;padding:6px 9px}.crc-rule-tags b{background:#eaf8f3;color:#087c5b}.crc-rule-tags span{background:#eef4fa;color:#49657e}.crc-price{display:flex;flex-direction:column;justify-content:center}.crc-price strong{font-size:23px;color:#102a43;margin-top:7px}.crc-price em{font-style:normal;font-size:9px;color:#8494a4}.crc-price.current.auto{background:linear-gradient(145deg,#effcf7,#fff);border-color:#cdeee1}.crc-price.current.manual{background:linear-gradient(145deg,#fff8e9,#fff);border-color:#f4dfac}.crc-price input{width:100%;margin-top:7px;padding:9px 10px;border:1px solid #d7e1ea;border-radius:10px;font-size:17px;font-weight:800;outline:none}.crc-price input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}.crc-arrow{display:grid;place-items:center;color:#7b8da0}.crc-result{display:flex;flex-direction:column;justify-content:center;background:linear-gradient(145deg,#f6f9fc,#fff)}.crc-result strong{font-size:17px;margin-top:7px}.crc-result span{width:max-content;margin-top:8px;padding:5px 8px;border-radius:999px;background:#e9f1fb;color:#28629c;font-size:8px;font-weight:800}.legacy-ops-grid,.legacy-ops-compare{display:none!important}
@@ -5905,3 +6143,324 @@ html[data-odak-theme="dark"] .efor-v59-brand img,html[data-odak-theme="dark"] .e
 .efor-v60-workspace .efor-cay-table th:nth-child(5),.efor-v60-workspace .efor-cay-table td:nth-child(5){width:20%!important;text-align:right!important}
 .efor-v60-workspace .efor-cay-money b{display:inline-flex!important;justify-content:flex-end!important;min-width:112px!important;font-size:14px!important;font-weight:800!important;color:#0f6749!important;font-variant-numeric:tabular-nums!important}
 @media(max-width:900px){.efor-v60-workspace .eti-workspace-top{grid-template-columns:1fr!important}.efor-v60-workspace .bim-v48-table-actions{justify-content:flex-start!important}.efor-v60-workspace .fuel-table-wrap{overflow-x:auto!important}.efor-v60-workspace .efor-cay-table{min-width:760px!important}}
+
+/* FASDAT modern visual layer — calculation and update behavior unchanged */
+.fasdat-page{--fasdat-ink:#102b43;--fasdat-muted:#75879a;--fasdat-line:#dce7ef;--fasdat-blue:#146de2;--fasdat-teal:#0b8b78;position:relative;background:radial-gradient(circle at 85% 0%,#edf6ff 0,transparent 33%),linear-gradient(180deg,#f7fafc,#eef4f8)!important;padding:25px 32px 42px!important;gap:18px!important}
+.fasdat-page:before{content:"FASDAT";position:absolute;right:36px;top:24px;font-size:86px;font-weight:950;letter-spacing:-.09em;color:#102b4305;pointer-events:none}
+.fasdat-page .fuel-v5-overview{position:relative;z-index:1}
+.fasdat-page .fuel-v5-titlebar{position:relative;min-height:106px!important;padding:21px 23px!important;border:1px solid #d7e4ed!important;border-radius:20px!important;background:linear-gradient(120deg,#fff 0%,#f6fbff 65%,#edf7ff 100%)!important;box-shadow:0 14px 36px #1239570b!important}
+.fasdat-page .fuel-v5-brand{gap:16px!important}.fasdat-page .fuel-v5-brandmark{width:58px!important;height:58px!important;border-radius:16px!important;background:linear-gradient(145deg,#e8ad16,#f6cc55)!important;color:#15263a!important;font-size:16px!important;font-weight:950!important;box-shadow:0 8px 18px #dcae2e33!important}.fasdat-page .fuel-v5-brand>div>span{display:block!important;font-size:9px!important;letter-spacing:.13em!important;color:#b07800!important;font-weight:850!important}.fasdat-page .fuel-v5-brand h1{font-size:25px!important;letter-spacing:-.045em!important;color:var(--fasdat-ink)!important;margin:3px 0 4px!important}.fasdat-page .fuel-v5-brand p{font-size:11px!important;color:var(--fasdat-muted)!important}.fasdat-page .fuel-v5-title-actions{gap:8px!important}.fasdat-page .fuel-v5-title-actions button{height:38px!important;border-radius:10px!important;font-size:10px!important;font-weight:800!important;transition:.18s ease!important}.fasdat-page .fuel-v5-title-actions button:hover{transform:translateY(-2px)!important;box-shadow:0 8px 18px #193b5417!important}.fasdat-page .fuel-v5-undo-main{background:#fff!important;border:1px solid #d5e1ea!important;color:#36536d!important}.fasdat-page .fuel-v5-memory-export{background:#ecf9f4!important;border:1px solid #c7e9dc!important;color:#177457!important}.fasdat-page .fuel-v5-other{background:#193a58!important;color:#fff!important;border-color:#193a58!important}
+.fasdat-page>.fuel-reference-panel{position:relative;z-index:1;border-radius:18px!important;border:1px solid #d7e4ed!important;box-shadow:0 12px 30px #173a5310!important;overflow:hidden!important;background:#fff!important}.fasdat-page .fuel-reference-banner{min-height:139px!important;padding:22px 24px!important;background:linear-gradient(115deg,#fff 0%,#fbfdff 53%,#e9f6ff 100%)!important}.fasdat-page .fuel-reference-icon.shell{width:64px!important;height:64px!important;border-radius:17px!important;border:1px solid #ead68b!important;box-shadow:0 8px 18px #cda82b24!important}.fasdat-page .fuel-reference-title strong{font-size:20px!important;color:#102b43!important}.fasdat-page .fuel-reference-title b{font-size:14px!important;color:#597188!important}.fasdat-page .fuel-reference-main small{font-size:10px!important;color:#73889a!important}.fasdat-page .fuel-reference-badge{background:#e8f8f0!important;border:1px solid #c8eadb!important;border-radius:999px!important;padding:8px 12px!important;color:#1f8a62!important}.fasdat-page .fuel-reference-prices{min-height:139px!important;background:#fff!important}.fasdat-page .fuel-reference-price-card{padding:23px 19px!important;transition:.18s ease!important}.fasdat-page .fuel-reference-price-card:hover{background:#f8fbfd!important;transform:translateY(-2px)!important}.fasdat-page .fuel-reference-price-card>span{font-size:9px!important;letter-spacing:.1em!important;color:#8395a4!important}.fasdat-page .fuel-reference-price-card>strong{font-size:25px!important;letter-spacing:-.04em!important;color:#112d47!important}.fasdat-page .fuel-reference-price-card.current>strong{color:#117f6c!important}.fasdat-page .fuel-reference-price-card.change>strong{font-size:21px!important}.fasdat-page .fuel-reference-price-card.status>strong{font-size:16px!important}
+.fasdat-page .fuel-rule-panel.simple-check{position:relative;z-index:1;border:1px solid #d7e4ed!important;border-radius:18px!important;padding:22px!important;background:#fff!important;box-shadow:0 12px 30px #173a530b!important}.fasdat-page .fasdat-threshold-head{margin-bottom:16px!important}.fasdat-page .fasdat-threshold-head b{font-size:15px!important;color:var(--fasdat-ink)!important}.fasdat-page .fasdat-threshold-head span{font-size:10px!important}.fasdat-page .fasdat-threshold-head strong{font-size:25px!important;color:var(--fasdat-blue)!important}.fasdat-page .fasdat-threshold-track{height:12px!important;background:linear-gradient(90deg,#daf5eb 0 70%,#ffe5df 70% 100%)!important;box-shadow:inset 0 1px 3px #153c5316!important}.fasdat-page .fasdat-threshold-fill{background:linear-gradient(90deg,#55caa8,#0e8a77)!important}.fasdat-page .fasdat-threshold-dot{width:19px!important;height:19px!important}.fasdat-page .simple-calc-grid.fasdat{margin-top:19px!important;padding:16px!important;border:1px solid #e0eaf1!important;border-radius:14px!important;background:#f7fafc!important}.fasdat-page .simple-calc-grid.fasdat input{height:48px!important;border:1px solid #cedce7!important;border-radius:10px!important;background:#fff!important;font-size:18px!important;font-weight:800!important;color:var(--fasdat-ink)!important;box-shadow:inset 0 1px 2px #173b5310!important}.fasdat-page .simple-calc-grid.fasdat input:focus{border-color:#5a9bf0!important;box-shadow:0 0 0 4px #4e93ef1a!important}.fasdat-page .simple-arrow{height:48px!important;color:#8da0b1!important;font-size:22px!important}.fasdat-page .fuel-update-actions{margin-top:16px!important;display:flex!important;justify-content:flex-end!important;gap:10px!important}.fasdat-page .fuel-update-actions button{height:43px!important;border-radius:11px!important;font-size:10px!important;font-weight:850!important}.fasdat-page .fuel-save{background:linear-gradient(135deg,#1b78e7,#1256b8)!important;box-shadow:0 8px 20px #1670da2b!important}.fasdat-page .fuel-undo-button{background:#fff!important;border:1px solid #d5e1ea!important;color:#4c657a!important}
+.fasdat-page .fasdat-tariff-unified,.fasdat-page .fuel-two-tables,.fasdat-page .fuel-table-card{position:relative;z-index:1;border:1px solid #d7e4ed!important;border-radius:18px!important;background:#fff!important;box-shadow:0 12px 30px #173a530b!important;overflow:hidden!important}.fasdat-page .fasdat-tariff-toolbar,.fasdat-page .fuel-table-card-head{padding:19px 22px!important;background:linear-gradient(110deg,#fff,#f7fbfe)!important;border-bottom:1px solid #e4edf3!important}.fasdat-page .fasdat-tariff-toolbar h2,.fasdat-page .fuel-table-card-head h2{font-size:17px!important;color:var(--fasdat-ink)!important}.fasdat-page .fasdat-tariff-toolbar p,.fasdat-page .fuel-table-card-head p{font-size:10px!important;color:var(--fasdat-muted)!important}.fasdat-page .fasdat-tariff-controls button,.fasdat-page .fasdat-tariff-controls label{height:35px!important;border-radius:9px!important;font-size:10px!important}.fasdat-page .fasdat-tariff-table th,.fasdat-page .fuel-table th{height:43px!important;background:#f2f7fb!important;color:#708397!important;letter-spacing:.08em!important;font-size:9px!important}.fasdat-page .fasdat-tariff-table td,.fasdat-page .fuel-table td{height:55px!important;font-size:11px!important;border-bottom:1px solid #edf2f6!important;color:#29445a!important}.fasdat-page .fasdat-tariff-table tbody tr,.fasdat-page .fuel-table tbody tr{transition:.16s ease!important}.fasdat-page .fasdat-tariff-table tbody tr:hover,.fasdat-page .fuel-table tbody tr:hover{background:#f5fbfa!important;transform:translateX(2px)!important}.fasdat-page .fasdat-tariff-table td b,.fasdat-page .fuel-table td b{color:#113450!important;font-weight:850!important}.fasdat-page .fasdat-margin{padding:5px 8px!important;border-radius:999px!important;background:#e8f7f0!important;color:#16835e!important;font-weight:800!important}
+@media(max-width:900px){.fasdat-page{padding:14px!important}.fasdat-page .fuel-v5-titlebar{align-items:flex-start!important;flex-direction:column!important;gap:14px!important}.fasdat-page .fuel-v5-title-actions{width:100%!important;flex-wrap:wrap!important}.fasdat-page .fuel-v5-title-actions button{flex:1!important}.fasdat-page .fuel-reference-prices{grid-template-columns:repeat(2,1fr)!important}.fasdat-page .fuel-update-actions{display:grid!important;grid-template-columns:1fr!important}.fasdat-page .simple-calc-grid.fasdat{grid-template-columns:1fr!important}.fasdat-page .simple-arrow{display:none!important}}
+@media(max-width:540px){.fasdat-page .fuel-v5-brand h1{font-size:21px!important}.fasdat-page .fuel-reference-prices{grid-template-columns:1fr!important}.fasdat-page .fuel-reference-banner{padding:17px!important}.fasdat-page .fasdat-threshold-head{display:block!important}.fasdat-page .fasdat-threshold-head>div:last-child{text-align:left!important;margin-top:9px!important}.fasdat-page .fasdat-tariff-toolbar{padding:15px!important}}
+
+/* FASDAT V2 — visible redesign layer. Calculation markup and handlers stay unchanged. */
+.fasdat-page.fasdat-modern-v2{background:#eef3f8!important;padding:22px 30px 45px!important;display:flex!important;flex-direction:column!important;gap:20px!important;color:#142b43!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-overview{display:contents!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-breadcrumb{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-titlebar{order:1!important;display:flex!important;align-items:center!important;min-height:125px!important;padding:28px 32px!important;border:0!important;border-radius:24px!important;background:linear-gradient(120deg,#092d49 0%,#115779 55%,#0c8a7a 100%)!important;box-shadow:0 18px 38px rgba(9,48,76,.2)!important;color:#fff!important;overflow:hidden!important;position:relative!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-titlebar:after{content:"FASDAT";position:absolute;right:30px;bottom:-25px;font-size:120px;line-height:1;font-weight:950;letter-spacing:-.1em;color:#ffffff0e;pointer-events:none}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brand{position:relative;z-index:1;gap:18px!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-brandmark{width:68px!important;height:68px!important;border-radius:20px!important;background:#f8c846!important;color:#17334b!important;border:3px solid #fff6!important;box-shadow:0 10px 24px #001c2f55!important;font-size:18px!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-brand>div>span{display:block!important;color:#bcefe3!important;font-size:9px!important;letter-spacing:.18em!important;font-weight:850!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-brand h1{font-size:30px!important;color:#fff!important;line-height:1.1!important;margin:6px 0!important;letter-spacing:-.055em!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-brand p{font-size:12px!important;color:#c0d8e3!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-title-actions{position:relative;z-index:2;margin-left:auto!important;display:flex!important;gap:9px!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-title-actions button{height:42px!important;border-radius:11px!important;font-size:10px!important;box-shadow:none!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-undo-main{background:#ffffff18!important;border-color:#ffffff40!important;color:#fff!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-memory-export{background:#d8f6e9!important;border-color:#d8f6e9!important;color:#11664f!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-other{background:#f8c846!important;border-color:#f8c846!important;color:#17334b!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-panel{order:2!important;display:grid!important;grid-template-columns:1.1fr 1.9fr!important;min-height:152px!important;border:0!important;border-radius:18px!important;background:#fff!important;box-shadow:0 12px 28px rgba(21,54,79,.1)!important;overflow:hidden!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-banner{min-height:152px!important;padding:25px!important;background:linear-gradient(135deg,#fff8db,#fff)!important;border-right:1px solid #f0e4ad!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-icon.shell{width:68px!important;height:68px!important;border-radius:18px!important;background:#fff!important;border:2px solid #f4cb3c!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-title strong{font-size:22px!important;color:#17334b!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-title b{font-size:15px!important;color:#6f7f8d!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-main small{font-size:10px!important;color:#7f8b94!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-prices{grid-template-columns:repeat(3,1fr)!important;min-height:152px!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card{padding:25px 21px!important;border-right:1px solid #edf1f4!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card>span{font-size:9px!important;font-weight:850!important;letter-spacing:.1em!important;color:#8a9aaa!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card>strong{font-size:27px!important;color:#183650!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card.current{background:#effbf6!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card.current>strong{color:#0d9470!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card.change{background:#fff7e6!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card.status{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-panel.simple-check{order:3!important;border:0!important;border-radius:18px!important;padding:25px!important;background:#fff!important;box-shadow:0 12px 28px rgba(21,54,79,.08)!important}.fasdat-page.fasdat-modern-v2 .fasdat-threshold-head{padding:0 0 17px!important;border-bottom:1px solid #e8eff4!important}.fasdat-page.fasdat-modern-v2 .fasdat-threshold-head b{font-size:17px!important;color:#163651!important}.fasdat-page.fasdat-modern-v2 .fasdat-threshold-head span{font-size:10px!important;color:#8192a1!important}.fasdat-page.fasdat-modern-v2 .fasdat-threshold-head strong{font-size:29px!important;color:#087d70!important}.fasdat-page.fasdat-modern-v2 .fasdat-threshold-track{height:14px!important;margin:22px 0 31px!important;background:linear-gradient(90deg,#c9f2e2 0 70%,#ffdeda 70%)!important}.fasdat-page.fasdat-modern-v2 .fasdat-threshold-fill{background:linear-gradient(90deg,#2fc09d,#087d70)!important}.fasdat-page.fasdat-modern-v2 .fasdat-threshold-dot{width:21px!important;height:21px!important;background:#087d70!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat{display:grid!important;grid-template-columns:1fr 46px 1fr 1fr 1fr!important;align-items:end!important;gap:13px!important;margin:0!important;padding:18px!important;border-radius:15px!important;background:#f1f6f9!important;border:1px solid #dce7ed!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat .simple-result-card{display:flex!important;flex-direction:column!important;justify-content:center!important;min-height:90px!important;padding:14px!important;border:1px solid #d9e7ee!important;border-radius:12px!important;background:#fff!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat label{padding:14px!important;border:1px solid #d9e7ee!important;border-radius:12px!important;background:#fff!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat label>span,.fasdat-page.fasdat-modern-v2 .simple-result-card>span{font-size:9px!important;font-weight:850!important;letter-spacing:.09em!important;color:#718799!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat input{height:47px!important;margin-top:9px!important;border:0!important;border-bottom:2px solid #d5e2e9!important;border-radius:0!important;background:transparent!important;font-size:20px!important;font-weight:850!important;color:#173851!important;box-shadow:none!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat input:focus{border-bottom-color:#168f7e!important;box-shadow:none!important}.fasdat-page.fasdat-modern-v2 .simple-result-card strong{font-size:23px!important;color:#123752!important}.fasdat-page.fasdat-modern-v2 .simple-result-card small{font-size:9px!important;color:#8393a0!important;margin-top:5px!important}.fasdat-page.fasdat-modern-v2 .simple-arrow{font-size:30px!important;color:#7e97a9!important;align-self:center!important}.fasdat-page.fasdat-modern-v2 .fuel-update-actions{display:flex!important;justify-content:flex-end!important;gap:11px!important;margin:17px 0 0!important}.fasdat-page.fasdat-modern-v2 .fuel-update-actions button{height:45px!important;padding:0 18px!important;border-radius:11px!important;font-size:10px!important;font-weight:850!important}.fasdat-page.fasdat-modern-v2 .fuel-save{background:linear-gradient(135deg,#1479e8,#0a55b4)!important;box-shadow:0 8px 18px #1268cf2e!important}.fasdat-page.fasdat-modern-v2 .fuel-undo-button{background:#fff!important;border:1px solid #d2e0e8!important;color:#446178!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-unified,.fasdat-page.fasdat-modern-v2 .fuel-two-tables,.fasdat-page.fasdat-modern-v2 .fuel-table-card{order:4!important;border:0!important;border-radius:18px!important;background:#fff!important;box-shadow:0 12px 28px rgba(21,54,79,.08)!important;overflow:hidden!important}.fasdat-page.fasdat-modern-v2 .fasdat-tariff-toolbar,.fasdat-page.fasdat-modern-v2 .fuel-table-card-head{padding:21px 25px!important;background:#fff!important;border-bottom:1px solid #e4edf2!important}.fasdat-page.fasdat-modern-v2 .fasdat-tariff-table th,.fasdat-page.fasdat-modern-v2 .fuel-table th{height:45px!important;background:#123650!important;color:#d9e9f1!important;font-size:9px!important;letter-spacing:.1em!important}.fasdat-page.fasdat-modern-v2 .fasdat-tariff-table td,.fasdat-page.fasdat-modern-v2 .fuel-table td{height:56px!important;font-size:11px!important;border-bottom:1px solid #edf2f5!important}.fasdat-page.fasdat-modern-v2 .fasdat-tariff-table tbody tr:hover td,.fasdat-page.fasdat-modern-v2 .fuel-table tbody tr:hover td{background:#edfaf6!important}.fasdat-page.fasdat-modern-v2 .fasdat-margin{background:#dff6ed!important;color:#087b62!important;border-radius:999px!important;padding:5px 9px!important;font-weight:850!important}
+@media(max-width:1050px){.fasdat-page.fasdat-modern-v2 .fuel-reference-panel{grid-template-columns:1fr!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-banner{border-right:0;border-bottom:1px solid #f0e4ad}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat{grid-template-columns:1fr 32px 1fr!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat .simple-result-card{grid-column:auto!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat .simple-result-card:nth-last-child(-n+2){display:flex!important}}
+@media(max-width:700px){.fasdat-page.fasdat-modern-v2{padding:12px!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-titlebar{padding:22px 18px!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-brand h1{font-size:23px!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-title-actions{width:100%!important;flex-wrap:wrap!important;margin-left:0!important}.fasdat-page.fasdat-modern-v2 .fuel-v5-title-actions button{flex:1 1 45%!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-prices{grid-template-columns:1fr!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card.status{display:flex!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat{grid-template-columns:1fr!important}.fasdat-page.fasdat-modern-v2 .simple-arrow{display:none!important}.fasdat-page.fasdat-modern-v2 .fuel-update-actions{display:grid!important;grid-template-columns:1fr!important}}
+
+/* FASDAT V3 — clean single-focus layout */
+.fasdat-page.fasdat-modern-v2 > .fuel-detail-topbar,
+.fasdat-page.fasdat-modern-v2 > .fuel-customer-head,
+.fasdat-page.fasdat-modern-v2 .fuel-v5-kpis,
+.fasdat-page.fasdat-modern-v2 .fuel-v5-tabs,
+.fasdat-page.fasdat-modern-v2 .fuel-v5-breadcrumb{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brandmark{position:relative;display:grid!important;place-items:center!important;font-size:0!important;overflow:hidden!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brandmark:before{content:'FA';font-size:20px;font-weight:950;letter-spacing:-.08em;color:#17334b}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brandmark:after{content:'FASDAT';position:absolute;bottom:7px;left:0;right:0;text-align:center;font-size:6px;font-weight:900;letter-spacing:.08em;color:#8b6810}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brand h1{max-width:620px}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-title-actions button{white-space:nowrap}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-banner{display:flex!important;align-items:center!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-main{min-width:0}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-photo{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-head{padding-bottom:18px!important;margin-bottom:0!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-head > div:first-child h2{font-size:22px!important;letter-spacing:-.04em!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-head > div:first-child p{max-width:620px!important;font-size:11px!important;line-height:1.55!important;color:#738698!important}
+.fasdat-page.fasdat-modern-v2 .fuel-decision{border-radius:12px!important;padding:12px 15px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-title h2{font-size:20px!important;letter-spacing:-.04em!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-title span{background:#e9f8f2!important;color:#0b8067!important;border-radius:999px!important;padding:5px 9px!important}
+
+/* FASDAT compact / BİM-style density pass */
+.fasdat-page.fasdat-modern-v2{padding:14px 20px 28px!important;gap:12px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-titlebar{min-height:92px!important;padding:18px 22px!important;border-radius:16px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brand{gap:13px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brandmark{width:52px!important;height:52px!important;border-radius:14px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brandmark:before{font-size:16px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brandmark:after{bottom:5px!important;font-size:5px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brand h1{font-size:23px!important;margin:3px 0!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brand p{font-size:10px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-title-actions{gap:6px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-title-actions button{height:34px!important;padding:0 11px!important;font-size:9px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-panel{min-height:112px!important;border-radius:14px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-banner{min-height:112px!important;padding:16px 18px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-icon.shell{width:48px!important;height:48px!important;border-radius:13px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-title strong{font-size:17px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-title b{font-size:12px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-main small{font-size:9px!important;display:block!important;max-width:250px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-badge{padding:6px 9px!important;font-size:8px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-prices{min-height:112px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card{padding:17px 15px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card>strong{font-size:21px!important;margin-top:8px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card>small{font-size:8px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-panel.simple-check{padding:18px!important;border-radius:14px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-head{padding-bottom:12px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-head > div:first-child h2{font-size:18px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-head > div:first-child p{font-size:10px!important;line-height:1.4!important;margin:4px 0 0!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-threshold-head{padding-bottom:11px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-threshold-head b{font-size:14px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-threshold-head strong{font-size:23px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-threshold-track{margin:15px 0 23px!important;height:10px!important}
+.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat{gap:9px!important;padding:11px!important;border-radius:11px!important}
+.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat label{padding:10px!important;border-radius:9px!important}
+.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat input{height:37px!important;font-size:16px!important;margin-top:5px!important}
+.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat .simple-result-card{min-height:67px!important;padding:10px!important;border-radius:9px!important}
+.fasdat-page.fasdat-modern-v2 .simple-result-card strong{font-size:18px!important}
+.fasdat-page.fasdat-modern-v2 .simple-result-card small{font-size:8px!important;margin-top:3px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-update-actions{margin-top:11px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-update-actions button{height:37px!important;padding:0 13px!important;font-size:9px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-unified{border-radius:14px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-toolbar{padding:15px 18px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-table th{height:37px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-table td{height:43px!important;font-size:10px!important}
+@media(max-width:1050px){.fasdat-page.fasdat-modern-v2{padding:12px!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-panel{grid-template-columns:1fr!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-banner{border-right:0!important;border-bottom:1px solid #f0e4ad!important}}
+
+/* FASDAT identity: fuel calculation is the primary action */
+.fasdat-page.fasdat-modern-v2 .fuel-v5-titlebar.fasdat-fuel-hero{min-height:108px!important;background:linear-gradient(118deg,#082a44 0%,#0b536f 54%,#078a78 100%)!important;box-shadow:0 15px 34px rgba(7,53,74,.22)!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-fuel-hero:before{content:"MOTORİN  •  LİTRE FİYATI  •  TARİFE ETKİSİ";position:absolute;right:28px;top:19px;font-size:8px;font-weight:900;letter-spacing:.16em;color:#b8eee2;opacity:.9}
+.fasdat-page.fasdat-modern-v2 .fasdat-fuel-hero:after{content:"₺";right:33px;bottom:-34px;font-size:150px;color:#ffffff0d;letter-spacing:-.08em}
+.fasdat-page.fasdat-modern-v2 .fasdat-fuel-hero .fuel-v5-brandmark{background:linear-gradient(145deg,#ffd954,#f4b92e)!important;border-color:#fff8!important;color:#123852!important;box-shadow:0 9px 22px #001a2b55!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-fuel-hero .fuel-v5-brandmark:before,.fasdat-page.fasdat-modern-v2 .fasdat-fuel-hero .fuel-v5-brandmark:after{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-fuel-hero .fuel-v5-brandmark svg{display:block!important;position:relative;z-index:2}
+.fasdat-page.fasdat-modern-v2 .fasdat-fuel-hero .fuel-v5-brand>div>span{color:#8ff0da!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-fuel-hero .fuel-v5-brand h1{font-size:27px!important;letter-spacing:-.05em!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-fuel-hero .fuel-v5-brand p{max-width:520px!important;color:#c5dde4!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-panel:before{content:"AKTİF YAKIT REFERANSI";position:absolute;z-index:3;top:10px;right:14px;padding:5px 8px;border-radius:999px;background:#e5f8f1;color:#0b8067;font-size:7px;font-weight:900;letter-spacing:.12em}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-panel{position:relative!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card.current{position:relative!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-price-card.current:before{content:"CANLI";position:absolute;top:11px;right:12px;color:#0b9875;font-size:7px;font-weight:900;letter-spacing:.12em}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-panel.simple-check:before{content:"01  /  FİYAT DEĞİŞİMİ HESAPLAMA";display:block;margin:-3px 0 13px;color:#126fc8;font-size:8px;font-weight:900;letter-spacing:.14em}
+
+/* FASDAT live fuel monitor */
+.fasdat-fuel-monitor{position:relative;overflow:hidden;padding:18px 20px;border:1px solid #cde4e8;border-radius:16px;background:linear-gradient(115deg,#f8fffd 0%,#eef8fb 58%,#e9f5ff 100%);box-shadow:0 10px 24px rgba(18,66,88,.08);animation:fasdatMonitorIn .45s ease both}
+.fasdat-fuel-monitor:before{content:"";position:absolute;right:-80px;top:-100px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,#54d5bc33 0,transparent 68%);pointer-events:none}
+.fasdat-monitor-title{position:relative;display:flex;align-items:center;gap:10px;margin-bottom:14px}.fasdat-monitor-title>div{display:grid;gap:2px}.fasdat-monitor-title small{font-size:8px;font-weight:900;letter-spacing:.15em;color:#0c927a}.fasdat-monitor-title h2{margin:0;color:#113852;font-size:18px;letter-spacing:-.04em}.fasdat-monitor-title p{margin:0;color:#738a9b;font-size:9px}.fasdat-live-dot{width:9px;height:9px;border-radius:50%;background:#20c997;box-shadow:0 0 0 5px #c9f5e9;animation:fasdatPulse 1.7s infinite}.fasdat-live-badge{display:flex;align-items:center;gap:6px;margin-left:auto;padding:7px 10px;border:1px solid #bfeadd;border-radius:999px;background:#e9fbf5;color:#0d8269;font-size:8px;font-weight:900}.fasdat-live-badge span{width:5px;height:5px;border-radius:50%;background:#16b88b;animation:fasdatPulse 1.2s infinite}
+.fasdat-monitor-grid{position:relative;display:grid;grid-template-columns:175px 1.25fr 1.1fr 150px;align-items:stretch;gap:10px}.fasdat-gauge-card,.fasdat-price-flow,.fasdat-mini-chart-card,.fasdat-impact-card{min-height:96px;border:1px solid #d7e8ed;border-radius:12px;background:#ffffffc9}.fasdat-gauge-card{display:flex;align-items:center;gap:10px;padding:10px 12px}.fasdat-gauge-ring{width:68px;height:68px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(#13a785 0 76%,#d9f0ec 76% 100%);padding:6px;box-shadow:0 5px 12px #0c9b871c}.fasdat-gauge-ring>div{width:100%;height:100%;display:grid;place-items:center;align-content:center;gap:1px;border-radius:50%;background:#f8fffd;color:#103c4a;text-align:center}.fasdat-gauge-ring svg{color:#eea917}.fasdat-gauge-ring b{font-size:12px;line-height:1}.fasdat-gauge-ring small{font-size:7px;color:#8297a3}.fasdat-gauge-caption{font-size:8px;font-weight:900;line-height:1.35;color:#78919d;max-width:54px}.fasdat-price-flow{display:grid;grid-template-columns:1fr 54px 1fr;align-items:center;gap:7px;padding:15px}.fasdat-flow-label{display:grid;gap:5px}.fasdat-flow-label span,.fasdat-mini-chart-card span,.fasdat-impact-card span{font-size:8px;font-weight:900;letter-spacing:.1em;color:#8093a0}.fasdat-flow-label b{font-size:17px;color:#173c57;letter-spacing:-.03em}.fasdat-flow-label.current b{color:#079479}.fasdat-flow-line{position:relative;display:flex;align-items:center;justify-content:center;color:#7893a0}.fasdat-flow-line:before{content:"";position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,#c9dfe5,#0da788);border-radius:2px}.fasdat-flow-line i{width:7px;height:7px;z-index:1;border-radius:50%;background:#0da788;box-shadow:0 0 0 4px #d1f5eb;animation:fasdatTravel 1.8s ease-in-out infinite}.fasdat-flow-line svg{z-index:2;margin-left:29px;background:#eef8fb}.fasdat-change-pill{grid-column:1/4;width:max-content;display:flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;font-size:8px;font-weight:900}.fasdat-change-pill.up{background:#e6f8f0;color:#068361}.fasdat-change-pill.down{background:#fff0ed;color:#d4573f}.fasdat-mini-chart-card{display:grid;grid-template-rows:auto 1fr auto;padding:12px 13px}.fasdat-mini-chart-card>div:first-child{display:flex;justify-content:space-between}.fasdat-mini-chart-card>div:first-child b{font-size:8px;color:#0c947a}.fasdat-mini-bars{display:flex;align-items:flex-end;gap:4px;height:48px;padding-top:8px}.fasdat-mini-bars i{flex:1;min-width:4px;border-radius:3px 3px 1px 1px;background:linear-gradient(180deg,#20c9a1,#087d70);transform-origin:bottom;animation:fasdatBarIn .7s ease both}.fasdat-mini-chart-card small{font-size:7px;color:#91a1ab}.fasdat-impact-card{display:grid;align-content:center;gap:5px;padding:14px;background:linear-gradient(145deg,#fffaf0,#fff5df);border-color:#f0ddb1}.fasdat-impact-card strong{font-size:22px;letter-spacing:-.04em;color:#d58b0b}.fasdat-impact-card small{font-size:8px;color:#9b7a43}
+@keyframes fasdatPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.78)}}@keyframes fasdatTravel{0%,100%{transform:translateX(-17px)}50%{transform:translateX(17px)}}@keyframes fasdatBarIn{from{transform:scaleY(.35);opacity:.3}to{transform:scaleY(1);opacity:1}}@keyframes fasdatMonitorIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@media(max-width:1050px){.fasdat-monitor-grid{grid-template-columns:1fr 1.4fr 1fr}.fasdat-impact-card{grid-column:1/4;min-height:62px;display:flex;align-items:center;justify-content:space-between}.fasdat-impact-card small{margin-left:auto}}
+@media(max-width:680px){.fasdat-fuel-monitor{padding:14px}.fasdat-monitor-title{align-items:flex-start}.fasdat-live-badge{display:none}.fasdat-monitor-grid{grid-template-columns:1fr 1fr}.fasdat-gauge-card{grid-column:1/3}.fasdat-price-flow{grid-column:1/3}.fasdat-mini-chart-card{grid-column:1/3}.fasdat-impact-card{grid-column:1/3}}
+
+/* FASDAT table-first layout: less cards, faster access to tariffs */
+.fasdat-page.fasdat-modern-v2 .fasdat-fuel-monitor{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-unified{order:2!important;margin-top:0!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-panel{order:3!important;display:block!important;min-height:74px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-banner{min-height:74px!important;padding:12px 18px!important;border:0!important;background:linear-gradient(100deg,#fffdf2,#ffffff 62%,#f1fbf7)!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-icon.shell{width:42px!important;height:42px!important;border-radius:11px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-title strong{font-size:15px!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-title b{font-size:11px!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-main small{font-size:8px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-prices{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-panel:before{top:9px!important;right:13px!important;font-size:6px!important;padding:4px 7px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-panel.simple-check{order:4!important;padding:16px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-toolbar{min-height:62px!important;display:flex!important;align-items:center!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-table-wrap{max-height:calc(100vh - 330px)!important;overflow:auto!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-table th{position:sticky!important;top:0!important;z-index:2!important}
+
+/* FASDAT v8 — command-center layout */
+.fasdat-page.fasdat-modern-v2 .fuel-v5-title-actions{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-titlebar{order:1!important;min-height:86px!important;padding:17px 22px!important;border-radius:15px!important}
+.fasdat-page.fasdat-modern-v2 .fuel-v5-brand h1{font-size:24px!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-command-bar{order:2!important;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:62px;padding:10px 13px 10px 16px;border:1px solid #dbe6ee;border-radius:14px;background:#fff;box-shadow:0 7px 18px rgba(21,54,79,.06)}
+.fasdat-page.fasdat-modern-v2 .fasdat-command-title{display:flex;align-items:center;gap:10px;min-width:220px}.fasdat-page.fasdat-modern-v2 .fasdat-command-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#fff6d5;color:#ba8300}.fasdat-page.fasdat-modern-v2 .fasdat-command-title div{display:grid;gap:2px}.fasdat-page.fasdat-modern-v2 .fasdat-command-title b{font-size:10px;letter-spacing:.08em;color:#173b55}.fasdat-page.fasdat-modern-v2 .fasdat-command-title small{font-size:8px;color:#8395a4}
+.fasdat-page.fasdat-modern-v2 .fasdat-command-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}.fasdat-page.fasdat-modern-v2 .fasdat-command-actions button{height:34px;display:flex;align-items:center;gap:6px;padding:0 10px;border:1px solid #d8e3eb;border-radius:9px;background:#fff;color:#35536a;font-size:9px;font-weight:850;cursor:pointer;transition:.18s ease}.fasdat-page.fasdat-modern-v2 .fasdat-command-actions button:hover:not(:disabled){border-color:#168f7e;color:#087a69;transform:translateY(-1px)}.fasdat-page.fasdat-modern-v2 .fasdat-command-actions button.primary{border-color:#1479e8;background:linear-gradient(135deg,#187be9,#0c58ba);color:#fff;box-shadow:0 6px 14px #1268cf2c}.fasdat-page.fasdat-modern-v2 .fasdat-command-actions button:disabled{opacity:.45;cursor:not-allowed}
+.fasdat-page.fasdat-modern-v2 .fuel-reference-panel{order:3!important;min-height:58px!important;border-radius:12px!important;box-shadow:none!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-banner{min-height:58px!important;padding:8px 14px!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-icon.shell{width:34px!important;height:34px!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-title strong{font-size:13px!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-title b{font-size:10px!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-main small{display:none!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-badge{padding:5px 8px!important;font-size:7px!important}.fasdat-page.fasdat-modern-v2 .fuel-reference-panel:before{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fuel-rule-panel.simple-check{order:4!important;margin:0!important;padding:13px!important;border-radius:12px!important;box-shadow:none!important}.fasdat-page.fasdat-modern-v2 .fuel-rule-panel.simple-check:before{margin:-1px 0 8px!important;font-size:7px!important}.fasdat-page.fasdat-modern-v2 .fuel-rule-head{padding-bottom:8px!important}.fasdat-page.fasdat-modern-v2 .fuel-rule-head > div:first-child h2{font-size:16px!important}.fasdat-page.fasdat-modern-v2 .fasdat-threshold-track{margin:11px 0 18px!important}.fasdat-page.fasdat-modern-v2 .simple-calc-grid.fasdat{padding:8px!important}.fasdat-page.fasdat-modern-v2 .fuel-update-actions{display:none!important}
+.fasdat-page.fasdat-modern-v2 .fasdat-tariff-unified{order:5!important;box-shadow:0 9px 25px rgba(21,54,79,.09)!important;border-radius:14px!important}.fasdat-page.fasdat-modern-v2 .fasdat-tariff-toolbar{padding:13px 17px!important;min-height:58px!important}.fasdat-page.fasdat-modern-v2 .fasdat-tariff-table-wrap{max-height:calc(100vh - 325px)!important}
+@media(max-width:800px){.fasdat-page.fasdat-modern-v2 .fasdat-command-bar{align-items:flex-start;flex-direction:column;gap:9px}.fasdat-page.fasdat-modern-v2 .fasdat-command-actions{width:100%;justify-content:flex-start}.fasdat-page.fasdat-modern-v2 .fasdat-command-actions button{flex:1 1 auto;justify-content:center}.fasdat-page.fasdat-modern-v2 .fasdat-command-actions button.primary{flex:1 1 100%}}
+
+/* Shared EFOR-style customer template for all customer-specific screens */
+.fuel-unified-customer.eti-page .fuel-v5-overview,
+.fuel-unified-customer.cmc-page .fuel-v5-overview,
+.fuel-unified-customer.corteva-page .fuel-v5-overview,
+.fuel-unified-customer.teverpan-page .fuel-v5-overview,
+.fuel-unified-customer.kws-page .fuel-v5-overview,
+.fuel-unified-customer.eti-page > .fuel-reference-panel,
+.fuel-unified-customer.cmc-page > .fuel-reference-panel,
+.fuel-unified-customer.corteva-page > .fuel-reference-panel,
+.fuel-unified-customer.teverpan-page > .fuel-reference-panel,
+.fuel-unified-customer.kws-page > .fuel-reference-panel{display:none!important}
+.fuel-unified-customer.eti-page,
+.fuel-unified-customer.cmc-page,
+.fuel-unified-customer.corteva-page,
+.fuel-unified-customer.teverpan-page,
+.fuel-unified-customer.kws-page{padding:18px 22px 32px!important;background:#f4f7fb!important;gap:0!important}
+.fuel-unified-customer.eti-page .fuel-customer-head,
+.fuel-unified-customer.cmc-page .fuel-customer-head,
+.fuel-unified-customer.corteva-page .fuel-customer-head,
+.fuel-unified-customer.teverpan-page .fuel-customer-head,
+.fuel-unified-customer.kws-page .fuel-customer-head,
+.fuel-unified-customer.eti-page .fuel-detail-topbar,
+.fuel-unified-customer.cmc-page .fuel-detail-topbar,
+.fuel-unified-customer.corteva-page .fuel-detail-topbar,
+.fuel-unified-customer.teverpan-page .fuel-detail-topbar,
+.fuel-unified-customer.kws-page .fuel-detail-topbar{display:none!important}
+.fuel-unified-customer.eti-page .eti-calc-card,
+.fuel-unified-customer.cmc-page .eti-calc-card,
+.fuel-unified-customer.corteva-page .eti-calc-card,
+.fuel-unified-customer.teverpan-page .eti-calc-card,
+.fuel-unified-customer.kws-page .fuel-rule-panel{margin:0 0 14px!important;border:1px solid #d9e5ee!important;border-radius:16px!important;background:#fff!important;box-shadow:0 8px 22px rgba(20,50,78,.055)!important}
+.fuel-unified-customer.eti-page .eti-head-actions,
+.fuel-unified-customer.cmc-page .eti-head-actions,
+.fuel-unified-customer.corteva-page .eti-head-actions,
+.fuel-unified-customer.teverpan-page .eti-head-actions,
+.fuel-unified-customer.kws-page .eti-head-actions{display:flex!important;gap:7px!important;flex-wrap:wrap!important}
+.fuel-unified-customer.eti-page .eti-action-btn,
+.fuel-unified-customer.cmc-page .eti-action-btn,
+.fuel-unified-customer.corteva-page .eti-action-btn,
+.fuel-unified-customer.teverpan-page .eti-action-btn,
+.fuel-unified-customer.kws-page .eti-action-btn{height:36px!important;border-radius:9px!important;font-size:9px!important;font-weight:850!important;border:1px solid #d4e1eb!important;background:#fff!important;color:#31516a!important;box-shadow:none!important}
+.fuel-unified-customer.eti-page .eti-action-btn.primary,
+.fuel-unified-customer.cmc-page .eti-action-btn.primary,
+.fuel-unified-customer.corteva-page .eti-action-btn.primary,
+.fuel-unified-customer.teverpan-page .eti-action-btn.primary,
+.fuel-unified-customer.kws-page .eti-action-btn.primary{background:linear-gradient(135deg,#1976e9,#125dc6)!important;border-color:#1768d1!important;color:#fff!important}
+.fuel-unified-customer.eti-page .eti-tariff-workspace,
+.fuel-unified-customer.cmc-page .eti-tariff-workspace,
+.fuel-unified-customer.corteva-page .eti-tariff-workspace,
+.fuel-unified-customer.teverpan-page .eti-tariff-workspace,
+.fuel-unified-customer.kws-page .fuel-price-panel,
+.fuel-unified-customer.kws-page .kws-two-tables{border:1px solid #d9e5ee!important;border-radius:16px!important;background:#fff!important;box-shadow:0 9px 25px rgba(20,50,78,.07)!important;overflow:hidden!important;margin:0!important}
+.fuel-unified-customer.eti-page .eti-workspace-top,
+.fuel-unified-customer.cmc-page .eti-workspace-top,
+.fuel-unified-customer.corteva-page .eti-workspace-top,
+.fuel-unified-customer.teverpan-page .eti-workspace-top,
+.fuel-unified-customer.kws-page .fuel-price-panel-head{padding:14px 18px!important;background:#fff!important;border-bottom:1px solid #e5edf3!important}
+.fuel-unified-customer.eti-page .eti-workspace-top h2,
+.fuel-unified-customer.cmc-page .eti-workspace-top h2,
+.fuel-unified-customer.corteva-page .eti-workspace-top h2,
+.fuel-unified-customer.teverpan-page .eti-workspace-top h2,
+.fuel-unified-customer.kws-page .fuel-price-panel-head h2{font-size:17px!important;letter-spacing:-.03em!important;color:#173a55!important}
+.fuel-unified-customer.eti-page .fuel-table th,
+.fuel-unified-customer.cmc-page .fuel-table th,
+.fuel-unified-customer.corteva-page .fuel-table th,
+.fuel-unified-customer.teverpan-page .fuel-table th,
+.fuel-unified-customer.kws-page .fuel-table th{height:40px!important;background:#123650!important;color:#dcecf3!important;font-size:8px!important;letter-spacing:.1em!important}
+.fuel-unified-customer.eti-page .fuel-table td,
+.fuel-unified-customer.cmc-page .fuel-table td,
+.fuel-unified-customer.corteva-page .fuel-table td,
+.fuel-unified-customer.teverpan-page .fuel-table td,
+.fuel-unified-customer.kws-page .fuel-table td{height:43px!important;font-size:10px!important;border-bottom:1px solid #edf2f6!important}
+.fuel-unified-customer.eti-page .fuel-table tbody tr:hover td,
+.fuel-unified-customer.cmc-page .fuel-table tbody tr:hover td,
+.fuel-unified-customer.corteva-page .fuel-table tbody tr:hover td,
+.fuel-unified-customer.teverpan-page .fuel-table tbody tr:hover td,
+.fuel-unified-customer.kws-page .fuel-table tbody tr:hover td{background:#edf9f6!important}
+@media(max-width:760px){.fuel-unified-customer.eti-page,.fuel-unified-customer.cmc-page,.fuel-unified-customer.corteva-page,.fuel-unified-customer.teverpan-page,.fuel-unified-customer.kws-page{padding:12px!important}.fuel-unified-customer.eti-page .eti-workspace-top,.fuel-unified-customer.cmc-page .eti-workspace-top,.fuel-unified-customer.corteva-page .eti-workspace-top,.fuel-unified-customer.teverpan-page .eti-workspace-top{display:block!important}.fuel-unified-customer.eti-page .eti-global-search,.fuel-unified-customer.cmc-page .eti-global-search,.fuel-unified-customer.corteva-page .eti-global-search,.fuel-unified-customer.teverpan-page .eti-global-search{margin-top:10px!important;max-width:none!important}}
+
+/* KWS: EFOR ÇAY ile aynı sade çalışma yüzeyi */
+.fuel-unified-customer.kws-page{padding:18px 32px 34px!important;background:#f4f7fb!important;gap:0!important}
+.fuel-unified-customer.kws-page>.fuel-detail-topbar,.fuel-unified-customer.kws-page>.fuel-customer-head{display:none!important}
+.kws-efor-shell{margin:0 0 16px!important;border-color:#d9e7df!important}
+.kws-efor-shell .bim-v56-brand img{width:82px!important;height:52px!important;object-fit:contain!important}
+.kws-efor-shell .bim-v56-brand>div>span{color:#16815c!important}
+.kws-efor-shell .bim-v56-actions .update{background:linear-gradient(135deg,#16815c,#0f6749)!important;border-color:#16815c!important;box-shadow:0 7px 18px rgba(22,129,92,.18)!important}
+.kws-efor-shell .bim-v56-summary{grid-template-columns:minmax(220px,1.25fr) minmax(155px,.8fr) 36px minmax(165px,.85fr) minmax(140px,.72fr) minmax(250px,1.2fr)!important}
+.kws-efor-shell .bim-v56-logo img{width:90px!important;height:56px!important;object-fit:contain!important}
+.kws-efor-shell .bim-v56-metric.current{background:#effcf7!important}
+.kws-efor-shell .bim-v56-metric.change{background:#fffaf0!important}
+.kws-efor-shell .bim-v56-metric.change.passed{background:#fff3f1!important}
+.kws-efor-shell .bim-v56-metric.change strong{color:#16815c!important}
+.kws-efor-shell .bim-v56-metric.change.passed strong{color:#d74b3f!important}
+.kws-efor-shell .kws-rule-summary{cursor:default!important;background:#f4fbf7!important}
+.kws-efor-shell .kws-rule-summary:hover{background:#edf8f2!important}
+.kws-efor-shell .kws-rule-summary svg{color:#16815c!important}
+.kws-efor-shell .kws-rule-summary i{color:#16815c!important}
+.kws-rule-status{padding:5px 8px;border-radius:999px;background:#e4f7ed;color:#0b8061;font-size:8px;font-weight:900;white-space:nowrap}
+.fuel-unified-customer.kws-page>.kws-rule-panel{margin:0 0 16px!important;border:1px solid #d9e5ee!important;border-radius:16px!important;background:#fff!important;box-shadow:0 8px 22px rgba(20,50,78,.055)!important;padding:20px!important}
+.fuel-unified-customer.kws-page>.kws-rule-panel .fuel-rule-head{margin-bottom:16px!important}
+.fuel-unified-customer.kws-page>.kws-rule-panel .fuel-rule-head h2{font-size:18px!important;color:#173a55!important}
+.fuel-unified-customer.kws-page>.kws-rule-panel .fuel-rule-head p{font-size:10px!important;color:#71879a!important}
+.fuel-unified-customer.kws-page>.kws-section-title{margin:4px 0 10px!important;padding:0 3px!important}
+.fuel-unified-customer.kws-page>.kws-two-tables{display:grid!important;grid-template-columns:1fr!important;gap:14px!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+.fuel-unified-customer.kws-page>.kws-two-tables .fuel-price-panel,.fuel-unified-customer.kws-page>.fuel-price-panel.kws-panel{border:1px solid #d9e5ee!important;border-radius:16px!important;background:#fff!important;box-shadow:0 9px 25px rgba(20,50,78,.07)!important;overflow:hidden!important;margin:0!important}
+.fuel-unified-customer.kws-page .fuel-price-panel-head{padding:15px 18px!important;background:#fff!important;border-bottom:1px solid #e5edf3!important}
+.fuel-unified-customer.kws-page .fuel-price-panel-head h2{font-size:17px!important;letter-spacing:-.03em!important;color:#173a55!important}
+.fuel-unified-customer.kws-page .fuel-table th{height:42px!important;background:#123650!important;color:#dcecf3!important;font-size:8px!important;letter-spacing:.1em!important}
+.fuel-unified-customer.kws-page .fuel-table td{height:44px!important;font-size:10px!important;border-bottom:1px solid #edf2f6!important}
+.fuel-unified-customer.kws-page .fuel-table tbody tr:hover td{background:#edf9f6!important}
+@media(max-width:1250px){.kws-efor-shell .bim-v56-summary{grid-template-columns:1fr 1fr 34px 1fr 1fr!important}.kws-efor-shell .bim-v56-logo{grid-column:1/6!important;border-bottom:1px solid #e5edf4!important}.kws-efor-shell .kws-rule-summary{grid-column:1/6!important;min-height:72px!important;border-top:1px solid #e5edf4!important}}
+@media(max-width:760px){.fuel-unified-customer.kws-page{padding:12px!important}.kws-efor-shell .bim-v56-header{display:block!important}.kws-efor-shell .bim-v56-actions{justify-content:flex-start!important;margin-top:14px!important}.kws-efor-shell .bim-v56-actions .icon-btn{min-width:42px;width:42px;padding:0!important;justify-content:center!important}.kws-efor-shell .bim-v56-actions .update{width:auto!important;padding:0 13px!important}.kws-efor-shell .bim-v56-summary{grid-template-columns:1fr 28px 1fr!important}.kws-efor-shell .bim-v56-logo{grid-column:1/4!important}.kws-efor-shell .bim-v56-metric.change{grid-column:1/4!important;min-height:80px!important}.kws-efor-shell .kws-rule-summary{grid-column:1/4!important;min-height:70px!important}}
+
+/* ETİ / CMC / CORTEVA / TEVERPAN ortak müşteri kabuğu */
+.fuel-unified-customer.eti-page,.fuel-unified-customer.cmc-page,.fuel-unified-customer.corteva-page,.fuel-unified-customer.teverpan-page{padding:18px 32px 34px!important;background:#f4f7fb!important;gap:0!important}
+.fuel-unified-customer.eti-page>.fuel-detail-topbar,.fuel-unified-customer.cmc-page>.fuel-detail-topbar,.fuel-unified-customer.corteva-page>.fuel-detail-topbar,.fuel-unified-customer.teverpan-page>.fuel-detail-topbar{display:none!important}
+.fuel-unified-customer.eti-page>.fuel-customer-head,.fuel-unified-customer.cmc-page>.fuel-customer-head,.fuel-unified-customer.corteva-page>.fuel-customer-head,.fuel-unified-customer.teverpan-page>.fuel-customer-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;margin:0 0 16px!important;padding:18px 20px!important;min-height:92px!important;border:1px solid #d9e7df!important;border-radius:20px!important;background:linear-gradient(120deg,#fff 58%,#f4fbf7)!important;box-shadow:0 12px 34px rgba(22,52,83,.065)!important}
+.fuel-unified-customer.eti-page>.fuel-customer-head .fuel-customer-identity,.fuel-unified-customer.cmc-page>.fuel-customer-head .fuel-customer-identity,.fuel-unified-customer.corteva-page>.fuel-customer-head .fuel-customer-identity,.fuel-unified-customer.teverpan-page>.fuel-customer-head .fuel-customer-identity{display:flex!important;align-items:center!important;gap:15px!important}
+.fuel-unified-customer.eti-page>.fuel-customer-head .fuel-logo,.fuel-unified-customer.cmc-page>.fuel-customer-head .fuel-logo,.fuel-unified-customer.corteva-page>.fuel-customer-head .fuel-logo,.fuel-unified-customer.teverpan-page>.fuel-customer-head .fuel-logo{width:52px!important;height:52px!important;display:grid!important;place-items:center!important;border-radius:14px!important;background:#edf9f4!important;color:#16815c!important}
+.fuel-unified-customer.eti-page>.fuel-customer-head .fuel-customer-identity>div>span,.fuel-unified-customer.cmc-page>.fuel-customer-head .fuel-customer-identity>div>span,.fuel-unified-customer.corteva-page>.fuel-customer-head .fuel-customer-identity>div>span,.fuel-unified-customer.teverpan-page>.fuel-customer-head .fuel-customer-identity>div>span{font-size:8px!important;letter-spacing:.14em!important;font-weight:900!important;color:#16815c!important}
+.fuel-unified-customer.eti-page>.fuel-customer-head h1,.fuel-unified-customer.cmc-page>.fuel-customer-head h1,.fuel-unified-customer.corteva-page>.fuel-customer-head h1,.fuel-unified-customer.teverpan-page>.fuel-customer-head h1{margin:2px 0!important;font-size:22px!important;line-height:1.2!important;letter-spacing:-.035em!important;color:#102b47!important}
+.fuel-unified-customer.eti-page>.fuel-customer-head p,.fuel-unified-customer.cmc-page>.fuel-customer-head p,.fuel-unified-customer.corteva-page>.fuel-customer-head p,.fuel-unified-customer.teverpan-page>.fuel-customer-head p{margin:2px 0 0!important;font-size:9px!important;color:#71859a!important}
+.fuel-unified-customer.eti-page>.fuel-customer-head .eti-head-actions,.fuel-unified-customer.cmc-page>.fuel-customer-head .eti-head-actions,.fuel-unified-customer.corteva-page>.fuel-customer-head .eti-head-actions,.fuel-unified-customer.teverpan-page>.fuel-customer-head .eti-head-actions{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;justify-content:flex-end!important}
+.fuel-unified-customer.eti-page .eti-action-btn,.fuel-unified-customer.cmc-page .eti-action-btn,.fuel-unified-customer.corteva-page .eti-action-btn,.fuel-unified-customer.teverpan-page .eti-action-btn{height:42px!important;padding:0 13px!important;border:1px solid #d7e2ed!important;border-radius:12px!important;background:#fff!important;color:#24425f!important;display:flex!important;align-items:center!important;gap:7px!important;font-size:9px!important;font-weight:850!important;box-shadow:0 3px 10px rgba(24,52,82,.05)!important}
+.fuel-unified-customer.eti-page .eti-action-btn.primary,.fuel-unified-customer.cmc-page .eti-action-btn.primary,.fuel-unified-customer.corteva-page .eti-action-btn.primary,.fuel-unified-customer.teverpan-page .eti-action-btn.primary{color:#fff!important;background:linear-gradient(135deg,#16815c,#0f6749)!important;border-color:#16815c!important}
+.fuel-unified-customer.eti-page>.eti-calc-card,.fuel-unified-customer.cmc-page>.eti-calc-card,.fuel-unified-customer.corteva-page>.eti-calc-card,.fuel-unified-customer.teverpan-page>.eti-calc-card{margin:0 0 16px!important;border:1px solid #d9e5ee!important;border-radius:16px!important;background:#fff!important;box-shadow:0 8px 22px rgba(20,50,78,.055)!important}
+.fuel-unified-customer.eti-page>.eti-tariff-workspace,.fuel-unified-customer.cmc-page>.eti-tariff-workspace,.fuel-unified-customer.corteva-page>.eti-tariff-workspace,.fuel-unified-customer.teverpan-page>.eti-tariff-workspace{border:1px solid #d9e5ee!important;border-radius:16px!important;background:#fff!important;box-shadow:0 9px 25px rgba(20,50,78,.07)!important;overflow:hidden!important}
+.fuel-unified-customer.eti-page .eti-workspace-top,.fuel-unified-customer.cmc-page .eti-workspace-top,.fuel-unified-customer.corteva-page .eti-workspace-top,.fuel-unified-customer.teverpan-page .eti-workspace-top{padding:18px 20px!important;border-bottom:1px solid #e5edf3!important;background:#fff!important}
+@media(max-width:760px){.fuel-unified-customer.eti-page,.fuel-unified-customer.cmc-page,.fuel-unified-customer.corteva-page,.fuel-unified-customer.teverpan-page{padding:12px!important}.fuel-unified-customer.eti-page>.fuel-customer-head,.fuel-unified-customer.cmc-page>.fuel-customer-head,.fuel-unified-customer.corteva-page>.fuel-customer-head,.fuel-unified-customer.teverpan-page>.fuel-customer-head{display:block!important}.fuel-unified-customer.eti-page>.fuel-customer-head .eti-head-actions,.fuel-unified-customer.cmc-page>.fuel-customer-head .eti-head-actions,.fuel-unified-customer.corteva-page>.fuel-customer-head .eti-head-actions,.fuel-unified-customer.teverpan-page>.fuel-customer-head .eti-head-actions{justify-content:flex-start!important;margin-top:14px!important}}
+
+/* Exact EFOR-style header placement for the remaining customers */
+.fuel-unified-customer.eti-page > .fuel-customer-head,
+.fuel-unified-customer.cmc-page > .fuel-customer-head,
+.fuel-unified-customer.corteva-page > .fuel-customer-head,
+.fuel-unified-customer.teverpan-page > .fuel-customer-head,
+.fuel-unified-customer.kws-page > .fuel-customer-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;margin:0 0 14px!important;padding:16px 20px!important;min-height:86px!important;border:1px solid #d8e4ee!important;border-radius:18px!important;background:linear-gradient(120deg,#fff 55%,#f3f8fd)!important;box-shadow:0 9px 24px rgba(22,52,83,.06)!important}
+.fuel-unified-customer.eti-page > .fuel-customer-head .fuel-customer-identity,
+.fuel-unified-customer.cmc-page > .fuel-customer-head .fuel-customer-identity,
+.fuel-unified-customer.corteva-page > .fuel-customer-head .fuel-customer-identity,
+.fuel-unified-customer.teverpan-page > .fuel-customer-head .fuel-customer-identity,
+.fuel-unified-customer.kws-page > .fuel-customer-head .fuel-customer-identity{display:flex!important;align-items:center!important;gap:12px!important}
+.fuel-unified-customer.eti-page > .fuel-customer-head .fuel-logo,
+.fuel-unified-customer.cmc-page > .fuel-customer-head .fuel-logo,
+.fuel-unified-customer.corteva-page > .fuel-customer-head .fuel-logo,
+.fuel-unified-customer.teverpan-page > .fuel-customer-head .fuel-logo,
+.fuel-unified-customer.kws-page > .fuel-customer-head .fuel-logo{width:46px!important;height:46px!important;display:grid!important;place-items:center!important;border-radius:13px!important;background:#edf5ff!important;color:#1769c7!important}
+.fuel-unified-customer.eti-page > .fuel-customer-head h1,
+.fuel-unified-customer.cmc-page > .fuel-customer-head h1,
+.fuel-unified-customer.corteva-page > .fuel-customer-head h1,
+.fuel-unified-customer.teverpan-page > .fuel-customer-head h1,
+.fuel-unified-customer.kws-page > .fuel-customer-head h1{margin:2px 0!important;font-size:22px!important;letter-spacing:-.04em!important;color:#123651!important}
+.fuel-unified-customer.eti-page > .fuel-customer-head p,
+.fuel-unified-customer.cmc-page > .fuel-customer-head p,
+.fuel-unified-customer.corteva-page > .fuel-customer-head p,
+.fuel-unified-customer.teverpan-page > .fuel-customer-head p,
+.fuel-unified-customer.kws-page > .fuel-customer-head p{margin:0!important;font-size:9px!important;color:#71879a!important}
+.fuel-unified-customer.eti-page > .fuel-customer-head .eti-head-actions,
+.fuel-unified-customer.cmc-page > .fuel-customer-head .eti-head-actions,
+.fuel-unified-customer.corteva-page > .fuel-customer-head .eti-head-actions,
+.fuel-unified-customer.teverpan-page > .fuel-customer-head .eti-head-actions,
+.fuel-unified-customer.kws-page > .fuel-customer-head .kws-head-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:7px!important}
+.fuel-unified-customer.kws-page > .fuel-customer-head .kws-rule-badge{height:36px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;border:1px solid #cde4dc!important;border-radius:9px!important;background:#edfbf5!important;color:#087d61!important}
+.fuel-unified-customer.kws-page > .fuel-customer-head .kws-rule-badge small{font-size:7px!important}.fuel-unified-customer.kws-page > .fuel-customer-head .kws-rule-badge b{font-size:9px!important}
+
+/* FASDAT uses the same concrete shell as the approved EFOR ÇAY screen */
+.fasdat-efor-template{padding:18px 32px 34px!important;background:#f4f8fb!important;gap:0!important}
+.fasdat-efor-template .fasdat-template-shell{margin:0 0 18px!important;border-color:#d8e4ef!important;border-radius:20px!important;box-shadow:0 12px 34px rgba(22,52,83,.065)!important}
+.fasdat-efor-template .bim-v56-header{min-height:92px!important;padding:17px 20px!important;background:linear-gradient(120deg,#fff 58%,#f4f9ff)!important}
+.fasdat-efor-template .bim-v56-brand{gap:14px!important}.fasdat-template-logo{width:52px;height:52px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#ffd84d,#f2b92e);color:#123651;box-shadow:0 7px 16px rgba(226,171,35,.22)}
+.fasdat-efor-template .bim-v56-brand span{color:#b17a00!important}.fasdat-efor-template .bim-v56-brand h1{font-size:22px!important}.fasdat-efor-template .bim-v56-brand p{font-size:9px!important}
+.fasdat-efor-template .bim-v56-actions .icon-btn.update{background:linear-gradient(135deg,#1976e9,#125cc6)!important;border-color:#1767cf!important;color:#fff!important}.fasdat-efor-template .bim-v56-actions .icon-btn.update:disabled{background:#e7edf2!important;color:#9ba9b5!important;border-color:#dfe7ed!important;box-shadow:none!important}
+.fasdat-efor-template .bim-v56-summary{grid-template-columns:minmax(220px,1.25fr) minmax(155px,.8fr) 36px minmax(165px,.85fr) minmax(140px,.72fr) minmax(250px,1.2fr)!important}
+.fasdat-efor-template .bim-v56-summary>div,.fasdat-efor-template .bim-v56-rule-toggle{min-height:116px!important}
+.fasdat-efor-template .bim-v56-logo{padding:18px 22px!important}.fasdat-summary-logo{width:84px;height:54px;display:grid;place-items:center;border-radius:10px;background:#fff5c9;color:#a97400;font-size:25px;font-weight:950;letter-spacing:-.1em;border:1px solid #f1d779}.fasdat-efor-template .bim-v56-logo b{font-size:18px!important}.fasdat-efor-template .bim-v56-logo span{font-size:10px!important}
+.fasdat-efor-template .bim-v56-metric.old{background:#f7faff!important}.fasdat-efor-template .bim-v56-metric.current{background:#effcf7!important}.fasdat-efor-template .bim-v56-metric.change{background:#fffaf0!important}.fasdat-efor-template .bim-v56-metric strong{font-size:24px!important}.fasdat-efor-template .fasdat-rule-static{cursor:default!important;background:#f3fbf7!important}.fasdat-efor-template .fasdat-rule-static:hover{background:#f3fbf7!important}.fasdat-efor-template .fasdat-rule-status{padding:5px 8px;border-radius:999px;background:#e4f7ed;color:#0b8061;font-size:8px;font-weight:900}
+.fasdat-efor-template .fasdat-template-workspace{margin:0!important;border:1px solid #d8e4ef!important;border-radius:18px!important;background:#fff!important;box-shadow:0 12px 34px rgba(22,52,83,.06)!important;overflow:hidden!important}
+.fasdat-efor-template .fasdat-template-workspace>.fasdat-tariff-unified{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important}.fasdat-efor-template .fasdat-tariff-toolbar{padding:17px 20px!important;background:#fff!important;border-bottom:1px solid #e4ebf2!important}.fasdat-efor-template .fasdat-tariff-title h2{font-size:20px!important}.fasdat-efor-template .fasdat-tariff-table th{height:42px!important;background:#f1f5f9!important;color:#63758a!important;font-size:8px!important}.fasdat-efor-template .fasdat-tariff-table td{height:46px!important;font-size:10px!important;border-bottom:1px solid #edf2f6!important}.fasdat-efor-template .fasdat-tariff-table tbody tr:hover td{background:#eef8f5!important}.fasdat-efor-template .fuel-error,.fasdat-efor-template .fuel-success{margin-top:12px!important}
+@media(max-width:1250px){.fasdat-efor-template .bim-v56-summary{grid-template-columns:1fr 1fr 34px 1fr 1fr!important}.fasdat-efor-template .bim-v56-logo{grid-column:1/6!important;border-bottom:1px solid #e5edf4!important}.fasdat-efor-template .fasdat-rule-static{grid-column:1/6!important;min-height:72px!important;border-top:1px solid #e5edf4!important}}
+@media(max-width:760px){.fasdat-efor-template{padding:12px!important}.fasdat-efor-template .bim-v56-header{display:block!important}.fasdat-efor-template .bim-v56-actions{justify-content:flex-start!important;margin-top:14px!important}.fasdat-efor-template .bim-v56-actions .icon-btn span{display:none!important}.fasdat-efor-template .bim-v56-actions .icon-btn{width:42px!important;padding:0!important;justify-content:center!important}.fasdat-efor-template .bim-v56-actions .update{width:auto!important;padding:0 13px!important}.fasdat-efor-template .bim-v56-actions .update span{display:inline!important}.fasdat-efor-template .bim-v56-summary{grid-template-columns:1fr 28px 1fr!important}.fasdat-efor-template .bim-v56-logo{grid-column:1/4!important}.fasdat-efor-template .bim-v56-metric.change{grid-column:1/4!important;min-height:80px!important}.fasdat-efor-template .fasdat-rule-static{grid-column:1/4!important;min-height:70px!important}}

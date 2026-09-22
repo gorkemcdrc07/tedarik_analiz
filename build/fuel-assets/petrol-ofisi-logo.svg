@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="Petrol Ofisi">
+  <rect width="220" height="220" rx="34" fill="#fff"/>
+  <circle cx="110" cy="86" r="55" fill="#e30613"/>
+  <path d="M80 102V58h26c24 0 37 10 37 28 0 17-13 28-36 28H98v24H80zm18-29v26h10c11 0 17-4 17-13s-6-13-17-13H98z" fill="#fff"/>
+  <path d="M126 63c18 4 31 17 35 34-8-7-16-10-25-10 7 6 10 13 10 22-8-8-17-13-28-14 9-7 13-18 8-32z" fill="#fff"/>
+  <text x="110" y="172" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="23" font-weight="700" fill="#e30613">Petrol Ofisi</text>
+</svg>

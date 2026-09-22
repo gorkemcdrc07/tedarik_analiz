@@ -11,6 +11,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Güvenli giriş: kullanıcı adı/şifre + e-posta OTP
+require("./auth2fa").install(app);
+
 const PORT = process.env.PORT || 5000;
 console.log(`🔐 Supabase env: URL=${Boolean(process.env.SUPABASE_URL)} KEY=${Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)}`);
 
@@ -304,6 +307,11 @@ async function getAutomationFuelPrice(ref) {
     return parsePetrolOfisiPrice(html, ref.district, ref.fuel, ref.city, vatIncluded);
 }
 installFuelAutomation(app, getAutomationFuelPrice);
+
+// API isteklerinde HTML 404 yerine her zaman JSON döndür.
+app.use('/api', (req, res) => {
+    res.status(404).json({ error: 'API endpoint bulunamadı.', path: req.originalUrl });
+});
 
 app.listen(PORT, () => {
     console.log(`🚀 Backend çalışıyor: http://localhost:${PORT}`);

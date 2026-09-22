@@ -1,0 +1,1 @@
+FASDAT için görünüm tamamen yenilendi: koyu mavi üst alan, Shell referans paneli, modern eşik/hesap kartları, butonlar ve tablo. Formüllere ve işlemlere dokunulmadı. İki src/Finans dosyasını değiştirin.

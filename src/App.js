@@ -39,6 +39,10 @@ import TestGider from "./GelirGider/TestGider";
 import SeferFiyatlandirma from "./fiyatlandirma/seferFiyatlandirma";
 import YakitDegisimMerkezi from "./Finans/YakitDegisimMerkezi";
 import YakitHesaplama from "./Finans/YakitHesaplama";
+import YakitKontrolMerkezi from "./Finans/YakitKontrolMerkezi";
+import YakitOnayMerkezi from "./Finans/YakitOnayMerkezi";
+import YakitYonetimMerkeziV3 from "./Finans/YakitYonetimMerkeziV3";
+import MusteriKurulumSihirbazi from "./Finans/MusteriKurulumSihirbazi";
 
 // Analiz
 import OzetTablo from "./analiz/ozetTablo";
@@ -54,9 +58,10 @@ import "./odak-dark-compat.css";
 
 function getLoginUser() {
     try {
-        return JSON.parse(
-            localStorage.getItem("loginUser") || "null"
-        );
+        // V7 güvenlik: loginUser tek başına oturum sayılmaz. OTP doğrulamasından
+        // sonra yalnızca bu tarayıcı oturumuna verilen imzalı session bulunmalıdır.
+        if (!sessionStorage.getItem("odakAuthSession")) return null;
+        return JSON.parse(localStorage.getItem("loginUser") || "null");
     } catch {
         return null;
     }
@@ -387,6 +392,42 @@ export default function App() {
                         element={
                             <ProtectedPage>
                                 <YakitHesaplama />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/musteri-kurulum"
+                        element={
+                            <ProtectedPage>
+                                <MusteriKurulumSihirbazi />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/yakit-yonetim-v3"
+                        element={
+                            <ProtectedPage>
+                                <YakitYonetimMerkeziV3 />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/yakit-onaylar"
+                        element={
+                            <ProtectedPage>
+                                <YakitOnayMerkezi />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/yakit-kontrol-merkezi"
+                        element={
+                            <ProtectedPage>
+                                <YakitKontrolMerkezi />
                             </ProtectedPage>
                         }
                     />

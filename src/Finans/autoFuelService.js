@@ -1,3 +1,6 @@
+import { createDailyFuelPricesNotification, createFuelErrorNotification, createFuelPriceNotification, createWeeklyFuelSummary, mergeFuelNotifications } from "./fuelNotifications";
+import { processFuelChange } from "./fuelEscalationEngine";
+
 const FUEL_API_BASE=(process.env.REACT_APP_FUEL_API_BASE_URL||process.env.REACT_APP_API_BASE_URL||"https://tedarik-analiz-backend.onrender.com").replace(/\/+$/,'');
 const fuelUrl=(path)=>`${FUEL_API_BASE}${path}`;
 const NOTICE_KEY="odak_sistem_bildirimleri_v1", UI_KEY="odak_yakit_ui_prices_v1";
@@ -28,7 +31,10 @@ function syncLiveResult(ref,d){
   source:`${ref.providerName} • ${ref.city} ${ref.district} • ${ref.fuel}${ref.customer==='BİM'?' • KDV hariç (+KDV)':''}`,
   checkedAt:d.checkedAt||new Date().toISOString(),updatedAt:new Date().toISOString(),rulePassed:passed,
   applied:passed?change*ref.factor:0,vatIncluded:ref.customer==='BİM'?false:d.vatIncluded,priceMode:d.priceMode||null,live:true};
- write(UI_KEY,ui);return {customer:ref.customer,ok:true,base:reference,current,change,threshold:ref.threshold,factor:ref.factor,passed,applied:passed?change*ref.factor:0,source:ui[ref.customer].source};
+ write(UI_KEY,ui);
+ createFuelPriceNotification({customer:ref.customer,oldPrice:Number(prev.new),newPrice:current,referencePrice:reference,threshold:ref.threshold,factor:ref.factor,source:ui[ref.customer].source,checkedAt:d.checkedAt});
+ processFuelChange({customer:ref.customer,oldFuel:reference,newFuel:current});
+ return {customer:ref.customer,ok:true,base:reference,current,change,threshold:ref.threshold,factor:ref.factor,passed,applied:passed?change*ref.factor:0,source:ui[ref.customer].source};
 }
 async function refreshOne(ref){
  const qs=new URLSearchParams({provider:ref.provider,city:ref.city,district:ref.district,fuel:ref.fuel,_t:String(Date.now())});
@@ -40,13 +46,16 @@ async function refreshOne(ref){
 async function refreshAllDirect(){
  const settled=await Promise.allSettled(LIVE_REFS.map(refreshOne));
  const results=settled.map((x,i)=>x.status==='fulfilled'?x.value:{customer:LIVE_REFS[i].customer,ok:false,error:x.reason?.message||'Fiyat alınamadı'});
+ results.filter(x=>!x.ok).forEach(x=>createFuelErrorNotification({customer:x.customer,message:x.error,source:'Shell / Petrol Ofisi canlı bağlantısı'}));
+ createDailyFuelPricesNotification(results);
+ createWeeklyFuelSummary();
  window.dispatchEvent(new Event('odak-fuel-updated'));
  return results;
 }
 function sync(status){
  const ui=read(UI_KEY,{}),latest=status?.runs?.[0]?.results||[];
  for(const r of latest){if(!r.ok)continue;const prev=ui[r.customer]||{};const oldPrice=Number(prev.lastProcessedPrice||prev.referencePrice||prev.old||r.base);ui[r.customer]={...prev,old:oldPrice,new:r.current,baseline:oldPrice,referencePrice:oldPrice,updatedAt:new Date().toISOString(),source:`${r.provider||prev.provider||'Merkezi Yakıt Otomasyonu'} • canlı`,rulePassed:r.passed,change:oldPrice&&r.current?(Number(r.current)-oldPrice)/oldPrice:r.change,applied:r.applied,message:r.message,checkedAt:new Date().toISOString(),tariffUpdated:r.tariffUpdated,vatIncluded:r.customer==='BİM'?false:r.vatIncluded,priceMode:r.customer==='BİM'?'KDV hariç (+KDV)':r.priceMode,live:true};}
- write(UI_KEY,ui);if(status?.notifications?.length)write(NOTICE_KEY,status.notifications.map(n=>({...n,action_path:n.action_path||'/yakit-hesaplama'})));window.dispatchEvent(new Event('odak-fuel-updated'));window.dispatchEvent(new Event('odak-notifications-changed'));
+ write(UI_KEY,ui);if(status?.notifications?.length)mergeFuelNotifications(status.notifications);window.dispatchEvent(new Event('odak-fuel-updated'));window.dispatchEvent(new Event('odak-notifications-changed'));
 }
 async function status(){const r=await fetch(fuelUrl('/api/fuel-automation/status'),{cache:'no-store'});const d=await readJson(r);if(!r.ok||!d.ok)throw new Error(d.error||`V5 otomasyon durumu alınamadı (HTTP ${r.status})`);return d;}
 export async function runAutomaticFuelCheck(){
