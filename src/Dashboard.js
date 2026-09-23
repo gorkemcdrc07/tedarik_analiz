@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import supabase from "./supabaseClient";
+import {
+    getAdminUsers,
+    createAdminUser,
+    updateAdminUser,
+    changeAdminUserPassword,
+    deleteAdminUser
+} from "./auth/adminUsersApi";
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Calculator, ChartNoAxesCombined, FilePlus2, MapPinned, PackagePlus, Route, WalletCards } from 'lucide-react';
 
@@ -187,31 +193,30 @@ export default function AdminPanel() {
         setLoading(true);
         setErrorText('');
 
-        const { data, error } = await supabase
-            .from('Login')
-            .select('*')
-            .order('id', { ascending: true });
+        try {
+            const data = await getAdminUsers();
 
-        if (error) {
-            setErrorText(error.message);
-            setUsers([]);
-        } else {
             const mappedUsers = data.map((item) => ({
                 id: item.id,
                 kullanici_adi: item.kullanici_adi || '',
-                sifre: item.sifre || '',
                 kullanici: item.kullanici || '',
                 Reel_kullanici: item.Reel_kullanici || '',
-                Reel_sifre: item.Reel_sifre || '',
+                hasReelCredential: Boolean(item.hasReelCredential),
                 rol: item.rol || 'kullanici',
                 allowedScreens: parseArray(item.allowedScreens),
                 allowedButtons: parseArray(item.allowedButtons)
             }));
 
             setUsers(mappedUsers);
+        } catch (error) {
+            setErrorText(
+                error?.message ||
+                'Kullanıcı listesi alınamadı.'
+            );
+            setUsers([]);
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     const filteredUsers = useMemo(() => {
@@ -272,10 +277,10 @@ export default function AdminPanel() {
 
         setFormData({
             kullanici_adi: user.kullanici_adi || '',
-            sifre: user.sifre || '',
+            sifre: '',
             kullanici: user.kullanici || '',
             Reel_kullanici: user.Reel_kullanici || '',
-            Reel_sifre: user.Reel_sifre || '',
+            Reel_sifre: '',
             rol: user.rol || 'kullanici',
             allowedScreens: user.allowedScreens || [],
             allowedButtons: user.allowedButtons || []
@@ -285,20 +290,24 @@ export default function AdminPanel() {
     };
 
     const handleDelete = async (id) => {
-        const confirmDelete = window.confirm('Bu kullanıcıyı silmek istiyor musunuz?');
+        const confirmDelete = window.confirm(
+            'Bu kullanıcıyı silmek istiyor musunuz?'
+        );
+
         if (!confirmDelete) return;
 
-        const { error } = await supabase
-            .from('Login')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            alert('Silme hatası: ' + error.message);
-            return;
+        try {
+            await deleteAdminUser(id);
+            await fetchLoginUsers();
+        } catch (error) {
+            alert(
+                'Silme hatası: ' +
+                (
+                    error?.message ||
+                    'Kullanıcı silinemedi.'
+                )
+            );
         }
-
-        await fetchLoginUsers();
     };
 
     const handleScreenChange = (screenPath) => {
@@ -335,33 +344,90 @@ export default function AdminPanel() {
     };
 
     const handleSave = async () => {
-        if (!formData.kullanici_adi || !formData.kullanici) {
-            alert('Kullanıcı maili ve kullanıcı adı zorunludur.');
+        const username = formData.kullanici_adi.trim();
+        const displayName = formData.kullanici.trim();
+        const password = formData.sifre;
+
+        if (!username || !displayName) {
+            alert(
+                'Kullanıcı maili ve kullanıcı adı zorunludur.'
+            );
+            return;
+        }
+
+        if (!editingUserId && password.length < 10) {
+            alert(
+                'Yeni kullanıcı şifresi en az 10 karakter olmalıdır.'
+            );
+            return;
+        }
+
+        if (
+            editingUserId &&
+            password &&
+            password.length < 10
+        ) {
+            alert(
+                'Yeni şifre en az 10 karakter olmalıdır.'
+            );
             return;
         }
 
         const payload = {
-            kullanici_adi: formData.kullanici_adi,
-            sifre: formData.sifre,
-            kullanici: formData.kullanici,
-            Reel_kullanici: formData.Reel_kullanici || null,
-            Reel_sifre: formData.Reel_sifre || null,
+            kullanici_adi: username,
+            kullanici: displayName,
+            Reel_kullanici:
+                formData.Reel_kullanici.trim() || null,
             rol: formData.rol,
-            allowedScreens: JSON.stringify(formData.allowedScreens),
-            allowedButtons: JSON.stringify(formData.allowedButtons)
+            allowedScreens: formData.allowedScreens,
+            allowedButtons: formData.allowedButtons
         };
 
-        const result = editingUserId
-            ? await supabase.from('Login').update(payload).eq('id', editingUserId)
-            : await supabase.from('Login').insert([payload]);
-
-        if (result.error) {
-            alert('Kayıt hatası: ' + result.error.message);
-            return;
+        /*
+         * Reel_sifre edit modunda bos ise backend mevcut
+         * credential'i korur. Mevcut Reel sifresi browser'a
+         * hicbir zaman geri yuklenmez.
+         */
+        if (formData.Reel_sifre) {
+            payload.Reel_sifre =
+                formData.Reel_sifre;
         }
 
-        handleClose();
-        await fetchLoginUsers();
+        try {
+            if (editingUserId) {
+                await updateAdminUser(
+                    editingUserId,
+                    payload
+                );
+
+                /*
+                 * Uygulama sifresi ayri endpointten degisir.
+                 * Bos birakilirsa mevcut bcrypt hash korunur.
+                 */
+                if (password) {
+                    await changeAdminUserPassword(
+                        editingUserId,
+                        password
+                    );
+                }
+            } else {
+                await createAdminUser({
+                    ...payload,
+                    password
+                });
+            }
+
+            handleClose();
+            await fetchLoginUsers();
+        } catch (error) {
+            alert(
+                'Kayıt hatası: ' +
+                (
+                    error?.message ||
+                    'İşlem tamamlanamadı.'
+                )
+            );
+        }
     };
 
     return (
@@ -608,11 +674,21 @@ export default function AdminPanel() {
                             />
 
                             <TextField
-                                label="Şifre"
+                                label={editingUserId ? "Yeni Şifre" : "Şifre"}
+                                type="password"
                                 fullWidth
+                                autoComplete="new-password"
                                 value={formData.sifre}
+                                helperText={
+                                    editingUserId
+                                        ? "Değiştirmek istemiyorsanız boş bırakın."
+                                        : "En az 10 karakter."
+                                }
                                 onChange={(e) =>
-                                    setFormData({ ...formData, sifre: e.target.value })
+                                    setFormData({
+                                        ...formData,
+                                        sifre: e.target.value
+                                    })
                                 }
                             />
 
@@ -636,10 +712,20 @@ export default function AdminPanel() {
 
                             <TextField
                                 label="Reel Şifre"
+                                type="password"
                                 fullWidth
+                                autoComplete="new-password"
                                 value={formData.Reel_sifre}
+                                helperText={
+                                    editingUserId
+                                        ? "Mevcut şifre gösterilmez. Değiştirmeyecekseniz boş bırakın."
+                                        : "Reel hesabı kullanılacaksa girin."
+                                }
                                 onChange={(e) =>
-                                    setFormData({ ...formData, Reel_sifre: e.target.value })
+                                    setFormData({
+                                        ...formData,
+                                        Reel_sifre: e.target.value
+                                    })
                                 }
                             />
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { getProjeOptions } from "../auth/dataApi";
 import {
     Download,
     Link as LinkIcon,
@@ -397,8 +398,7 @@ export default function SiparisOlustur() {
             setProjectsLoading(true);
             setProjectsError("");
             try {
-                const { data, error } = await supabase.from("Projeler").select("id, Proje_Adi");
-                if (error) throw error;
+                const data = await getProjeOptions();
                 const list = (Array.isArray(data) ? data : [])
                     .map((x) => ({ id: x?.id, name: (x?.Proje_Adi ?? "").trim() }))
                     .filter((x) => x.id && x.name.length > 0)

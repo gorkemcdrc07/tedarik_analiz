@@ -1,4 +1,4 @@
-﻿.env
+.env
 .vs/
 node_modules/
 
@@ -8,3 +8,9 @@ tedarik_analiz/node_modules/
 tedarik_analiz/.vs/
 
 tedarik_analiz-clean.git/
+*.before-*-backup.js
+*.email-otp-backup.js
+*.before-*-backup.jsx
+*.before-*-backup.ts
+*.before-*-backup.tsx
+*.email-otp-backup.jsx

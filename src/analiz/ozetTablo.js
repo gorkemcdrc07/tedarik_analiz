@@ -4,7 +4,6 @@ import { BarChart3, Download, Filter, Layers3 } from "lucide-react";
 
 /* ====== ENV ====== */
 const API_BASE = (process.env.REACT_APP_API_BASE_URL || "").replace(/\/+$/, "");
-const ODAK_KEY = process.env.REACT_APP_ODAK_API_KEY || "";
 
 /* ====== Mini UI (dark) ====== */
 const Page = ({ children }) => (
@@ -73,12 +72,17 @@ function dayDiffPickupMinusCreated(pickup, created) {
 
 /* ====== API ====== */
 async function fetchOdakData(startDate, endDate) {
-    if (!API_BASE || !ODAK_KEY) throw new Error("ODAK ENV eksik (REACT_APP_API_BASE_URL / REACT_APP_ODAK_API_KEY).");
-    const payload = { startDate: `${startDate}T00:00:00`, endDate: `${endDate}T23:59:59`, userId: 1 };
+    if (!API_BASE) throw new Error("Backend API adresi tanimli degil.");
+    const payload = { startDate: `${startDate}T00:00:00`, endDate: `${endDate}T23:59:59` };
 
-    const res = await fetch(`${API_BASE}/odak`, {
+    const res = await fetch(`${API_BASE}/api/fiyatlandirma/tmsorders/getall`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: ODAK_KEY },
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
         body: JSON.stringify(payload),
     });
     if (!res.ok) {

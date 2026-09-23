@@ -49,6 +49,8 @@ import {
 } from "../Finans/fuelNotifications";
 import TicketCenter, { getOpenTicketCount } from "./TicketCenter";
 import "./Navbar.css";
+const API_BASE =
+  (process.env.REACT_APP_API_BASE_URL || "").replace(/\/$/, "");
 
 const PAGE_CONFIG = {
   "/dashboard": { title: "Ana Sayfa", description: "Odak Lojistik operasyon merkezi.", icon: LayoutDashboard },
@@ -223,10 +225,31 @@ export default function Navbar({ toggleSidebar, isMobile }) {
     setQuery("");
   };
 
-  const logout = () => {
-    ["loginUser", "kullanici", "userName", "userRole", "Reel_kullanici", "Reel_sifre"].forEach((key) => localStorage.removeItem(key));
-    navigate("/", { replace: true });
-    window.location.reload();
+  const logout = async () => {
+    try {
+      await fetch(`${API_BASE}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+    } catch (error) {
+      console.error("[LOGOUT]", error);
+    } finally {
+      [
+        "loginUser",
+        "kullanici",
+        "userName",
+        "userRole",
+        "Reel_kullanici",
+        "Reel_sifre",
+        "odakAuthSession"
+      ].forEach((key) => localStorage.removeItem(key));
+
+      navigate("/", { replace: true });
+      window.location.reload();
+    }
   };
 
   return (

@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo, useCallback, useEffect } from "react";
 import * as XLSX from "xlsx";
-import supabase from "../supabaseClient";
+import { getFirmalar, getHesapAdlari } from "../auth/dataApi";
 import { authorizedJson } from "../auth/tokenManager";
 import { FiUploadCloud, FiFile, FiCheckCircle, FiXCircle, FiAlertTriangle, FiTrash2, FiDownload, FiSearch, FiSend, FiRefreshCw, FiTrendingUp } from 'react-icons/fi';
 import "./GelirEkleme.css";
@@ -215,10 +215,7 @@ const formatSize = (bytes) => {
 
 // ... (fetchDokumanLookup ve fetchFirmaLookup aynı)
 const fetchDokumanLookup = async () => {
-    const { data, error } = await supabase
-        .from("Fiyat_Ekleme_Hesap_Adlari")
-        .select("hizmet_adi, tip_id, detay_id");
-    if (error) throw error;
+    const data = await getHesapAdlari();
     const map = new Map();
     (data || []).forEach(({ hizmet_adi, tip_id, detay_id }) => {
         map.set(norm(hizmet_adi), { tip_id, detay_id });
@@ -227,10 +224,7 @@ const fetchDokumanLookup = async () => {
 };
 
 const fetchFirmaLookup = async () => {
-    const { data, error } = await supabase
-        .from("Firmalar")
-        .select("firma_adi, firma_id");
-    if (error) throw error;
+    const data = await getFirmalar();
     const map = new Map();
     (data || []).forEach(({ firma_adi, firma_id }) => {
         map.set(norm(firma_adi), { firma_id });

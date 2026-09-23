@@ -7,7 +7,6 @@ import { Calculator, Download, FilterX, RefreshCw, Truck } from "lucide-react";
 const API_BASE = (process.env.REACT_APP_API_BASE_URL || "http://localhost:5000")
     .trim()
     .replace(/\/+$/, "");
-const ODAK_KEY = (process.env.REACT_APP_ODAK_API_KEY || "").trim();
 
 // Supabase
 const SB_URL = (process.env.REACT_APP_SUPABASE_URL || "").trim();
@@ -143,55 +142,44 @@ const parseListFlexible = (text) => {
 };
 
 async function multiRequest(params) {
-    const BASES = [API_BASE, `${API_BASE}/reel-api`];
-    const PATHS = [
-        { path: "/odak", methods: ["POST"] },
-        { path: "/api/TmsOrders/GetAll", methods: ["POST", "GET"] },
-        { path: "/api/tmsorders/getall", methods: ["POST", "GET"] },
-        { path: "/TmsOrders/GetAll", methods: ["POST", "GET"] },
-        { path: "/tmsorders/getall", methods: ["POST", "GET"] },
-    ];
-    const headersCommon = {
-        Accept: "application/json",
-        ...(ODAK_KEY ? { Authorization: ODAK_KEY } : {}),
-    };
+    const url = `${API_BASE}/api/fiyatlandirma/tmsorders/getall`;
 
-    const tried = [];
-    for (const base of BASES) {
-        for (const { path, methods } of PATHS) {
-            for (const method of methods) {
-                const urlBase = `${base}${path}`;
-                const opts = { method, headers: { ...headersCommon } };
-                let url = urlBase;
+    const res = await fetch(url, {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify(params),
+    });
 
-                if (method === "GET") {
-                    url += `?${new URLSearchParams(params).toString()}`;
-                } else {
-                    opts.headers["Content-Type"] = "application/json";
-                    opts.body = JSON.stringify(params);
-                }
+    const text = await res.text();
 
-                tried.push(`${method} ${url}`);
-                try {
-                    const res = await fetch(url, opts);
-                    const text = await res.text();
-                    if (!res.ok) {
-                        if (res.status !== 404)
-                            throw new Error(
-                                `HTTP ${res.status} ${res.statusText} — ${text.slice(0, 200)}`
-                            );
-                        continue;
-                    }
-                    const list = parseListFlexible(text);
-                    return { list, connected: `${method} ${url}` };
-                } catch {
-                }
+    if (!res.ok) {
+        let message = `HTTP ${res.status}`;
+
+        try {
+            const errorData = JSON.parse(text);
+
+            if (errorData?.error) {
+                message += ` - ${errorData.error}`;
             }
+        } catch {
+            // Response JSON olmayabilir.
         }
-    }
-    throw new Error("Tüm kombinasyonlar 404 döndü.\nDenemeler:\n" + tried.join("\n"));
-}
 
+        throw new Error(message);
+    }
+
+    const list = parseListFlexible(text);
+
+    return {
+        list,
+        connected: "POST /api/fiyatlandirma/tmsorders/getall",
+    };
+}
 
 const SB_TABLE = "bungeFiyatlar";
 const SB_COLS = "teslim_il,teslim_ilce,mesafe,tir,kamyon";
@@ -376,8 +364,8 @@ export default function SeferFiyatlandirma() {
         setConnectedInfo("");
 
         try {
-            if (!API_BASE || !ODAK_KEY)
-                throw new Error("REACT_APP_API_BASE_URL / REACT_APP_ODAK_API_KEY eksik.");
+            if (!API_BASE)
+                throw new Error("Backend API adresi tanimli degil.");
 
             const startLocal = toLocalISOString(new Date(dates.start), false);
             const endLocal = toLocalISOString(new Date(dates.end), true);
@@ -385,7 +373,6 @@ export default function SeferFiyatlandirma() {
             let res1 = await multiRequest({
                 startDate: startLocal,
                 endDate: endLocal,
-                userId: 1,
             });
             let list = res1.list;
             let connected = res1.connected;
@@ -398,7 +385,6 @@ export default function SeferFiyatlandirma() {
                 const res2 = await multiRequest({
                     startDate: startUTC,
                     endDate: endUTC,
-                    userId: 1,
                 });
                 list = res2.list;
                 connected = res2.connected;
@@ -408,7 +394,6 @@ export default function SeferFiyatlandirma() {
                 const res3 = await multiRequest({
                     startDate: dates.start,
                     endDate: dates.end,
-                    userId: 1,
                 });
                 list = res3.list;
                 connected = res3.connected;

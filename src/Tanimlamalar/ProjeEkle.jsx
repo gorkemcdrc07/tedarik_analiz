@@ -1,4 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import {
+    getProjeler,
+    createProje,
+    updateProje,
+    deleteProje
+} from "../auth/dataApi";
 
 import {
     Alert,
@@ -46,7 +52,7 @@ import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 
-import supabase from "../supabaseClient";
+
 import './ProjeEkle.css';
 
 // Fields the user is asked for when creating / editing a project.
@@ -105,10 +111,8 @@ export default function ProjeEkle() {
         setLoading(true);
         setErrorText('');
 
-        const { data, error } = await supabase
-            .from('Projeler')
-            .select('*')
-            .order('id', { ascending: false });
+        const data = await getProjeler();
+        const error = null;
 
         if (error) {
             console.error('Proje listeleme hatası:', error);
@@ -246,18 +250,28 @@ export default function ProjeEkle() {
 
         const payload = createPayload(formData);
 
-        const result = editingId
-            ? await supabase
-                .from('Projeler')
-                .update(payload)
-                .eq('id', editingId)
-            : await supabase
-                .from('Projeler')
-                .insert([payload]);
+        try {
+            if (editingId) {
+                await updateProje(
+                    editingId,
+                    payload
+                );
+            } else {
+                await createProje(payload);
+            }
+        } catch (error) {
+            console.error(
+                'Proje kayıt hatası:',
+                error
+            );
 
-        if (result.error) {
-            console.error('Proje kayıt hatası:', result.error);
-            setErrorText(`Kayıt hatası: ${result.error.message}`);
+            setErrorText(
+                `Kayıt hatası: ${
+                    error?.message ||
+                    'İşlem tamamlanamadı.'
+                }`
+            );
+
             setSaving(false);
             return;
         }
@@ -287,14 +301,23 @@ export default function ProjeEkle() {
         setErrorText('');
         setSuccessText('');
 
-        const { error } = await supabase
-            .from('Projeler')
-            .delete()
-            .eq('id', deleteTarget.id);
+        try {
+            await deleteProje(
+                deleteTarget.id
+            );
+        } catch (error) {
+            console.error(
+                'Proje silme hatası:',
+                error
+            );
 
-        if (error) {
-            console.error('Proje silme hatası:', error);
-            setErrorText(`Silme hatası: ${error.message}`);
+            setErrorText(
+                `Silme hatası: ${
+                    error?.message ||
+                    'İşlem tamamlanamadı.'
+                }`
+            );
+
             setDeleting(false);
             setDeleteTarget(null);
             return;

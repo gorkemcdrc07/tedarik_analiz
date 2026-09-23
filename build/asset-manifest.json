@@ -1,18 +1,18 @@
 {
   "files": {
     "main.css": "/static/css/main.964181e1.css",
-    "main.js": "/static/js/main.d1bc40de.js",
+    "main.js": "/static/js/main.8d0b5615.js",
     "static/js/453.ae94bf42.chunk.js": "/static/js/453.ae94bf42.chunk.js",
     "static/media/dashboard-hero.jpg": "/static/media/dashboard-hero.56472bb07b197e007553.jpg",
     "static/media/resmi-logo.png": "/static/media/resmi-logo.9e5f74f9b237b54e23fe.png",
     "static/media/odak-lojistik-logo.png": "/static/media/odak-lojistik-logo.e9e56fe28076dfd97cfd.png",
     "index.html": "/index.html",
     "main.964181e1.css.map": "/static/css/main.964181e1.css.map",
-    "main.d1bc40de.js.map": "/static/js/main.d1bc40de.js.map",
+    "main.8d0b5615.js.map": "/static/js/main.8d0b5615.js.map",
     "453.ae94bf42.chunk.js.map": "/static/js/453.ae94bf42.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.964181e1.css",
-    "static/js/main.d1bc40de.js"
+    "static/js/main.8d0b5615.js"
   ]
 }

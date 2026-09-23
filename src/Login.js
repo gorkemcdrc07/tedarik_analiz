@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -38,7 +38,13 @@ const authUrl = (path) =>
   `${API_BASE}/api/auth/2fa/${path}`;
 
 const apiJson = async (url, options = {}) => {
-  const response = await fetch(url, options);
+  const response = await fetch(url, {
+    ...options,
+    credentials: "include",
+    headers: {
+      ...(options.headers || {})
+    }
+  });
 
   const contentType = (
     response.headers.get("content-type") || ""
@@ -233,10 +239,7 @@ export default function Login({
           }
         );
 
-        if (
-          !data?.user ||
-          !data?.sessionToken
-        ) {
+        if (!data?.user) {
           throw new Error(
             "Oturum bilgisi oluşturulamadı."
           );
@@ -292,12 +295,14 @@ export default function Login({
           "Reel_sifre"
         );
 
-        sessionStorage.setItem(
-          "odakAuthSession",
-          data.sessionToken
-        );
-
         /*
+         * Eski frontend surumlerinden kalmis JS-readable
+         * auth tokenini temizle. Yeni oturum HttpOnly cookie'dir.
+         */
+        sessionStorage.removeItem(
+          "odakAuthSession"
+        );
+/*
          * React state'inde de şifreyi
          * gereksiz yere tutma.
          */

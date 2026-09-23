@@ -6,8 +6,6 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 /* ====== ENV (DEĞİŞMEDİ) ====== */
 const API_BASE = (process.env.REACT_APP_API_BASE_URL || "").replace(/\/+$/, "");
-const ODAK_KEY = process.env.REACT_APP_ODAK_API_KEY || "";
-
 /* ====== UI (DEĞİŞMEDİ) ====== */
 const GlowCard = ({ children, className = "" }) => (
     <div className={`rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,.035),0_8px_24px_rgba(15,23,42,.035)] ${className}`}>
@@ -69,12 +67,17 @@ function addDays(dateStr, delta) {
     return d.toISOString().slice(0, 10);
 }
 async function fetchOdakData(startDate, endDate) {
-    if (!API_BASE || !ODAK_KEY) throw new Error("ODAK ENV eksik (REACT_APP_API_BASE_URL / REACT_APP_ODAK_API_KEY).");
-    const payload = { startDate: `${startDate}T00:00:00`, endDate: `${endDate}T23:59:59`, userId: 1 };
+    if (!API_BASE) throw new Error("Backend API adresi tanimli degil.");
+    const payload = { startDate: `${startDate}T00:00:00`, endDate: `${endDate}T23:59:59` };
 
-    const res = await fetch(`${API_BASE}/odak`, {
+    const res = await fetch(`${API_BASE}/api/fiyatlandirma/tmsorders/getall`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: ODAK_KEY },
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
         body: JSON.stringify(payload),
     });
     if (!res.ok) {

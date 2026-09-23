@@ -6,15 +6,12 @@ import {
     Navigate,
     useLocation
 } from "react-router-dom";
-
 import Login from "./Login";
 import Dashboard from "./Dashboard";
 import AnaSayfa from "./AnaSayfa";
 import Layout from "./Layout";
 import Gorsel from "./gorsel";
 import Yetkisiz from "./Yetkisiz";
-
-// Sipariş
 import SiparisOlustur from "./SiparisIslemleri/SiparisOlustur";
 import YeniSiparis from "./SiparisIslemleri/YeniSiparis";
 import ParsiyelSiparisOlustur from "./SiparisIslemleri/ParsiyelSiparisOlustur";
@@ -22,20 +19,12 @@ import SiparisAcanlar from "./SiparisIslemleri/siparisAcanlar";
 import Arkas from "./SiparisIslemleri/Arkas";
 import Fasdat from "./SiparisIslemleri/Fasdat";
 import TeslimNoktalari from "./SiparisIslemleri/TeslimNoktalari";
-
-// İrsaliye
 import Irsaliye from "./Irsaliye/Irsaliye";
-
-// Tanımlamalar
 import ProjeEkle from "./Tanimlamalar/ProjeEkle";
-
-// Gelir / Gider
 import GelirEkleme from "./GelirGider/GelirEkleme";
 import GiderEkleme from "./GelirGider/GiderEkleme";
 import TestGelir from "./GelirGider/TestGelir";
 import TestGider from "./GelirGider/TestGider";
-
-// Fiyatlandırma
 import SeferFiyatlandirma from "./fiyatlandirma/seferFiyatlandirma";
 import YakitDegisimMerkezi from "./Finans/YakitDegisimMerkezi";
 import YakitHesaplama from "./Finans/YakitHesaplama";
@@ -43,25 +32,70 @@ import YakitKontrolMerkezi from "./Finans/YakitKontrolMerkezi";
 import YakitOnayMerkezi from "./Finans/YakitOnayMerkezi";
 import YakitYonetimMerkeziV3 from "./Finans/YakitYonetimMerkeziV3";
 import MusteriKurulumSihirbazi from "./Finans/MusteriKurulumSihirbazi";
-
-// Analiz
 import OzetTablo from "./analiz/ozetTablo";
-
 import OdakMuiTheme from "./theme/OdakMuiTheme";
 import { startFuelScheduler } from "./Finans/autoFuelService";
-
 import "./odak-modern.css";
 import "./odak-modern-v3.css";
 import "./odak-modern-v4.css";
 import "./odak-modern-v6.css";
 import "./odak-dark-compat.css";
 
+const API_BASE =
+    (process.env.REACT_APP_API_BASE_URL || "")
+        .replace(/\/+$/, "");
+
+async function fetchCurrentSession() {
+    const response = await fetch(
+        `${API_BASE}/api/auth/session`,
+        {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                Accept: "application/json"
+            },
+            cache: "no-store"
+        }
+    );
+
+    let data = null;
+
+    try {
+        data = await response.json();
+    } catch {
+        data = null;
+    }
+
+    if (
+        !response.ok ||
+        !data?.authenticated
+    ) {
+        return null;
+    }
+
+    return data.user || null;
+}
+
+// Sipariş
+
+// İrsaliye
+
+// Tanımlamalar
+
+// Gelir / Gider
+
+// Fiyatlandırma
+
+// Analiz
+
+
+
 function getLoginUser() {
     try {
-        // V7 güvenlik: loginUser tek başına oturum sayılmaz. OTP doğrulamasından
-        // sonra yalnızca bu tarayıcı oturumuna verilen imzalı session bulunmalıdır.
-        if (!sessionStorage.getItem("odakAuthSession")) return null;
-        return JSON.parse(localStorage.getItem("loginUser") || "null");
+        return JSON.parse(
+            localStorage.getItem("loginUser") ||
+            "null"
+        );
     } catch {
         return null;
     }
@@ -77,10 +111,8 @@ function getFirstAllowedPath() {
     return "/dashboard";
 }
 
-function ProtectedPage({ children }) {
+function ProtectedPage({ children, user }) {
     const location = useLocation();
-
-    const user = getLoginUser();
 
     if (!user) {
         return (
@@ -173,19 +205,136 @@ export default function App() {
         setIsAuthenticated
     ] = useState(false);
 
-    useEffect(() => {
-        const user = getLoginUser();
+    const [
+        sessionUser,
+        setSessionUser
+    ] = useState(null);
 
-        setIsAuthenticated(
-            Boolean(user)
-        );
+    const [
+        sessionLoading,
+        setSessionLoading
+    ] = useState(true);
+
+    useEffect(() => {
+        let active = true;
+
+        const restoreSession = async () => {
+            try {
+                const user =
+                    await fetchCurrentSession();
+
+                if (!active) return;
+
+                if (user) {
+                    setSessionUser(user);
+                    setIsAuthenticated(true);
+
+                    /*
+                     * Yalnızca UI cache.
+                     * Yetkilendirme otoritesi backend session + DB'dir.
+                     */
+                    localStorage.setItem(
+                        "loginUser",
+                        JSON.stringify(user)
+                    );
+                } else {
+                    setSessionUser(null);
+                    setIsAuthenticated(false);
+
+                    localStorage.removeItem(
+                        "loginUser"
+                    );
+
+                    localStorage.removeItem(
+                        "userRole"
+                    );
+                }
+            } catch {
+                if (!active) return;
+
+                setSessionUser(null);
+                setIsAuthenticated(false);
+
+                localStorage.removeItem(
+                    "loginUser"
+                );
+
+                localStorage.removeItem(
+                    "userRole"
+                );
+            } finally {
+                if (active) {
+                    setSessionLoading(false);
+                }
+            }
+        };
+
+        restoreSession();
+
+        return () => {
+            active = false;
+        };
     }, []);
 
     useEffect(() => startFuelScheduler(), []);
 
-    const handleLoginSuccess = () => {
-        setIsAuthenticated(true);
+    const handleLoginSuccess = async () => {
+        setSessionLoading(true);
+
+        try {
+            const user =
+                await fetchCurrentSession();
+
+            if (!user) {
+                throw new Error(
+                    "Oturum doğrulanamadı."
+                );
+            }
+
+            setSessionUser(user);
+            setIsAuthenticated(true);
+
+            localStorage.setItem(
+                "loginUser",
+                JSON.stringify(user)
+            );
+
+            localStorage.setItem(
+                "userRole",
+                user.rol || "kullanici"
+            );
+        } catch {
+            setSessionUser(null);
+            setIsAuthenticated(false);
+
+            localStorage.removeItem(
+                "loginUser"
+            );
+
+            localStorage.removeItem(
+                "userRole"
+            );
+        } finally {
+            setSessionLoading(false);
+        }
     };
+
+    if (sessionLoading) {
+        return (
+            <OdakMuiTheme>
+                <div
+                    style={{
+                        minHeight: "100vh",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}
+                >
+                    Oturum kontrol ediliyor...
+                </div>
+            </OdakMuiTheme>
+        );
+    }
 
     return (
         <OdakMuiTheme>
@@ -225,7 +374,7 @@ export default function App() {
                     <Route
                         path="/dashboard"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <AnaSayfa />
                             </ProtectedPage>
                         }
@@ -235,7 +384,7 @@ export default function App() {
                     <Route
                         path="/admin"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <Dashboard />
                             </ProtectedPage>
                         }
@@ -248,7 +397,7 @@ export default function App() {
                     <Route
                         path="/SiparisIslemleri/SiparisOlustur"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <SiparisOlustur />
                             </ProtectedPage>
                         }
@@ -257,7 +406,7 @@ export default function App() {
                     <Route
                         path="/SiparisIslemleri/YeniSiparis"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <YeniSiparis />
                             </ProtectedPage>
                         }
@@ -266,7 +415,7 @@ export default function App() {
                     <Route
                         path="/SiparisIslemleri/ParsiyelSiparisOlustur"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <ParsiyelSiparisOlustur />
                             </ProtectedPage>
                         }
@@ -275,7 +424,7 @@ export default function App() {
                     <Route
                         path="/SiparisIslemleri/SiparisAcanlar"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <SiparisAcanlar />
                             </ProtectedPage>
                         }
@@ -284,7 +433,7 @@ export default function App() {
                     <Route
                         path="/SiparisIslemleri/Arkas"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <Arkas />
                             </ProtectedPage>
                         }
@@ -293,7 +442,7 @@ export default function App() {
                     <Route
                         path="/SiparisIslemleri/Fasdat"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <Fasdat />
                             </ProtectedPage>
                         }
@@ -302,7 +451,7 @@ export default function App() {
                     <Route
                         path="/SiparisIslemleri/TeslimNoktalari"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <TeslimNoktalari />
                             </ProtectedPage>
                         }
@@ -315,7 +464,7 @@ export default function App() {
                     <Route
                         path="/Irsaliye"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <Irsaliye />
                             </ProtectedPage>
                         }
@@ -328,7 +477,7 @@ export default function App() {
                     <Route
                         path="/Tanimlamalar/ProjeEkle"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <ProjeEkle />
                             </ProtectedPage>
                         }
@@ -341,7 +490,7 @@ export default function App() {
                     <Route
                         path="/GelirGider/GelirEkleme"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <GelirEkleme />
                             </ProtectedPage>
                         }
@@ -350,7 +499,7 @@ export default function App() {
                     <Route
                         path="/GelirGider/GiderEkleme"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <GiderEkleme />
                             </ProtectedPage>
                         }
@@ -359,7 +508,7 @@ export default function App() {
                     <Route
                         path="/GelirGider/TestGelir"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <TestGelir />
                             </ProtectedPage>
                         }
@@ -368,7 +517,7 @@ export default function App() {
                     <Route
                         path="/GelirGider/TestGider"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <TestGider />
                             </ProtectedPage>
                         }
@@ -381,7 +530,7 @@ export default function App() {
                     <Route
                         path="/fiyatlandirma/seferFiyatlandirma"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <SeferFiyatlandirma />
                             </ProtectedPage>
                         }
@@ -390,7 +539,7 @@ export default function App() {
                     <Route
                         path="/finans/yakit-hesaplama"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <YakitHesaplama />
                             </ProtectedPage>
                         }
@@ -399,7 +548,7 @@ export default function App() {
                     <Route
                         path="/finans/musteri-kurulum"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <MusteriKurulumSihirbazi />
                             </ProtectedPage>
                         }
@@ -408,7 +557,7 @@ export default function App() {
                     <Route
                         path="/finans/yakit-yonetim-v3"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <YakitYonetimMerkeziV3 />
                             </ProtectedPage>
                         }
@@ -417,7 +566,7 @@ export default function App() {
                     <Route
                         path="/finans/yakit-onaylar"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <YakitOnayMerkezi />
                             </ProtectedPage>
                         }
@@ -426,7 +575,7 @@ export default function App() {
                     <Route
                         path="/finans/yakit-kontrol-merkezi"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <YakitKontrolMerkezi />
                             </ProtectedPage>
                         }
@@ -435,7 +584,7 @@ export default function App() {
                     <Route
                         path="/finans/akaryakit-fiyat-takip"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <YakitDegisimMerkezi />
                             </ProtectedPage>
                         }
@@ -444,7 +593,7 @@ export default function App() {
                     <Route
                         path="/finans/yakit-otomasyon-merkezi"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <YakitDegisimMerkezi />
                             </ProtectedPage>
                         }
@@ -457,7 +606,7 @@ export default function App() {
                     <Route
                         path="/analiz/ozet"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <OzetTablo />
                             </ProtectedPage>
                         }
@@ -470,7 +619,7 @@ export default function App() {
                     <Route
                         path="/gorsel"
                         element={
-                            <ProtectedPage>
+                            <ProtectedPage user={sessionUser}>
                                 <Gorsel />
                             </ProtectedPage>
                         }

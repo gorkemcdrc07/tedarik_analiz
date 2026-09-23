@@ -1,9 +1,9 @@
 import React, { useRef, useState, useMemo } from "react";
 import * as XLSX from "xlsx";
-import supabase from "../supabaseClient";
-import { getToken } from "../auth/tokenManager";
+import { getFirmalar, getHesapAdlari } from "../auth/dataApi";
 import { Download, FileSpreadsheet, LoaderCircle, Search, Send, Trash2, UploadCloud } from "lucide-react";
 import "./GelirEkleme.css";
+import { authorizedFetch } from "../auth/tokenManager";
 
 export default function TestGelir() {
     const inputRef = useRef(null);
@@ -71,10 +71,7 @@ export default function TestGelir() {
             const sablonWS = XLSX.utils.aoa_to_sheet([S_HEADERS]);
             sablonWS["!cols"] = [{ wch: 10 }, { wch: 28 }, { wch: 16 }, { wch: 26 }, { wch: 14 }, { wch: 10 }, { wch: 12 }, { wch: 16 }, { wch: 44 }];
 
-            const { data, error } = await supabase
-                .from("Fiyat_Ekleme_Hesap_Adlari")
-                .select("tip_id,detay_id,hizmet_adi,kdv_oran");
-            if (error) throw error;
+            const data = await getHesapAdlari();
 
             const D_HEADERS = ["tip_id", "detay_id", "hizmet_adi", "kdv_oran"];
             const rows = (data || []).map((r) => [
@@ -169,10 +166,7 @@ export default function TestGelir() {
     }, [previewHeaders, previewRows]);
 
     const fetchDokumanLookup = async () => {
-        const { data, error } = await supabase
-            .from("Fiyat_Ekleme_Hesap_Adlari")
-            .select("hizmet_adi, tip_id, detay_id");
-        if (error) throw error;
+        const data = await getHesapAdlari();
         const map = new Map();
         (data || []).forEach(({ hizmet_adi, tip_id, detay_id }) => {
             map.set(norm(hizmet_adi), { tip_id, detay_id });
@@ -181,10 +175,7 @@ export default function TestGelir() {
     };
 
     const fetchFirmaLookup = async () => {
-        const { data, error } = await supabase
-            .from("Firmalar")
-            .select("firma_adi, firma_id");
-        if (error) throw error;
+        const data = await getFirmalar();
         const map = new Map();
         (data || []).forEach(({ firma_adi, firma_id }) => {
             map.set(norm(firma_adi), { firma_id });
@@ -279,24 +270,6 @@ export default function TestGelir() {
     const sendToReel = async () => {
         try {
             setSending(true); setError(""); clearSendState();
-
-            // Token
-            let token;
-            try { token = await getToken(); }
-            catch (err) {
-                setError(err?.message || "Token alınamadı.");
-                alert("Oturum kimliğiniz alınamadı. Lütfen tekrar giriş yapın.");
-                try { localStorage.removeItem("kullanici"); } catch { }
-                window.location.href = "/";
-                return;
-            }
-            if (!token) {
-                setError("Token alınamadı.");
-                alert("Oturumunuz geçersiz. Lütfen tekrar giriş yapın.");
-                try { localStorage.removeItem("kullanici"); } catch { }
-                window.location.href = "/";
-                return;
-            }
 
             if (!previewHeaders.length || !previewRows.length) {
                 setError("Önce dosyayı tarayın. Gönderilecek satır bulunamadı.");
@@ -398,13 +371,14 @@ export default function TestGelir() {
                 };
 
                 try {
-                    const res = await fetch(endpoint, {
+                    const res = await authorizedFetch(endpoint, {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify(payload),
+                        credentials: "include",
+                        cache: "no-store",
                     });
 
                     if (!res.ok) {
