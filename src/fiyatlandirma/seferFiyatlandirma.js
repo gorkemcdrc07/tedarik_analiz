@@ -8,10 +8,6 @@ const API_BASE = (process.env.REACT_APP_API_BASE_URL || "http://localhost:5000")
     .trim()
     .replace(/\/+$/, "");
 
-// Supabase
-const SB_URL = (process.env.REACT_APP_SUPABASE_URL || "").trim();
-const SB_KEY = (process.env.REACT_APP_SUPABASE_KEY || "").trim();
-const HAS_SB = Boolean(SB_URL && SB_KEY);
 
 /*Sabitler*/
 const PROJECT_NAME = "BUNGE LÜLEBURGAZ FTL";
@@ -181,51 +177,92 @@ async function multiRequest(params) {
     };
 }
 
-const SB_TABLE = "bungeFiyatlar";
-const SB_COLS = "teslim_il,teslim_ilce,mesafe,tir,kamyon";
-
+// BUNGE_FIYAT_BACKEND_V1
 async function fetchPriceMap(uniqueCities) {
-    if (!HAS_SB) throw new Error("Supabase ortam değişkenleri tanımlı değil.");
-    const inCities = `in.(${uniqueCities
-        .map((v) => encodeURIComponent(String(v ?? "")))
-        .join(",")})`;
-    const url = `${SB_URL}/rest/v1/${SB_TABLE}?select=${encodeURIComponent(
-        SB_COLS
-    )}&teslim_il=${inCities}`;
+    const cities = [
+        ...new Set(
+            (Array.isArray(uniqueCities)
+                ? uniqueCities
+                : []
+            )
+                .map((value) =>
+                    String(value ?? "").trim()
+                )
+                .filter(Boolean)
+        ),
+    ];
 
-    const res = await fetch(url, {
-        headers: {
-            apikey: SB_KEY,
-            Authorization: `Bearer ${SB_KEY}`,
-            Accept: "application/json",
-            Prefer: "count=estimated",
-        },
-    });
-    if (!res.ok) {
-        const t = await res.text().catch(() => "");
-        throw new Error(`Supabase ${res.status}: ${t.slice(0, 200)}`);
+    if (!cities.length) {
+        return new Map();
     }
 
-    const rows = await res.json();
+    const res = await fetch(
+        `${API_BASE}/api/data/fiyatlandirma/bunge-fiyatlar`,
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify({
+                cities,
+            }),
+        }
+    );
+
+    let payload = null;
+
+    try {
+        payload = await res.json();
+    } catch {
+        payload = null;
+    }
+
+    if (!res.ok) {
+        throw new Error(
+            payload?.error ||
+                `Fiyat bilgileri alınamadı (${res.status}).`
+        );
+    }
+
+    const rows = Array.isArray(payload?.data)
+        ? payload.data
+        : [];
+
     const map = new Map();
+
     const setVal = (key, r) => {
         const existing = map.get(key) || {};
-        const mesafeNum = parseTRNumber(r.mesafe); 
+        const mesafeNum = parseTRNumber(
+            r.mesafe
+        );
+
         map.set(key, {
             tir: r.tir ?? existing.tir,
-            kamyon: r.kamyon ?? existing.kamyon,
-            mesafe: Number.isFinite(mesafeNum) ? mesafeNum : existing.mesafe ?? null,
+            kamyon:
+                r.kamyon ?? existing.kamyon,
+            mesafe: Number.isFinite(mesafeNum)
+                ? mesafeNum
+                : existing.mesafe ?? null,
         });
     };
+
     for (const r of rows) {
         const il = ncity(r.teslim_il);
-        const ilce = r.teslim_ilce ? ncounty(r.teslim_ilce) : "";
+        const ilce = r.teslim_ilce
+            ? ncounty(r.teslim_ilce)
+            : "";
+
         setVal(`${il}||*`, r);
-        if (ilce) setVal(`${il}||${ilce}`, r);
+
+        if (ilce) {
+            setVal(`${il}||${ilce}`, r);
+        }
     }
+
     return map;
 }
-
 // parçalama yardımcıları
 const splitMulti = (s = "") =>
     String(s)
@@ -487,12 +524,6 @@ export default function SeferFiyatlandirma() {
 
     const handleCalculate = async () => {
         if (!rows.length) return;
-        if (!HAS_SB) {
-            alert(
-                "Hesaplama için Supabase ayarları yok.\n.env içine REACT_APP_SUPABASE_URL + REACT_APP_SUPABASE_KEY girin."
-            );
-            return;
-        }
         setCalcLoading(true);
         try {
             const citiesRaw = rows
@@ -546,7 +577,7 @@ export default function SeferFiyatlandirma() {
                         });
                     }
 
-                    // Eğer hiçbir segmentte Supabase mesafesi yoksa, fallback mesafeleri kullan
+                    // Eğer hiçbir segmentte fiyat servisi mesafesi yoksa, fallback mesafeleri kullan
                     const allNegInf = segments.every((s) => s.sbMesafe === -Infinity);
                     if (allNegInf) {
                         segments = segments.map((s) => ({ ...s, sbMesafe: s.fallback }));
@@ -920,8 +951,8 @@ export default function SeferFiyatlandirma() {
                     <button
                         className="fx-btn fx-btn-outline"
                         onClick={handleCalculate}
-                        disabled={!rows.length || calcLoading || !HAS_SB}
-                        title={HAS_SB ? "Supabase fiyatları uygula" : "Supabase ayarları yok (.env dosyasını doldurun)"}
+                        disabled={!rows.length || calcLoading}
+                        title="Fiyatları uygula"
                     >
                         {calcLoading ? <><Calculator className="fx-spin" size={15} />Hesaplanıyor…</> : <><Calculator size={15} />Hesapla</>}
                     </button>

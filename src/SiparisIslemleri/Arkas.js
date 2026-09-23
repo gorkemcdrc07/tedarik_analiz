@@ -1,7 +1,10 @@
 import React, { useMemo, useRef, useState } from "react";
 import { Link as LinkIcon, ListChecks, FileSpreadsheet, UploadCloud, Loader2, X, FileCheck2, Route, Sparkles, Download, RotateCcw, CheckCircle2 } from "lucide-react";
 import * as XLSX from "xlsx";
-import supabase from "../supabaseClient";
+import {
+    getTeslimNoktalariAll,
+    searchTeslimNoktalari,
+} from "../auth/dataApi";
 import "./Arkas.css";
 
 /** ===================== SABİTLER ===================== */
@@ -373,20 +376,9 @@ export default function ArkasEkrani() {
 
             const key = (s) => String(s ?? "").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim().toLocaleUpperCase("tr");
 
-            // 1) Toplam kayıt sayısı
-            const pageSize = 1000;
-            const { count, error: countError } = await supabase.from("Teslim_Noktalari").select("*", { count: "exact", head: true });
-            if (countError) throw countError;
-
-            // 2) Sayfalı çek
-            const total = count || 0;
-            let allAdresler = [];
-            for (let from = 0; from < total; from += pageSize) {
-                const to = from + pageSize - 1;
-                const { data, error } = await supabase.from("Teslim_Noktalari").select("adres_id, adres_adi, cari_hesap_id").range(from, to);
-                if (error) throw error;
-                allAdresler = allAdresler.concat(data || []);
-            }
+            // Teslim noktaları backend API üzerinden alınır.
+            const allAdresler =
+                await getTeslimNoktalariAll();
             setAdresCatalog(allAdresler); // manuel seçim modali için sakla
 
             // 3) Birebir eşleşme için map
@@ -459,32 +451,11 @@ export default function ArkasEkrani() {
             const aQ = normalize(adresQ).toLocaleLowerCase("tr");
             const cQ = normalize(cariQ).toLocaleLowerCase("tr");
 
-            // Önce "cari" kolonu var kabul ederek sorgula
-            let rq = supabase
-                .from("Teslim_Noktalari")
-                .select("adres_id, adres_adi, cari, cari_hesap_id")
-                .order("adres_adi", { ascending: true })
-                .limit(100);
-            if (aQ) rq = rq.ilike("adres_adi", `%${aQ}%`);
-            if (cQ) rq = rq.ilike("cari", `%${cQ}%`);
-
-            let { data, error } = await rq;
-
-            // "cari" kolonu yoksa fallback: sadece adres_adi ile ara, cari boş gelir
-            if (error && /column .*cari/i.test(String(error.message || ""))) {
-                rq = supabase
-                    .from("Teslim_Noktalari")
-                    .select("adres_id, adres_adi, cari_hesap_id")
-                    .order("adres_adi", { ascending: true })
-                    .limit(100);
-                if (aQ) rq = rq.ilike("adres_adi", `%${aQ}%`);
-                ({ data, error } = await rq);
-                if (error) throw error;
-                data = (data || []).map(d => ({ ...d, cari: null }));
-            } else if (error) {
-                throw error;
-            }
-
+            const data =
+                await searchTeslimNoktalari({
+                    adresQ: aQ,
+                    cariQ: cQ,
+                });
             setSelResults(
                 (data || []).map(a => ({
                     adres_id: String(a?.adres_id ?? ""),

@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { getProjeOptions } from "../auth/dataApi";
+import {
+    getProjeOptions,
+    getTeslimNoktalariAll,
+    getSiparisOlusturProjectRows,
+    getSiparisOlusturBallogTeslimNoktalari,
+    createSiparisOlusturBallogTeslimNoktalariBulk,
+} from "../auth/dataApi";
 import {
     Download,
     Link as LinkIcon,
@@ -21,9 +27,6 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import "./SiparisOlustur.css";
-import supabase from "../supabaseClient";
-
-const DATA_TABLE = "Projeler";
 
 const HEADERS = [
     "Vkn",
@@ -72,7 +75,6 @@ const FIELD_OVERLAY_MAP = {
 
 const SELECT_COLS = Object.keys(FIELD_OVERLAY_MAP).join(", ");
 const BALLOG_CARI_ID = "63625";
-const BALLOG_TABLE = "ballog_teslim_noktalari";
 const BALLOG_CARI_COLUMN = "cari_hesap_id";
 
 const DETAIL_FIELD_KEYS = {
@@ -419,12 +421,7 @@ export default function SiparisOlustur() {
         ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel"].includes(file.type);
 
     const fetchProjectRows = async (projectName) => {
-        const { data, error } = await supabase
-            .from(DATA_TABLE)
-            .select(`${SELECT_COLS}, Proje_Adi`)
-            .eq("Proje_Adi", projectName);
-        if (error) throw error;
-        return Array.isArray(data) ? data : [];
+        return getSiparisOlusturProjectRows(projectName);
     };
 
     const applyBallogOverrides = (rowsArr) => {
@@ -543,25 +540,10 @@ export default function SiparisOlustur() {
             setDlProgress(15);
             setDlPhase("fetch");
 
-            let allData = [];
-            const pageSize = 1000;
-            const { count, error: countError } = await supabase
-                .from("Teslim_Noktalari")
-                .select("*", { count: "exact", head: true });
-            if (countError) throw countError;
+            const allData =
+                await getTeslimNoktalariAll();
 
-            const totalPages = Math.ceil((count || 0) / pageSize);
-            for (let page = 0; page < totalPages; page++) {
-                const from = page * pageSize;
-                const { data, error } = await supabase
-                    .from("Teslim_Noktalari")
-                    .select("*")
-                    .range(from, from + pageSize - 1);
-                if (error) throw error;
-                allData = allData.concat(data || []);
-                const pct = 15 + Math.round(((page + 1) / totalPages) * 60);
-                setDlProgress(pct);
-            }
+            setDlProgress(75);
 
             setDlPhase("build");
             setDlProgress(80);
@@ -732,7 +714,6 @@ export default function SiparisOlustur() {
         });
     };
 
-    const getAdresSelectCols = () => "*";
 
     const pickBallogFile = () => {
         if (!isBallog) {
@@ -868,51 +849,18 @@ export default function SiparisOlustur() {
 
         try {
             const parsedRows = await parseBallogDeliveryFile(file);
-            const pageSize = 1000;
 
-            const { count, error: countError } = await supabase
-                .from(BALLOG_TABLE)
-                .select("adres_id, adres_adi", { count: "exact", head: true });
-            if (countError) throw countError;
-
-            const totalPages = Math.ceil((count || 0) / pageSize);
-            let existingRows = [];
-
-            for (let page = 0; page < totalPages; page++) {
-                const from = page * pageSize;
-                const { data, error } = await supabase
-                    .from(BALLOG_TABLE)
-                    .select("adres_id, adres_adi")
-                    .range(from, from + pageSize - 1);
-                if (error) throw error;
-                existingRows = existingRows.concat(data || []);
-            }
-
-            const existingIds = new Set(existingRows.map((r) => normalizeKey(r?.adres_id)));
-            const existingNames = new Set(existingRows.map((r) => normalizeKey(r?.adres_adi)));
-
-            const rowsToInsert = parsedRows.filter((r) => {
-                const idKey = normalizeKey(r.adres_id);
-                const nameKey = normalizeKey(r.adres_adi);
-                return !existingIds.has(idKey) && !existingNames.has(nameKey);
-            });
-
-            if (!rowsToInsert.length) {
-                setBallogImportResult({ total: parsedRows.length, inserted: 0, skipped: parsedRows.length });
-                return;
-            }
-
-            const insertChunkSize = 500;
-            for (let i = 0; i < rowsToInsert.length; i += insertChunkSize) {
-                const chunk = rowsToInsert.slice(i, i + insertChunkSize);
-                const { error } = await supabase.from(BALLOG_TABLE).insert(chunk);
-                if (error) throw error;
-            }
+            const result =
+                await createSiparisOlusturBallogTeslimNoktalariBulk(
+                    parsedRows
+                );
 
             setBallogImportResult({
                 total: parsedRows.length,
-                inserted: rowsToInsert.length,
-                skipped: parsedRows.length - rowsToInsert.length,
+                inserted: Number(result?.inserted ?? 0),
+                skipped:
+                    parsedRows.length -
+                    Number(result?.inserted ?? 0),
             });
         } catch (e) {
             setError(e.message || "BALLOG teslim noktaları eklenirken hata oluştu.");
@@ -943,29 +891,14 @@ export default function SiparisOlustur() {
                 }
             } catch (_) { }
 
-            const pageSize = 1000;
-            const adresTableName = isBallog ? BALLOG_TABLE : "Teslim_Noktalari";
-
-            const { count, error: countError } = await supabase
-                .from(adresTableName)
-                .select("*", { count: "exact", head: true });
-
-            if (countError) throw countError;
-
-            const totalPages = Math.ceil((count || 0) / pageSize);
             let allAdresler = [];
 
-            for (let page = 0; page < totalPages; page++) {
-                const from = page * pageSize;
-
-                const { data, error } = await supabase
-                    .from(adresTableName)
-                    .select(getAdresSelectCols())
-                    .range(from, from + pageSize - 1);
-
-                if (error) throw error;
-
-                allAdresler = allAdresler.concat(data || []);
+            if (isBallog) {
+                allAdresler =
+                    await getSiparisOlusturBallogTeslimNoktalari();
+            } else {
+                allAdresler =
+                    await getTeslimNoktalariAll();
             }
 
             const keyFn = (s) => compactAddr(String(s ?? "").replace(/\u00A0/g, " "));

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
     AlertCircle,
     Building2,
@@ -21,12 +21,21 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
-import supabase from "../supabaseClient";
+import {
+    getProjeTanitimKartlari,
+    getYeniSiparisMusteriler,
+    getYeniSiparisMappings,
+    createYeniSiparisMusteri,
+    updateYeniSiparisMusteri,
+    archiveYeniSiparisMusteri,
+    bulkUpsertYeniSiparisMusteriler,
+    createYeniSiparisMapping,
+    updateYeniSiparisMapping,
+    archiveYeniSiparisMapping,
+    bulkCreateYeniSiparisMappings,
+} from "../auth/dataApi";
 import "./YeniSiparis.css";
 
-const MAPPING_TABLE = "yeni_siparis_mapping";
-const CUSTOMER_TABLE = "musteriler";
-const LEGACY_CUSTOMER_TABLE = "Proje_Tanitim_Karti";
 
 // Sipariş Oluştur ekranının kabul ettiği standart kolon sırası.
 const TEMPLATE_HEADERS = [
@@ -363,25 +372,10 @@ export default function YeniSiparis() {
     const fetchCustomers = async () => {
         setCustomersLoading(true);
         try {
-            const pageSize = 1000;
-            let from = 0;
-            let records = [];
-
-            while (true) {
-                const { data, error } = await supabase
-                    .from(CUSTOMER_TABLE)
-                    .select("id, cari_firma_id, vkn, urun_id, proje_adi, proje_karti_id, firma_unvani, hizmet_tipi, alt_hizmet_tipi, erp_proje_kodu, kayit_anahtari, aktif, created_at, updated_at")
-                    .eq("aktif", true)
-                    .order("firma_unvani", { ascending: true })
-                    .order("proje_adi", { ascending: true })
-                    .range(from, from + pageSize - 1);
-
-                if (error) throw error;
-                const page = Array.isArray(data) ? data : [];
-                records = records.concat(page);
-                if (page.length < pageSize) break;
-                from += pageSize;
-            }
+            const records =
+                await getYeniSiparisMusteriler({
+                    aktif: true,
+                });
 
             setCustomerRecords(records);
             setCustomerProjects(
@@ -401,19 +395,33 @@ export default function YeniSiparis() {
             );
         } catch (error) {
             try {
-                const { data: legacyData, error: legacyError } = await supabase
-                    .from(LEGACY_CUSTOMER_TABLE)
-                    .select("ID, FirmaUnvani, ProjeAdi")
-                    .order("FirmaUnvani", { ascending: true })
-                    .order("ProjeAdi", { ascending: true });
+                const legacy =
+                    await getProjeTanitimKartlari();
 
-                if (legacyError) throw legacyError;
-                const legacy = Array.isArray(legacyData) ? legacyData : [];
                 setCustomerRecords([]);
-                setCustomerProjects(legacy.map((item) => ({ ...item, __customerRowId: `legacy-${item.ID}-${item.ProjeAdi}` })));
-                showMessage("error", "Müşteriler tablosuna ulaşılamadı. Geçici olarak eski müşteri kaynağı kullanılıyor; Tedarik-Analiz bağlantısını ve public.musteriler tablosunu kontrol edin.");
+
+                setCustomerProjects(
+                    legacy.map((item) => ({
+                        ...item,
+                        __customerRowId:
+                            `legacy-${item.ID}-${item.ProjeAdi}`,
+                    }))
+                );
+
+                showMessage(
+                    "error",
+                    "Müşteriler tablosuna ulaşılamadı. Geçici olarak eski müşteri kaynağı kullanılıyor; Tedarik-Analiz bağlantısını ve public.musteriler tablosunu kontrol edin."
+                );
             } catch (legacyError) {
-                showMessage("error", `Müşteri listesi alınamadı: ${legacyError?.message || error?.message || error}`);
+                showMessage(
+                    "error",
+                    `Müşteri listesi alınamadı: ${
+                        legacyError?.message ||
+                        error?.message ||
+                        error
+                    }`
+                );
+
                 setCustomerRecords([]);
                 setCustomerProjects([]);
             }
@@ -425,26 +433,10 @@ export default function YeniSiparis() {
     const fetchMappings = async () => {
         setLoadingMappings(true);
         try {
-            const pageSize = 1000;
-            let from = 0;
-            let allRows = [];
-
-            while (true) {
-                const { data, error } = await supabase
-                    .from(MAPPING_TABLE)
-                    .select(
-                        "id, musteriden_gelen, teslim_alan_firma, teslim_firmasi_id, teslim_noktasi_adi, teslim_noktasi_id, teslim_noktasi_il, teslim_noktasi_ilce"
-                    )
-                    .eq("aktif", true)
-                    .order("musteriden_gelen", { ascending: true })
-                    .range(from, from + pageSize - 1);
-
-                if (error) throw error;
-                const page = Array.isArray(data) ? data : [];
-                allRows = allRows.concat(page);
-                if (page.length < pageSize) break;
-                from += pageSize;
-            }
+            const allRows =
+                await getYeniSiparisMappings({
+                    aktif: true,
+                });
 
             setMappings(allRows);
         } catch (error) {
@@ -567,7 +559,7 @@ export default function YeniSiparis() {
     };
 
     const addManualOrderRow = () => {
-        const row = {};
+        let row = {};
         TEMPLATE_HEADERS.forEach((header) => { row[header] = ""; });
         row = hydrateOrderDefaults(row);
         row.__customerName = "";
@@ -1119,8 +1111,7 @@ export default function YeniSiparis() {
                 MAPPING_COLUMNS.map(({ key }) => [key, normalize(newValues[key])])
             );
 
-            const { error } = await supabase.from(MAPPING_TABLE).insert(payload);
-            if (error) throw error;
+            await createYeniSiparisMapping(payload);
 
             setCreating(false);
             setNewValues(emptyMapping());
@@ -1147,12 +1138,7 @@ export default function YeniSiparis() {
             );
             payload.updated_at = new Date().toISOString();
 
-            const { error } = await supabase
-                .from(MAPPING_TABLE)
-                .update(payload)
-                .eq("id", editingId);
-
-            if (error) throw error;
+            await updateYeniSiparisMapping(editingId, payload);
 
             cancelEdit();
             await fetchMappings();
@@ -1241,15 +1227,14 @@ export default function YeniSiparis() {
                 return;
             }
 
-            const chunkSize = 250;
-            for (let i = 0; i < newRows.length; i += chunkSize) {
-                const chunk = newRows.slice(i, i + chunkSize);
-                const { error } = await supabase.from(MAPPING_TABLE).insert(chunk);
-                if (error) throw error;
-                const done = Math.min(i + chunk.length, newRows.length);
-                setMappingImportProgress(40 + Math.round((done / newRows.length) * 55));
-                setMappingImportStatus(`${done}/${newRows.length} kayıt aktarılıyor...`);
-            }
+            setMappingImportProgress(72);
+            setMappingImportStatus(
+                `${newRows.length} kayıt güvenli API üzerinden aktarılıyor...`
+            );
+
+            await bulkCreateYeniSiparisMappings(newRows);
+
+            setMappingImportProgress(95);
 
             await fetchMappings();
             setMappingImportProgress(100);
@@ -1270,11 +1255,7 @@ export default function YeniSiparis() {
         if (!approved) return;
         setMappingDeletingId(row.id);
         try {
-            const { error } = await supabase
-                .from(MAPPING_TABLE)
-                .update({ aktif: false, updated_at: new Date().toISOString() })
-                .eq("id", row.id);
-            if (error) throw error;
+            await archiveYeniSiparisMapping(row.id);
             setMappings((prev) => prev.filter((item) => item.id !== row.id));
             if (editingId === row.id) cancelEdit();
             showMessage("success", "Eşleştirme kaydı silindi.");
@@ -1331,11 +1312,11 @@ export default function YeniSiparis() {
 
         setCustomerSaving(true);
         try {
-            const query = customerEditingId
-                ? supabase.from(CUSTOMER_TABLE).update(payload).eq("id", customerEditingId)
-                : supabase.from(CUSTOMER_TABLE).insert(payload);
-            const { error } = await query;
-            if (error) throw error;
+            if (customerEditingId) {
+                await updateYeniSiparisMusteri(customerEditingId, payload);
+            } else {
+                await createYeniSiparisMusteri(payload);
+            }
 
             setCustomerFormOpen(false);
             setCustomerEditingId(null);
@@ -1353,11 +1334,7 @@ export default function YeniSiparis() {
         if (!window.confirm(`${record.firma_unvani} kaydını pasife almak istiyor musunuz?`)) return;
         setCustomerDeletingId(record.id);
         try {
-            const { error } = await supabase
-                .from(CUSTOMER_TABLE)
-                .update({ aktif: false, updated_at: new Date().toISOString() })
-                .eq("id", record.id);
-            if (error) throw error;
+            await archiveYeniSiparisMusteri(record.id);
             await fetchCustomers();
             showMessage("success", "Müşteri kaydı pasife alındı.");
         } catch (error) {
@@ -1490,18 +1467,14 @@ export default function YeniSiparis() {
             );
             setCustomerImportProgress(52);
 
-            const chunkSize = 250;
-            for (let i = 0; i < uniqueImported.length; i += chunkSize) {
-                const chunk = uniqueImported.slice(i, i + chunkSize);
-                const { error } = await supabase
-                    .from(CUSTOMER_TABLE)
-                    .upsert(chunk, { onConflict: "kayit_anahtari" });
-                if (error) throw error;
-                setCustomerImportProgress(Math.min(92, 52 + Math.round(((i + chunk.length) / uniqueImported.length) * 40)));
-                setCustomerImportStatus(
-                    `${Math.min(i + chunk.length, uniqueImported.length)} / ${uniqueImported.length} benzersiz kayıt Supabase'e aktarılıyor...`
-                );
-            }
+            setCustomerImportStatus(
+                `${uniqueImported.length} benzersiz kayıt güvenli API üzerinden aktarılıyor...`
+            );
+            setCustomerImportProgress(72);
+
+            await bulkUpsertYeniSiparisMusteriler(uniqueImported);
+
+            setCustomerImportProgress(92);
 
             setCustomerImportProgress(100);
             setCustomerImportStatus("Müşteri listesi güncellendi.");

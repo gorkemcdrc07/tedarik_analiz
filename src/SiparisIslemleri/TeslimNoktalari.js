@@ -1,6 +1,9 @@
 import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
-import supabase from "../supabaseClient";
+import {
+    createTeslimNoktalariBulk,
+    getTeslimNoktasiAdresIds,
+} from "../auth/dataApi";
 import {
     FileSpreadsheet, LoaderCircle, MapPinned, UploadCloud, X,
     Rows3, CircleCheckBig, DatabaseZap, CopyCheck, ArrowRight
@@ -64,32 +67,23 @@ export default function TeslimNoktalari() {
     }
 
     async function getAllExistingAdresIds() {
+        const data =
+            await getTeslimNoktasiAdresIds();
+
         const existingIds = new Set();
-        const pageSize = 1000;
-        let from = 0;
-        let hasMore = true;
 
-        while (hasMore) {
-            const { data, error } = await supabase
-                .from("Teslim_Noktalari")
-                .select("adres_id")
-                .not("adres_id", "is", null)
-                .range(from, from + pageSize - 1);
+        (data || []).forEach((item) => {
+            const id = String(
+                item?.adres_id ?? ""
+            ).trim();
 
-            if (error) throw error;
-
-            (data || []).forEach((item) => {
-                const id = String(item.adres_id ?? "").trim();
-                if (id) existingIds.add(id);
-            });
-
-            hasMore = data && data.length === pageSize;
-            from += pageSize;
-        }
+            if (id) {
+                existingIds.add(id);
+            }
+        });
 
         return existingIds;
     }
-
     async function processFile(file) {
         const isExcel = [".xlsx", ".xls"].some((ext) =>
             file.name.toLowerCase().endsWith(ext)
@@ -214,42 +208,31 @@ export default function TeslimNoktalari() {
             });
             await wait(700);
 
-            const { error: insertError } = await supabase
-                .from("Teslim_Noktalari")
-                .insert(recordsToInsert);
+            const insertResult =
+                await createTeslimNoktalariBulk(
+                    recordsToInsert
+                );
 
-            if (insertError) {
-                if (insertError.code === "23505") {
-                    setPhase("success");
-                    setSummary({
-                        total: rows.length,
-                        valid: uniqueCount,
-                        added: 0,
-                        skipped: uniqueCount,
-                    });
-                    setStatus({
-                        type: "success",
-                        title: "Zaten kayıtlı",
-                        text: "Bu kayıtlar işlem sırasında zaten mevcut görünüyor.",
-                    });
-                    return;
-                }
+            const actuallyAddedCount =
+                Number(insertResult?.count) || 0;
 
-                throw insertError;
-            }
+            const raceSkippedCount =
+                Number(insertResult?.skippedCount) || 0;
 
-            setPhase("success");
-            setSummary({
+            const finalSkippedCount =
+                skippedCount +
+                raceSkippedCount;
+            setPhase("success");            setSummary({
                 total: rows.length,
                 valid: uniqueCount,
-                added: recordsToInsert.length,
-                skipped: skippedCount,
+                added: actuallyAddedCount,
+                skipped: finalSkippedCount,
             });
 
             setStatus({
                 type: "success",
                 title: "Aktarım tamamlandı",
-                text: `${recordsToInsert.length} yeni kayıt bulundu ve eklendi.`,
+                text: `${actuallyAddedCount} yeni kayıt eklendi, ${finalSkippedCount} kayıt atlandı.`,
             });
         } catch (err) {
             setPhase("error");

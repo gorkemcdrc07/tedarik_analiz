@@ -37,7 +37,15 @@ import {
 
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
-import supabase from "../supabaseClient";
+import {
+  getYakitHesaplamaMusteriler,
+  getYakitHesaplamaTarifeler,
+  getYakitHesaplamaGecmis,
+  createYakitHesaplamaTarife,
+  createYakitHesaplamaTarifelerBulk,
+  updateYakitHesaplamaTarifeler,
+  undoYakitHesaplamaTarifeler,
+} from "../auth/dataApi";
 import { createFuelPriceNotification } from "./fuelNotifications";
 import { getContractRules, saveContractRule } from "./fuelEscalationEngine";
 import "./YakitHesaplama.css";
@@ -1603,18 +1611,8 @@ export default function YakitHesaplama() {
     setError("");
 
     try {
-      const {
-        data,
-        error: customerError,
-      } = await supabase
-        .from("yakit_musterileri")
-        .select(
-          "id,musteri_adi,kod"
-        );
-
-      if (customerError) {
-        throw customerError;
-      }
+      const data =
+        await getYakitHesaplamaMusteriler();
 
       /*
         Veritabanında BİM, ARKAS veya başka
@@ -1811,50 +1809,22 @@ export default function YakitHesaplama() {
 
     try {
       const [
-        alisResult,
-        satisResult,
+        alis,
+        satis,
       ] = await Promise.all([
-        supabase
-          .from(
-            "yakit_alis_tarifeleri"
-          )
-          .select("*")
-          .eq(
-            "musteri_id",
-            activeCustomer.id
-          )
-          .eq("aktif", true)
-          .order("id"),
-
-        supabase
-          .from(
-            "yakit_satis_tarifeleri"
-          )
-          .select("*")
-          .eq(
-            "musteri_id",
-            activeCustomer.id
-          )
-          .eq("aktif", true)
-          .order("id"),
+        getYakitHesaplamaTarifeler(
+          activeCustomer.id,
+          "alis"
+        ),
+        getYakitHesaplamaTarifeler(
+          activeCustomer.id,
+          "satis"
+        ),
       ]);
 
-      if (
-        alisResult.error ||
-        satisResult.error
-      ) {
-        throw (
-          alisResult.error ||
-          satisResult.error
-        );
-      }
-
       setRows({
-        alis:
-          alisResult.data || [],
-
-        satis:
-          satisResult.data || [],
+        alis,
+        satis,
       });
     } catch (e) {
       console.error(
@@ -2304,21 +2274,11 @@ export default function YakitHesaplama() {
         );
       }
 
-      const table =
-        type === "alis"
-          ? "yakit_alis_tarifeleri"
-          : "yakit_satis_tarifeleri";
-
-      const {
-        error: insertError,
-      } =
-        await supabase
-          .from(table)
-          .insert(payload);
-
-      if (insertError) {
-        throw insertError;
-      }
+      await createYakitHesaplamaTarifelerBulk(
+        customer.id,
+        type,
+        payload
+      );
 
       setInfo(
         `${payload.length} satır ${
@@ -2361,11 +2321,6 @@ export default function YakitHesaplama() {
     setError("");
 
     try {
-      const table =
-        modal.type === "alis"
-          ? "yakit_alis_tarifeleri"
-          : "yakit_satis_tarifeleri";
-
       const tonTl =
         num(rowForm.ton_tl);
 
@@ -2398,16 +2353,11 @@ export default function YakitHesaplama() {
           tonTl,
       };
 
-      const {
-        error: insertError,
-      } =
-        await supabase
-          .from(table)
-          .insert(payload);
-
-      if (insertError) {
-        throw insertError;
-      }
+      await createYakitHesaplamaTarife(
+        customer.id,
+        modal.type,
+        payload
+      );
 
       setModal(null);
 
@@ -2444,113 +2394,53 @@ export default function YakitHesaplama() {
       setError("");
 
       try {
-        const batchCreatedAt = new Date().toISOString();
-
-        for (
-          const type of [
-            "alis",
-            "satis",
-          ]
-        ) {
-          const table =
-            type === "alis"
-              ? "yakit_alis_tarifeleri"
-              : "yakit_satis_tarifeleri";
-
-          const hist = [];
-
-          for (
-            const row of
-            rows[type]
-          ) {
-            const yeniTonTl =
-              Number(
-                row.ton_tl
-              ) *
-              (1 + applied);
-
-            hist.push({
-              musteri_id:
-                customer.id,
-
-              tarife_tipi:
-                type,
-
-              tarife_id:
-                row.id,
-
-              il:
-                row.il,
-
-              ilce:
-                row.ilce,
-
-              koy_mahalle:
-                row.koy_mahalle,
-
-              eski_ton_tl:
-                row.ton_tl,
-
+        const alisRows =
+          rows.alis.map(
+            (row) => ({
+              id: row.id,
               yeni_ton_tl:
-                yeniTonTl,
+                Number(
+                  row.ton_tl
+                ) *
+                (1 + applied),
+            })
+          );
 
-              eski_yakit_fiyati:
+        const satisRows =
+          rows.satis.map(
+            (row) => ({
+              id: row.id,
+              yeni_ton_tl:
+                Number(
+                  row.ton_tl
+                ) *
+                (1 + applied),
+            })
+          );
+
+        if (
+          alisRows.length +
+            satisRows.length >
+          0
+        ) {
+          await updateYakitHesaplamaTarifeler(
+            customer.id,
+            alisRows,
+            satisRows,
+            {
+              eskiYakitFiyati:
                 num(calc.eski),
 
-              yeni_yakit_fiyati:
+              yeniYakitFiyati:
                 num(calc.yeni),
 
-              yakit_degisim_orani:
+              yakitDegisimOrani:
                 oran,
 
-              uygulanan_artis_orani:
+              uygulananArtisOrani:
                 applied,
-
-              // Aynı yakıt güncellemesindeki alış + satış kayıtlarını
-              // tek işlem olarak geri alabilmek için ortak zaman damgası.
-              created_at:
-                batchCreatedAt,
-            });
-
-            const {
-              error:
-                updateError,
-            } =
-              await supabase
-                .from(table)
-                .update({
-                  ton_tl:
-                    yeniTonTl,
-
-                  updated_at:
-                    new Date()
-                      .toISOString(),
-                })
-                .eq(
-                  "id",
-                  row.id
-                );
-
-            if (updateError) {
-              throw updateError;
             }
-          }
-
-          if (hist.length) {
-            const {
-              error:
-                historyError,
-            } =
-              await supabase
-                .from(
-                  "yakit_ton_tl_gecmisi"
-                )
-                .insert(hist);
-
-            if (historyError) {
-              throw historyError;
-            }
-          }
+          );
         }
 
         setInfo(
@@ -2597,93 +2487,69 @@ export default function YakitHesaplama() {
     setInfo("");
 
     try {
-      const { data: latestRows, error: latestError } = await supabase
-        .from("yakit_ton_tl_gecmisi")
-        .select("*")
-        .eq("musteri_id", customer.id)
-        .order("created_at", { ascending: false })
-        .limit(1);
+      const result = await undoYakitHesaplamaTarifeler(
+        customer.id
+      );
 
-      if (latestError) throw latestError;
-
-      const latest = latestRows?.[0];
-
-      if (!latest) {
-        setInfo("Geri alınabilecek bir FASDAT güncellemesi bulunamadı.");
+      if (
+        !result ||
+        result.found !== true ||
+        Number(result.restored) < 1
+      ) {
+        setInfo(
+          "Geri alınabilecek bir FASDAT güncellemesi bulunamadı."
+        );
         return;
       }
 
-      // Yeni kayıtlar ortak created_at ile yazılıyor. Eski kayıtlar için de
-      // aynı yakıt değerleri/oran ve yakın zamanlı kayıtları güvenli şekilde yakala.
-      const { data: candidates, error: candidatesError } = await supabase
-        .from("yakit_ton_tl_gecmisi")
-        .select("*")
-        .eq("musteri_id", customer.id)
-        .eq("eski_yakit_fiyati", latest.eski_yakit_fiyati)
-        .eq("yeni_yakit_fiyati", latest.yeni_yakit_fiyati)
-        .eq("uygulanan_artis_orani", latest.uygulanan_artis_orani)
-        .order("created_at", { ascending: false })
-        .limit(1000);
+      const latest = {
+        eski_yakit_fiyati:
+          result.eskiYakitFiyati,
+        yeni_yakit_fiyati:
+          result.yeniYakitFiyati,
+        yakit_degisim_orani:
+          result.yakitDegisimOrani,
+        uygulanan_artis_orani:
+          result.uygulananArtisOrani,
+        created_at:
+          result.createdAt,
+      };
 
-      if (candidatesError) throw candidatesError;
-
-      const latestTime = new Date(latest.created_at).getTime();
-
-      const batch = (candidates || []).filter((item) => {
-        const itemTime = new Date(item.created_at).getTime();
-
-        // Yeni sistemde timestamp birebir aynıdır.
-        // Önceden oluşmuş kayıtlarda alış/satış insertleri arasında
-        // küçük fark olabileceği için 10 saniyelik tolerans kullanılır.
-        return (
-          item.created_at === latest.created_at ||
-          Math.abs(latestTime - itemTime) <= 10000
-        );
+      setCalc({
+        eski: String(
+          Number(result.eskiYakitFiyati)
+        ).replace(".", ","),
+        yeni: String(
+          Number(result.yeniYakitFiyati)
+        ).replace(".", ","),
       });
 
-      if (!batch.length) {
-        throw new Error("Geri alınacak işlem kayıtları bulunamadı.");
-      }
+      restoreFuelValuesAfterUndo(
+        "FASDAT",
+        latest,
+        () => {},
+        () => {}
+      );
 
-      for (const item of batch) {
-        const table =
-          item.tarife_tipi === "alis"
-            ? "yakit_alis_tarifeleri"
-            : "yakit_satis_tarifeleri";
-
-        const { error: restoreError } = await supabase
-          .from(table)
-          .update({
-            ton_tl: Number(item.eski_ton_tl),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", item.tarife_id);
-
-        if (restoreError) throw restoreError;
-      }
-
-      const ids = batch.map((item) => item.id).filter(Boolean);
-
-      if (ids.length) {
-        const { error: deleteHistoryError } = await supabase
-          .from("yakit_ton_tl_gecmisi")
-          .delete()
-          .in("id", ids);
-
-        if (deleteHistoryError) throw deleteHistoryError;
-      }
-
-      setCalc({ eski: String(Number(latest.eski_yakit_fiyati)).replace(".", ","), yeni: String(Number(latest.yeni_yakit_fiyati)).replace(".", ",") });
-      restoreFuelValuesAfterUndo("FASDAT", latest, () => {}, () => {});
       setModal(null);
+
       setInfo(
-        `Son FASDAT işlemi geri alındı. ${batch.length} tarife önceki değerine döndürüldü.`
+        `Son FASDAT işlemi geri alındı. ${Number(
+          result.restored
+        )} tarife önceki değerine döndürüldü.`
       );
 
       await loadCustomerData();
     } catch (e) {
-      console.error("FASDAT geri alma hatası:", e);
-      setError(e?.message || "Son FASDAT işlemi geri alınamadı.");
+      console.error(
+        "FASDAT geri alma hatası:",
+        e
+      );
+
+      setError(
+        e?.message ||
+          "Son FASDAT işlemi geri alınamadı."
+      );
     } finally {
       setBusy(false);
     }
@@ -2692,7 +2558,6 @@ export default function YakitHesaplama() {
   /* =======================================================
      GEÇMİŞİ EXCEL'E AKTAR
   ======================================================= */
-
   const excelMoney = (value) =>
     Number.isFinite(Number(value)) ? Number(value) : 0;
 
@@ -3205,15 +3070,10 @@ export default function YakitHesaplama() {
     setError("");
 
     try {
-      const { data, error: exportError } = await supabase
-        .from("yakit_ton_tl_gecmisi")
-        .select("*")
-        .eq("musteri_id", customer.id)
-        .order("created_at", { ascending: false });
-
-      if (exportError) throw exportError;
-
-      const all = data || [];
+      const all =
+        await getYakitHesaplamaGecmis(
+          customer.id
+        );
       const alis = all.filter((x) => x.tarife_tipi === "alis");
       const satis = all.filter((x) => x.tarife_tipi === "satis");
 
@@ -3634,37 +3494,16 @@ export default function YakitHesaplama() {
       setError("");
 
       try {
-        const {
-          data,
-          error:
-            historyError,
-        } =
-          await supabase
-            .from(
-              "yakit_ton_tl_gecmisi"
-            )
-            .select("*")
-            .eq(
-              "musteri_id",
-              customer.id
-            )
-            .eq(
-              "tarife_tipi",
-              type
-            )
-            .order(
-              "created_at",
-              {
-                ascending: false,
-              }
-            );
-
-        if (historyError) {
-          throw historyError;
-        }
+        const data =
+          await getYakitHesaplamaGecmis(
+            customer.id
+          );
 
         setHistory(
-          data || []
+          data.filter(
+            (item) =>
+              item.tarife_tipi === type
+          )
         );
 
         setModal({

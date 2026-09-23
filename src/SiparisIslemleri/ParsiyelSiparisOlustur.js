@@ -25,8 +25,12 @@ import {
     Rows3,
     ArrowRight,
 } from "lucide-react";
-import supabase from "../supabaseClient";
 import { authorizedFetch } from "../auth/tokenManager";
+import {
+    createProjeTanitimKarti,
+    getNextSiparisSayaci,
+    getProjeTanitimKartlari,
+} from "../auth/dataApi";
 const emptyRow = () => ({
     plaka: "",
     vkn: "",
@@ -1827,23 +1831,44 @@ export default function ParsiyelSiparisOlustur() {
     const fetchProjectsAndCustomers = async () => {
         setLoadingProjects(true);
         setLoadError("");
-        const { data, error } = await supabase
-            .from("Proje_Tanitim_Karti")
-            .select("ID, FirmaUnvani, ProjeAdi")
-            .order("FirmaUnvani", { ascending: true })
-            .order("ProjeAdi", { ascending: true });
-        if (error) {
-            setProjectOptions([]); setCustomerOptions([]);
-            setLoadError("Müşteri ve proje listesi alınamadı.");
-        } else {
-            const fetched = data || [];
-            setProjectOptions(fetched);
-            const uniq = Array.from(new Map(fetched.filter((i) => i.FirmaUnvani).map((i) => [i.FirmaUnvani, { value: i.FirmaUnvani, label: i.FirmaUnvani }])).values());
-            setCustomerOptions(uniq);
-        }
-        setLoadingProjects(false);
-    };
 
+        try {
+            const fetched =
+                await getProjeTanitimKartlari();
+
+            setProjectOptions(fetched);
+
+            const uniq = Array.from(
+                new Map(
+                    fetched
+                        .filter((item) => item.FirmaUnvani)
+                        .map((item) => [
+                            item.FirmaUnvani,
+                            {
+                                value: item.FirmaUnvani,
+                                label: item.FirmaUnvani,
+                            },
+                        ])
+                ).values()
+            );
+
+            setCustomerOptions(uniq);
+        } catch (error) {
+            console.error(
+                "Proje tanitim kartlari alinamadi:",
+                error
+            );
+
+            setProjectOptions([]);
+            setCustomerOptions([]);
+
+            setLoadError(
+                "Müşteri ve proje listesi alınamadı."
+            );
+        } finally {
+            setLoadingProjects(false);
+        }
+    };
     useEffect(() => {
         fetchProjectsAndCustomers();
     }, []);
@@ -1853,45 +1878,22 @@ export default function ParsiyelSiparisOlustur() {
     };
 
     const getNextCustomerCounter = async (customerName) => {
-        const today = getTodayNumber();
+        const normalizedCustomerName =
+            String(customerName || "").trim();
 
-        const { data, error } = await supabase
-            .from("siparis_sayaclari")
-            .select("id, son_sayac")
-            .eq("musteri_adi", customerName)
-            .eq("tarih", today)
-            .maybeSingle();
-
-        if (error) throw error;
-
-        if (!data) {
-            const { data: inserted, error: insertError } = await supabase
-                .from("siparis_sayaclari")
-                .insert({
-                    musteri_adi: customerName,
-                    tarih: today,
-                    son_sayac: 1,
-                })
-                .select("son_sayac")
-                .single();
-
-            if (insertError) throw insertError;
-
-            return inserted.son_sayac;
+        if (!normalizedCustomerName) {
+            throw new Error(
+                "Müşteri adı sayaç için zorunludur."
+            );
         }
 
-        const nextCounter = data.son_sayac + 1;
+        const today = getTodayNumber();
 
-        const { error: updateError } = await supabase
-            .from("siparis_sayaclari")
-            .update({ son_sayac: nextCounter })
-            .eq("id", data.id);
-
-        if (updateError) throw updateError;
-
-        return nextCounter;
+        return getNextSiparisSayaci(
+            normalizedCustomerName,
+            today
+        );
     };
-
     const generateAutoNumbers = (list) => {
         const sc = {}, rc = {};
         return list.map((row) => {
@@ -1962,13 +1964,26 @@ export default function ParsiyelSiparisOlustur() {
     // ✅ Yeni proje/firma kaydı ekleme (sadece admin butonundan tetiklenir)
     // ✅ Aynı ID varsa uyarı verir ve kayıt atmaz.
     const handleAddProject = async () => {
-        const rawId = String(newProject.ID || "").trim();
-        const id = Number(rawId);
-        const firma = newProject.FirmaUnvani.trim();
-        const proje = newProject.ProjeAdi.trim();
+        const rawId = String(
+            newProject.ID || ""
+        ).trim();
 
-        if (!rawId || Number.isNaN(id) || id <= 0 || !firma || !proje) {
-            setAddProjectError("Geçerli bir ID, firma unvanı ve proje adı zorunludur.");
+        const firma = String(
+            newProject.FirmaUnvani || ""
+        ).trim();
+
+        const proje = String(
+            newProject.ProjeAdi || ""
+        ).trim();
+
+        if (
+            !/^[1-9][0-9]*$/.test(rawId) ||
+            !firma ||
+            !proje
+        ) {
+            setAddProjectError(
+                "Geçerli bir ID, firma unvanı ve proje adı zorunludur."
+            );
             return;
         }
 
@@ -1976,60 +1991,30 @@ export default function ParsiyelSiparisOlustur() {
         setAddProjectError("");
 
         try {
-            // Önce mevcut kayıt kontrol edilir.
-            const { data: existingProjects, error: checkError } = await supabase
-                .from("Proje_Tanitim_Karti")
-                .select("ID, FirmaUnvani, ProjeAdi")
-                .eq("ID", id)
-                .limit(1);
-
-            if (checkError) {
-                setAddProjectError(`ID kontrolü yapılamadı: ${checkError.message}`);
-                return;
-            }
-
-            const existingProject = Array.isArray(existingProjects) ? existingProjects[0] : null;
-
-            if (existingProject) {
-                setAddProjectError(
-                    `Bu ID zaten kayıtlı. ID: ${existingProject.ID} | Firma: ${existingProject.FirmaUnvani || "-"} | Proje: ${existingProject.ProjeAdi || "-"}`
-                );
-                return;
-            }
-
-            const { error } = await supabase
-                .from("Proje_Tanitim_Karti")
-                .insert({
-                    ID: id,
-                    FirmaUnvani: firma,
-                    ProjeAdi: proje,
-                });
-
-            if (error) {
-                // Veritabanında unique constraint varsa, eş zamanlı denemelerde de aynı ID engellenir.
-                if (error.code === "23505") {
-                    setAddProjectError("Bu ID zaten kayıtlı. Aynı ID ile ikinci kayıt oluşturulamaz.");
-                    return;
-                }
-
-                setAddProjectError(`Proje eklenemedi: ${error.message}`);
-                return;
-            }
+            await createProjeTanitimKarti({
+                ID: rawId,
+                FirmaUnvani: firma,
+                ProjeAdi: proje,
+            });
 
             await fetchProjectsAndCustomers();
+
             setNewProject({
                 ID: "",
                 FirmaUnvani: "",
                 ProjeAdi: "",
             });
+
             setShowAddProject(false);
-        } catch (err) {
-            setAddProjectError(`Beklenmeyen hata oluştu: ${err?.message || err}`);
+        } catch (error) {
+            setAddProjectError(
+                error?.message ||
+                "Proje eklenemedi."
+            );
         } finally {
             setAddingProject(false);
         }
     };
-
     const filteredRows = useMemo(() => {
         if (!search.trim()) return rows;
         const q = normalizeSearch(search);

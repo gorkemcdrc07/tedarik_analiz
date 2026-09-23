@@ -141,7 +141,11 @@ const screenButtons = {
     ],
 
     "/finans/yakit-hesaplama": [
-        "Görüntüle"
+        "Görüntüle",
+        "Kaydet",
+        "Güncelle",
+        "Geri Al",
+        "Excel Yükle"
     ],
 
     "/analiz/ozet": [
