@@ -45,6 +45,9 @@ import {
   createYakitHesaplamaTarifelerBulk,
   updateYakitHesaplamaTarifeler,
   undoYakitHesaplamaTarifeler,
+  getEforCayCentralState,
+  updateEforCayCentralState,
+  undoEforCayCentralState,
 } from "../auth/dataApi";
 import { createFuelPriceNotification } from "./fuelNotifications";
 import { getContractRules, saveContractRule } from "./fuelEscalationEngine";
@@ -57,6 +60,14 @@ import {
   CUSTOMER_KEYS,
   getCustomerKey,
 } from "./customerScreens";
+
+const FUEL_API_BASE = (
+  process.env.REACT_APP_FUEL_API_BASE_URL ||
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://tedarik-analiz-backend.onrender.com"
+).replace(/\/+$/, "");
+
+const fuelApiUrl = (path) => `${FUEL_API_BASE}${path}`;
 
 /* =========================================================
    YARDIMCI FONKSİYONLAR
@@ -683,13 +694,11 @@ export default function YakitHesaplama() {
     }
   });
   const [eforCaySearch, setEforCaySearch] = useState("");
-  const [eforCayOldFuel, setEforCayOldFuel] = useState(() => {
-    const saved = Number(localStorage.getItem("efor_cay_kabul_edilen_yakit_v1"));
-    return Number.isFinite(saved) && saved > 0 ? saved.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "90,63";
-  });
+  const [eforCayOldFuel, setEforCayOldFuel] = useState("");
   const [eforCayNewFuel, setEforCayNewFuel] = useState("");
   const [eforCayHistoryOpen, setEforCayHistoryOpen] = useState(false);
   const [eforCayRuleOpen, setEforCayRuleOpen] = useState(false);
+  const [eforCayMusteriId, setEforCayMusteriId] = useState(null);
   const [bimTarifeler, setBimTarifeler] = useState(() => {
     const keepRawRows = (rows) => (rows || []).map(r => ({...r, fiyatlar: Object.fromEntries(Object.entries(r.fiyatlar || {}).map(([k,v]) => [k, parseTariffNumber(v)]))}));
     try { const x=JSON.parse(localStorage.getItem("bim_yakit_tarifeleri")||"null"); return keepRawRows(Array.isArray(x)&&x.length?x:BIM_TARIFELERI); } catch { return keepRawRows(BIM_TARIFELERI); }
@@ -1638,7 +1647,8 @@ export default function YakitHesaplama() {
             name === "ETİ" ||
             name === "ETI" ||
             code === "ETİ" ||
-            code === "ETI"
+            code === "ETI" ||
+            code === "EFOR_CAY"
           );
         })
         .sort((a, b) => {
@@ -1750,6 +1760,68 @@ export default function YakitHesaplama() {
         visibleCustomers.push({ id:"__BIM_PLACEHOLDER__", musteri_adi:"BİM", kod:"BIM", isPlaceholder:true });
       }
 
+      // EFOR_CAY_CENTRAL_HYDRATION_V1
+      const realEforCustomer = visibleCustomers.find((item) => {
+        if (item?.isPlaceholder) return false;
+        const code = norm(item?.kod);
+        return code === "EFOR_CAY" && /^[1-9][0-9]*$/.test(String(item?.id ?? ""));
+      });
+
+      if (realEforCustomer) {
+        const realEforId = Number(realEforCustomer.id);
+        setEforCayMusteriId(realEforId);
+
+        try {
+          const central = await getEforCayCentralState(realEforId);
+
+          if (central?.initialized) {
+            const acceptedFuel = Number(central.kabulEdilenYakit);
+            const centralTarifeler = Array.isArray(central.tarifeler)
+              ? central.tarifeler
+              : [];
+            const centralHistory = Array.isArray(central.gecmis)
+              ? central.gecmis
+              : [];
+
+            if (acceptedFuel > 0) {
+              setEforCayOldFuel(
+                acceptedFuel.toLocaleString("tr-TR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              );
+            }
+
+            if (centralTarifeler.length) {
+              setEforCayTarifeler(centralTarifeler);
+            }
+
+            setEforCayHistory(centralHistory);
+
+            // localStorage yalnizca merkezi verinin cache kopyasidir.
+            try {
+              if (acceptedFuel > 0) {
+                localStorage.setItem(
+                  "efor_cay_kabul_edilen_yakit_v1",
+                  String(acceptedFuel)
+                );
+              }
+              localStorage.setItem(
+                "efor_cay_yakit_tarifeleri",
+                JSON.stringify(centralTarifeler)
+              );
+              localStorage.setItem(
+                "efor_cay_yakit_gecmisi",
+                JSON.stringify(centralHistory)
+              );
+            } catch {}
+          }
+        } catch (eforError) {
+          console.error("[EFOR_CAY_CENTRAL_HYDRATION]", eforError);
+        }
+      } else {
+        setEforCayMusteriId(null);
+      }
       setCustomers(
         visibleCustomers.sort((a, b) => {
           const getOrder = (item) => {
@@ -1999,7 +2071,7 @@ export default function YakitHesaplama() {
           provider: "petrol-ofisi", city: "İstanbul", district: "SANCAKTEPE",
           fuel: "Motorin", vatIncluded: "false"
         });
-        const res = await fetch(`/api/fuel-check?${qs.toString()}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+        const res = await fetch(fuelApiUrl(`/api/fuel-check?${qs.toString()}`), { headers: { Accept: "application/json" }, cache: "no-store" });
         const data = await res.json();
         if (!res.ok || !data?.ok || !Number.isFinite(Number(data.price))) throw new Error(data?.error || "BİM KDV hariç fiyatı alınamadı");
         if (cancelled) return;
@@ -2024,7 +2096,7 @@ export default function YakitHesaplama() {
     const refreshEforPrice = async () => {
       try {
         const qs = new URLSearchParams({ provider: "petrol-ofisi", city: "Tokat", district: "ERBAA", fuel: "Motorin" });
-        const res = await fetch(`/api/fuel-check?${qs.toString()}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+        const res = await fetch(fuelApiUrl(`/api/fuel-check?${qs.toString()}`), { headers: { Accept: "application/json" }, cache: "no-store" });
         const contentType = res.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) throw new Error(`Yakıt servisi JSON dönmedi (${res.status})`);
         const data = await res.json();
@@ -2033,10 +2105,7 @@ export default function YakitHesaplama() {
         const price = Number(data.price);
         setEforCayNewFuel(price.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
         let all = {}; try { all = JSON.parse(localStorage.getItem("odak_yakit_ui_prices_v1") || "{}"); } catch {}
-        const storedReference = Number(localStorage.getItem("efor_cay_kabul_edilen_yakit_v1"));
-        const reference = Number.isFinite(storedReference) && storedReference > 0
-          ? storedReference
-          : Number(eforCayHistory?.[0]?.yeni_yakit_fiyati || 90.63);
+        const reference = num(eforCayOldFuel);
         all["EFOR ÇAY"] = { ...(all["EFOR ÇAY"] || {}), old: reference, new: price, source: "Petrol Ofisi • Tokat Erbaa • Motorin", checkedAt: data.checkedAt || new Date().toISOString() };
         localStorage.setItem("odak_yakit_ui_prices_v1", JSON.stringify(all));
         window.dispatchEvent(new Event("odak-fuel-updated"));
@@ -2045,7 +2114,7 @@ export default function YakitHesaplama() {
     refreshEforPrice();
     const timer = setInterval(refreshEforPrice, 5 * 60 * 1000);
     return () => { cancelled = true; clearInterval(timer); };
-  }, [customer, eforCayHistory]);
+  }, [customer, eforCayOldFuel]);
 
   // Akaryakıt Fiyat Takip ekranından gelen canlı fiyatları müşteri kural kartlarına bağlar.
   // old = son kabul edilmiş/referans fiyat, new = takip ekranından gelen güncel fiyat.
@@ -2059,10 +2128,7 @@ export default function YakitHesaplama() {
       put("TEVERPAN", setTeverpanOldFuel, setTeverpanNewFuel);
       const eforLive = ui["EFOR ÇAY"];
       if (eforLive && Number(eforLive.new) > 0) setEforCayNewFuel(tr(eforLive.new));
-      const storedEforReference = Number(localStorage.getItem("efor_cay_kabul_edilen_yakit_v1"));
-      if (Number.isFinite(storedEforReference) && storedEforReference > 0) setEforCayOldFuel(tr(storedEforReference));
-      else if (eforCayHistory?.[0]?.yeni_yakit_fiyati > 0) setEforCayOldFuel(tr(eforCayHistory[0].yeni_yakit_fiyati));
-      else setEforCayOldFuel("90,63");
+      // EFOR referans fiyatini yalnizca merkezi backend/Supabase state belirler.
       put("CORTEVA", setCortevaOldFuel, setCortevaNewFuel);
       put("CMC AGRO", setCmcOldFuel, setCmcNewFuel);
       put("ETİ", setEtiOldFuel, setEtiNewFuel);
@@ -4733,61 +4799,133 @@ export default function YakitHesaplama() {
       tir: Number(row.tir || 0) * (1 + Number(rate || 0)),
     }));
 
-  const applyEforCayUpdate = () => {
-    if (!(eforCayOldFuelNum > 0) || !(eforCayNewFuelNum > 0)) {
-      setError("EFOR ÇAY için eski ve yeni yakıt fiyatını girin.");
-      return;
-    }
-    if (!eforCayThresholdPassed) {
-      setError("EFOR ÇAY'da yakıt değişimi en az %5 olmalıdır. %5 ve üzerindeki değişimin %50'si tarifeye yansıtılır.");
-      return;
+  // EFOR_CAY_CENTRAL_WRITE_UI_V1
+  const refreshEforCayCentralState = async () => {
+    if (!eforCayMusteriId) {
+      throw new Error("EFOR CAY merkezi musteri kaydi bulunamadi.");
     }
 
-    const before = JSON.parse(JSON.stringify(eforCayTarifeler));
-    const after = eforCayApplyRows(before, eforCayAppliedRate);
-    const item = {
-      id: `efor-cay-${Date.now()}`,
-      created_at: new Date().toISOString(),
-      eski_yakit_fiyati: eforCayOldFuelNum,
-      yeni_yakit_fiyati: eforCayNewFuelNum,
-      yakit_degisim_orani: eforCayFuelRate,
-      uygulanan_artis_orani: eforCayAppliedRate,
-      eski_tarifeler: before,
-      yeni_tarifeler: after,
-    };
+    const central = await getEforCayCentralState(eforCayMusteriId);
 
-    setEforCayTarifeler(after);
-    localStorage.setItem("efor_cay_yakit_tarifeleri", JSON.stringify(after));
-    // Güncelleme sonrası yeni fiyat artık kabul edilen referans fiyattır.
-    localStorage.setItem("efor_cay_kabul_edilen_yakit_v1", String(eforCayNewFuelNum));
-    setEforCayHistory((prev) => {
-      const next = [item, ...prev];
-      localStorage.setItem("efor_cay_yakit_gecmisi", JSON.stringify(next));
-      return next;
+    if (!central?.initialized) {
+      throw new Error("EFOR CAY merkezi verisi henuz baslatilmamis.");
+    }
+
+    const acceptedFuel = Number(central.kabulEdilenYakit);
+    const centralTarifeler = Array.isArray(central.tarifeler) ? central.tarifeler : [];
+    const centralHistory = Array.isArray(central.gecmis) ? central.gecmis : [];
+
+    if (!(acceptedFuel > 0) || !centralTarifeler.length) {
+      throw new Error("EFOR CAY merkezi verisi eksik.");
+    }
+
+    const acceptedFuelText = acceptedFuel.toLocaleString("tr-TR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
-    setEforCayOldFuel(String(eforCayNewFuelNum));
-    setEforCayNewFuel("");
-    setError("");
-    setInfo(`EFOR ÇAY tarifeleri güncellendi. Yakıt değişimi ${formatEforCayPercent(eforCayFuelRate)}, tarifeye uygulanan oran ${formatEforCayPercent(eforCayAppliedRate)}.`);
+
+    setEforCayOldFuel(acceptedFuelText);
+    setEforCayTarifeler(centralTarifeler);
+    setEforCayHistory(centralHistory);
+
+    // Cache merkezi veriyi takip eder; kaynak backend/Supabase'dir.
+    try {
+      localStorage.setItem("efor_cay_kabul_edilen_yakit_v1", String(acceptedFuel));
+      localStorage.setItem("efor_cay_yakit_tarifeleri", JSON.stringify(centralTarifeler));
+      localStorage.setItem("efor_cay_yakit_gecmisi", JSON.stringify(centralHistory));
+
+      let ui = {};
+      try {
+        ui = JSON.parse(localStorage.getItem("odak_yakit_ui_prices_v1") || "{}");
+      } catch {}
+
+      const previousUi = ui["EFOR CAY"] || ui["EFOR ÇAY"] || {};
+      ui["EFOR ÇAY"] = {
+        ...previousUi,
+        old: acceptedFuel,
+        referencePrice: acceptedFuel,
+        lastProcessedPrice: acceptedFuel,
+      };
+      delete ui["EFOR CAY"];
+
+      localStorage.setItem("odak_yakit_ui_prices_v1", JSON.stringify(ui));
+      window.dispatchEvent(new Event("odak-fuel-updated"));
+    } catch {}
+
+    return central;
   };
 
-  const undoLastEforCayUpdate = () => {
-    const latest = eforCayHistory[0];
-    if (!latest?.eski_tarifeler) {
-      setInfo("Geri alınabilecek EFOR ÇAY güncellemesi bulunamadı.");
+  const applyEforCayUpdate = async () => {
+    if (!eforCayMusteriId) {
+      setError("EFOR CAY merkezi musteri kaydi bulunamadi.");
       return;
     }
-    if (!window.confirm("EFOR ÇAY için son yakıt güncellemesi geri alınsın mı?")) return;
-    const restored = latest.eski_tarifeler;
-    const nextHistory = eforCayHistory.slice(1);
-    setEforCayTarifeler(restored);
-    setEforCayHistory(nextHistory);
-    localStorage.setItem("efor_cay_yakit_tarifeleri", JSON.stringify(restored));
-    localStorage.setItem("efor_cay_yakit_gecmisi", JSON.stringify(nextHistory));
-    restoreFuelValuesAfterUndo("EFOR ÇAY", latest, setEforCayOldFuel, setEforCayNewFuel);
-    setInfo("EFOR ÇAY için son işlem geri alındı. Yakıt referans değerleri de geri yüklendi.");
+
+    if (!(eforCayOldFuelNum > 0) || !(eforCayNewFuelNum > 0)) {
+      setError("EFOR CAY icin eski ve yeni yakit fiyatini girin.");
+      return;
+    }
+
+    if (!eforCayThresholdPassed) {
+      setError("EFOR CAY'da yakit degisimi en az %5 olmalidir. %5 ve uzerindeki degisimin %50'si tarifeye yansitilir.");
+      return;
+    }
+
+    setError("");
+
+    try {
+      const result = await updateEforCayCentralState(
+        eforCayMusteriId,
+        eforCayNewFuelNum
+      );
+
+      await refreshEforCayCentralState();
+
+      if (!result?.updated) {
+        setInfo("EFOR CAY yakit kontrolu tamamlandi; merkezi kural tarife guncellemesi olusturmadi.");
+        return;
+      }
+
+      setInfo(
+        `EFOR CAY tarifeleri merkezi olarak guncellendi. Yakit degisimi ${formatEforCayPercent(result.degisimOrani ?? eforCayFuelRate)}, tarifeye uygulanan oran ${formatEforCayPercent(result.uygulananOran ?? eforCayAppliedRate)}.`
+      );
+    } catch (error) {
+      console.error("[EFOR_CAY_CENTRAL_UPDATE]", error);
+      setError(error?.message || "EFOR CAY merkezi guncelleme tamamlanamadi.");
+    }
   };
 
+  const undoLastEforCayUpdate = async () => {
+    if (!eforCayMusteriId) {
+      setError("EFOR CAY merkezi musteri kaydi bulunamadi.");
+      return;
+    }
+
+    if (!eforCayHistory.length) {
+      setInfo("Geri alinabilecek EFOR CAY guncellemesi bulunamadi.");
+      return;
+    }
+
+    if (!window.confirm("EFOR CAY icin son yakit guncellemesi geri alinsin mi?")) return;
+
+    setError("");
+
+    try {
+      const result = await undoEforCayCentralState(eforCayMusteriId);
+
+      await refreshEforCayCentralState();
+
+      if (result?.found === false) {
+        setInfo("Geri alinabilecek EFOR CAY guncellemesi bulunamadi.");
+        return;
+      }
+
+      setInfo("EFOR CAY icin son islem merkezi olarak geri alindi.");
+    } catch (error) {
+      console.error("[EFOR_CAY_CENTRAL_UNDO]", error);
+      setError(error?.message || "EFOR CAY geri alma islemi tamamlanamadi.");
+    }
+  };
   const getEforCayHistoryRows = () => {
     const rows = [];
     eforCayHistory.forEach((item) => {
@@ -4880,7 +5018,7 @@ export default function YakitHesaplama() {
           </header>
           <div className="bim-v56-summary efor-v59-summary">
             <div className="bim-v56-logo efor-v59-logo"><img src="/fuel-assets/efor-cay-logo.png" alt="EFOR ÇAY"/><div><b>EFOR ÇAY</b><span>TIR Fiyatlandırma</span></div></div>
-            <div className="bim-v56-metric old"><span>REFERANS YAKIT FİYATI</span><strong>{eforCayOldFuel || "90,63"} ₺</strong><small>Son kabul edilen fiyat</small></div>
+            <div className="bim-v56-metric old"><span>REFERANS YAKIT FİYATI</span><strong>{eforCayOldFuel || "?"} ₺</strong><small>Son kabul edilen fiyat</small></div>
             <div className="bim-v56-arrow"><ArrowRight size={22}/></div>
             <div className="bim-v56-metric current"><span>GÜNCEL YAKIT FİYATI</span><strong>{eforCayNewFuel || "—"} ₺</strong><small>Petrol Ofisi • Tokat Erbaa</small></div>
             <div className={`bim-v56-metric change ${eforCayThresholdPassed?"passed":""}`}><span>DEĞİŞİM</span><strong>{formatEforCayPercent(eforCayFuelRate)}</strong><small>{eforCayThresholdPassed?"Eşik sağlandı":"%5 eşik altında"}</small></div>

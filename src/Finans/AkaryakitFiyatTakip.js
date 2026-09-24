@@ -3,6 +3,15 @@ import { BellRing, Building2, CheckCircle2, Clock3, ExternalLink, Fuel, History,
 import "./AkaryakitFiyatTakip.css";
 import { runAutomaticFuelCheck } from "./autoFuelService";
 
+const FUEL_API_BASE = (
+  process.env.REACT_APP_FUEL_API_BASE_URL ||
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://tedarik-analiz-backend.onrender.com"
+).replace(/\/+$/, "");
+
+const fuelApiUrl = (path) => `${FUEL_API_BASE}${path}`;
+
+
 const STORAGE_KEY = "odak_akaryakit_takip_v1";
 const HISTORY_KEY = "odak_akaryakit_gecmis_v1";
 const PROVIDERS = ["Petrol Ofisi", "Shell"];
@@ -53,7 +62,7 @@ export default function AkaryakitFiyatTakip() {
   const checkOne = async (row) => {
     try {
       const qs = new URLSearchParams({ provider: row.provider === "Shell" ? "shell" : "petrol-ofisi", city: row.city, district: row.district, fuel: row.fuel });
-      const res = await fetch(`/api/fuel-check?${qs}`, { headers: { Accept: "application/json" } });
+      const res = await fetch(fuelApiUrl(`/api/fuel-check?${qs}`), { headers: { Accept: "application/json" } });
       const raw = await res.text();
       let data;
       try { data = JSON.parse(raw); }

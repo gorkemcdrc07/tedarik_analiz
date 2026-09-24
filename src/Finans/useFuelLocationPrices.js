@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const FUEL_API_BASE = (
+  process.env.REACT_APP_FUEL_API_BASE_URL ||
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://tedarik-analiz-backend.onrender.com"
+).replace(/\/+$/, "");
+
+const fuelApiUrl = (path) => `${FUEL_API_BASE}${path}`;
+
+
 export const LOCATION_PRICES_KEY = "odak_yakit_location_prices_v1";
 export const LOCATION_HISTORY_KEY = "odak_yakit_location_history_v1";
 export const locationKey = (provider, city, district) => [provider,city,district,"vat-included"].map(v=>String(v).trim().toLocaleUpperCase("tr-TR")).join("|");
@@ -23,7 +32,7 @@ export default function useFuelLocationPrices(location) {
       const controller=new AbortController();pending.current.add(controller);const timer=setTimeout(()=>controller.abort(),25000);
       try {
         const query=new URLSearchParams({provider,city:provider==="shell"&&city==="Afyonkarahisar"?"Afyon":city,district,fuel:"Motorin",vatIncluded:"true"});
-        const res=await fetch(`/api/fuel-check?${query}`,{headers:{Accept:"application/json"},cache:"no-store",signal:controller.signal});
+        const res=await fetch(fuelApiUrl(`/api/fuel-check?${query}`),{headers:{Accept:"application/json"},cache:"no-store",signal:controller.signal});
         if(!res.headers.get("content-type")?.includes("application/json"))throw new Error("Fiyat servisine ulaşılamadı. Backend bağlantısını kontrol edin.");
         const data=await res.json();
         if(!res.ok||!data?.ok||!Number.isFinite(Number(data.price))||Number(data.price)<=0)throw new Error(data?.error||"Bu konum için fiyat bulunamadı.");

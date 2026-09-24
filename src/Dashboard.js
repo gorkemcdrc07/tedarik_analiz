@@ -194,27 +194,62 @@ export default function AdminPanel() {
     };
 
     const handleScreenChange = (screenPath) => {
-        const selected = formData.allowedScreens.includes(screenPath);
-
         setFormData((prev) => {
+            const selected =
+                prev.allowedScreens.includes(screenPath);
+
             const nextScreens = selected
-                ? prev.allowedScreens.filter((item) => item !== screenPath)
-                : [...prev.allowedScreens, screenPath];
+                ? prev.allowedScreens.filter(
+                    (item) => item !== screenPath
+                )
+                : [
+                    ...new Set([
+                        ...prev.allowedScreens,
+                        screenPath
+                    ])
+                ];
 
             const validButtons = [
-                ...new Set(nextScreens.flatMap((path) => screenButtons[path] || []))
+                ...new Set(
+                    nextScreens.flatMap(
+                        (path) => screenButtons[path] || []
+                    )
+                )
             ];
+
+            let nextButtons =
+                prev.allowedButtons.filter(
+                    (button) =>
+                        validButtons.includes(button)
+                );
+
+            /*
+             * Bir ekran ilk kez verildiginde, ekranin
+             * Görüntüle aksiyonu varsa onu da otomatik ver.
+             *
+             * Backend GET endpointleri ekran yetkisinin
+             * yaninda Görüntüle yetkisini de kontrol ediyor.
+             */
+            if (
+                !selected &&
+                (screenButtons[screenPath] || [])
+                    .includes("Görüntüle")
+            ) {
+                nextButtons = [
+                    ...new Set([
+                        ...nextButtons,
+                        "Görüntüle"
+                    ])
+                ];
+            }
 
             return {
                 ...prev,
                 allowedScreens: nextScreens,
-                allowedButtons: prev.allowedButtons.filter((button) =>
-                    validButtons.includes(button)
-                )
+                allowedButtons: nextButtons
             };
         });
     };
-
     const handleButtonChange = (button) => {
         const selected = formData.allowedButtons.includes(button);
 

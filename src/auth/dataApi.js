@@ -605,6 +605,27 @@ export async function getYakitHesaplamaGecmis(
         ? body.data
         : [];
 }
+// EFOR_CAY_CENTRAL_READ_HELPER_V1
+export async function getEforCayCentralState(
+    musteriId
+) {
+    const normalizedMusteriId =
+        String(musteriId ?? "").trim();
+
+    if (!/^[1-9][0-9]*$/.test(normalizedMusteriId)) {
+        throw new Error(
+            "Gecerli EFOR CAY musteri id gerekli."
+        );
+    }
+
+    return request(
+        `/yakit-hesaplama/efor-cay/${encodeURIComponent(
+            normalizedMusteriId
+        )}`
+    );
+}
+
+
 // YAKIT_HESAPLAMA_CREATE_HELPERS_V1
 
 function normalizeYakitCreateTip(tip) {
@@ -754,4 +775,41 @@ export async function undoYakitHesaplamaTarifeler(
             }),
         }
     );
+}
+
+// EFOR_CAY_CENTRAL_WRITE_HELPERS_V1
+export async function updateEforCayCentralState(musteriId, yeniYakit) {
+    const normalizedMusteriId = String(musteriId ?? "").trim();
+    const normalizedYeniYakit = Number(yeniYakit);
+
+    if (!/^[1-9][0-9]*$/.test(normalizedMusteriId)) {
+        throw new Error("Gecerli EFOR CAY musteri id gerekli.");
+    }
+
+    if (!Number.isFinite(normalizedYeniYakit) || normalizedYeniYakit <= 0) {
+        throw new Error("Gecerli yeni yakit fiyati gerekli.");
+    }
+
+    return request("/yakit-hesaplama/efor-cay/update", {
+        method: "POST",
+        body: JSON.stringify({
+            musteriId: Number(normalizedMusteriId),
+            yeniYakit: normalizedYeniYakit,
+        }),
+    });
+}
+
+export async function undoEforCayCentralState(musteriId) {
+    const normalizedMusteriId = String(musteriId ?? "").trim();
+
+    if (!/^[1-9][0-9]*$/.test(normalizedMusteriId)) {
+        throw new Error("Gecerli EFOR CAY musteri id gerekli.");
+    }
+
+    return request("/yakit-hesaplama/efor-cay/undo", {
+        method: "POST",
+        body: JSON.stringify({
+            musteriId: Number(normalizedMusteriId),
+        }),
+    });
 }
