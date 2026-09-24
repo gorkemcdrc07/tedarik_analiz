@@ -28,136 +28,15 @@ import AppsIcon from '@mui/icons-material/Apps';
 import BoltIcon from '@mui/icons-material/Bolt';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
+import {
+    PERMISSION_MODULES,
+    PERMISSION_SCREENS,
+    SCREEN_ACTIONS
+} from "./auth/permissionCatalog";
 import './AdminPanel.css';
 
-const screens = [
-    { label: "Sipariş Oluştur", path: "/SiparisIslemleri/SiparisOlustur", group: "Sipariş" },
-    { label: "Yeni Sipariş", path: "/SiparisIslemleri/YeniSiparis", group: "Sipariş" },
-    { label: "Parsiyel Sipariş Oluştur", path: "/SiparisIslemleri/ParsiyelSiparisOlustur", group: "Sipariş" },
-    { label: "Sipariş Açanlar", path: "/SiparisIslemleri/SiparisAcanlar", group: "Sipariş" },
-    { label: "Arkas", path: "/SiparisIslemleri/Arkas", group: "Sipariş" },
-    { label: "Fasdat", path: "/SiparisIslemleri/Fasdat", group: "Sipariş" },
-    { label: "Teslim Noktaları", path: "/SiparisIslemleri/TeslimNoktalari", group: "Sipariş" },
-
-    { label: "Proje Ekle", path: "/Tanimlamalar/ProjeEkle", group: "Tanımlamalar" },
-
-    { label: "Gelir Ekleme", path: "/GelirGider/GelirEkleme", group: "Gelir / Gider" },
-    { label: "Gider Ekleme", path: "/GelirGider/GiderEkleme", group: "Gelir / Gider" },
-    { label: "Test Gelir", path: "/GelirGider/TestGelir", group: "Gelir / Gider" },
-    { label: "Test Gider", path: "/GelirGider/TestGider", group: "Gelir / Gider" },
-
-    { label: "Sefer Fiyatlandırma", path: "/fiyatlandirma/seferFiyatlandirma", group: "Fiyatlandırma" },
-    { label: "Yakıt Hesaplama", path: "/finans/yakit-hesaplama", group: "Finans" },
-    { label: "Yakıt Onayları", path: "/finans/yakit-onaylar", group: "Finans" },
-    { label: "Tarife Kontrol Merkezi", path: "/finans/yakit-kontrol-merkezi", group: "Finans" },
-    { label: "Özet Tablo", path: "/analiz/ozet", group: "Analiz" },
-    { label: "Görsel", path: "/gorsel", group: "Görsel" }
-];
-
-const screenButtons = {
-    "/SiparisIslemleri/SiparisOlustur": [
-        "Görüntüle",
-        "Kaydet",
-        "Sil",
-        "Güncelle"
-    ],
-
-    "/SiparisIslemleri/YeniSiparis": [
-        "Görüntüle",
-        "Kaydet",
-        "Sil",
-        "Güncelle",
-        "Şablon İndir",
-        "Excel Yükle"
-    ],
-
-    "/SiparisIslemleri/ParsiyelSiparisOlustur": [
-        "Görüntüle",
-        "Kaydet",
-        "Sil",
-        "Güncelle"
-    ],
-
-    "/SiparisIslemleri/SiparisAcanlar": [
-        "Görüntüle",
-        "Filtrele",
-        "Dışa Aktar"
-    ],
-
-    "/SiparisIslemleri/Arkas": [
-        "Görüntüle",
-        "Kaydet",
-        "Dışa Aktar"
-    ],
-
-    "/SiparisIslemleri/Fasdat": [
-        "Görüntüle",
-        "Kaydet",
-        "Dışa Aktar"
-    ],
-
-    "/SiparisIslemleri/TeslimNoktalari": [
-        "Görüntüle",
-        "Ekle",
-        "Sil",
-        "Güncelle"
-    ],
-
-    "/Tanimlamalar/ProjeEkle": [
-        "Görüntüle",
-        "Ekle",
-        "Güncelle",
-        "Sil"
-    ],
-
-    "/GelirGider/GelirEkleme": [
-        "Görüntüle",
-        "Ekle",
-        "Sil",
-        "Güncelle"
-    ],
-
-    "/GelirGider/GiderEkleme": [
-        "Görüntüle",
-        "Ekle",
-        "Sil",
-        "Güncelle"
-    ],
-
-    "/GelirGider/TestGelir": [
-        "Görüntüle",
-        "Dışa Aktar"
-    ],
-
-    "/GelirGider/TestGider": [
-        "Görüntüle",
-        "Dışa Aktar"
-    ],
-
-    "/fiyatlandirma/seferFiyatlandirma": [
-        "Görüntüle",
-        "Hesapla",
-        "Kaydet"
-    ],
-
-    "/finans/yakit-hesaplama": [
-        "Görüntüle",
-        "Kaydet",
-        "Güncelle",
-        "Geri Al",
-        "Excel Yükle"
-    ],
-
-    "/analiz/ozet": [
-        "Görüntüle",
-        "Filtrele",
-        "Dışa Aktar"
-    ],
-
-    "/gorsel": [
-        "Görüntüle"
-    ]
-};
+const screens = PERMISSION_SCREENS;
+const screenButtons = SCREEN_ACTIONS;
 export default function AdminPanel() {
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
@@ -347,6 +226,100 @@ export default function AdminPanel() {
         }));
     };
 
+    const handleModuleToggle = (module) => {
+        const modulePaths = module.screens.map((screen) => screen.path);
+
+        const allSelected = modulePaths.every((path) =>
+            formData.allowedScreens.includes(path)
+        );
+
+        setFormData((prev) => {
+            const nextScreens = allSelected
+                ? prev.allowedScreens.filter(
+                    (path) => !modulePaths.includes(path)
+                )
+                : [
+                    ...new Set([
+                        ...prev.allowedScreens,
+                        ...modulePaths
+                    ])
+                ];
+
+            const validButtons = [
+                ...new Set(
+                    nextScreens.flatMap(
+                        (path) => screenButtons[path] || []
+                    )
+                )
+            ];
+
+            return {
+                ...prev,
+                allowedScreens: nextScreens,
+                allowedButtons: prev.allowedButtons.filter(
+                    (button) => validButtons.includes(button)
+                )
+            };
+        });
+    };
+
+    const handleScreenFullAccess = (screen) => {
+        setFormData((prev) => {
+            const actions = screenButtons[screen.path] || [];
+
+            const hasScreen =
+                prev.allowedScreens.includes(screen.path);
+
+            const hasAllActions =
+                actions.length > 0 &&
+                actions.every((action) =>
+                    prev.allowedButtons.includes(action)
+                );
+
+            if (hasScreen && hasAllActions) {
+                const nextScreens =
+                    prev.allowedScreens.filter(
+                        (path) => path !== screen.path
+                    );
+
+                const validButtons = [
+                    ...new Set(
+                        nextScreens.flatMap(
+                            (path) => screenButtons[path] || []
+                        )
+                    )
+                ];
+
+                return {
+                    ...prev,
+                    allowedScreens: nextScreens,
+                    allowedButtons:
+                        prev.allowedButtons.filter(
+                            (button) =>
+                                validButtons.includes(button)
+                        )
+                };
+            }
+
+            return {
+                ...prev,
+
+                allowedScreens: [
+                    ...new Set([
+                        ...prev.allowedScreens,
+                        screen.path
+                    ])
+                ],
+
+                allowedButtons: [
+                    ...new Set([
+                        ...prev.allowedButtons,
+                        ...actions
+                    ])
+                ]
+            };
+        });
+    };
     const handleSave = async () => {
         const username = formData.kullanici_adi.trim();
         const displayName = formData.kullanici.trim();
@@ -505,7 +478,7 @@ export default function AdminPanel() {
 
                 {errorText && (
                     <Alert severity="error" className="api-alert">
-                        Supabase hatası: {errorText}
+                        Kullanıcı servisi hatası: {errorText}
                     </Alert>
                 )}
 
@@ -750,92 +723,261 @@ export default function AdminPanel() {
 
                         <Divider className="dialog-divider" />
 
-                        <Box className="permission-dialog">
-                            <Box className="permission-sidebar">
-                                <Typography className="permission-title">
-                                    Yetkiler
-                                </Typography>
+                        <Box className="permission-v2">
 
-                                <Box className="mini-stat">
-                                    <span>{formData.allowedScreens.length}</span>
-                                    <small>Ekran</small>
+                            <Box className="permission-v2-head">
+
+                                <Box>
+                                    <Typography className="permission-title">
+                                        Modül, Ekran ve İşlem Yetkileri
+                                    </Typography>
+
+                                    <Typography className="permission-v2-subtitle">
+                                        Kullanıcının erişeceği ekranları ve kullanabileceği işlemleri tek merkezden yönetin.
+                                    </Typography>
                                 </Box>
 
-                                <Box className="mini-stat purple">
-                                    <span>{formData.allowedButtons.length}</span>
-                                    <small>Buton</small>
-                                </Box>
-                            </Box>
+                                <Box className="permission-v2-counters">
 
-                            <Box className="permission-content">
-                                <Box className="permission-block">
-                                    <Box className="permission-block-head">
-                                        <Typography className="permission-block-title">
-                                            Ekran Yetkileri
-                                        </Typography>
-                                        <Chip label={`${formData.allowedScreens.length} seçili`} className="count-chip" />
+                                    <Box>
+                                        <strong>
+                                            {formData.allowedScreens.length}
+                                        </strong>
+                                        <span>Ekran</span>
                                     </Box>
 
-                                    <Box className="screen-card-grid">
-                                        {screens.map((screen) => {
-                                            const selected = formData.allowedScreens.includes(screen.path);
+                                    <Box>
+                                        <strong>
+                                            {formData.allowedButtons.length}
+                                        </strong>
+                                        <span>İşlem</span>
+                                    </Box>
 
-                                            return (
-                                                <Box
-                                                    key={screen.path}
-                                                    className={`modern-screen-card ${selected ? 'selected' : ''}`}
-                                                    onClick={() => handleScreenChange(screen.path)}
-                                                >
-                                                    <Box>
-                                                        <Typography className="modern-screen-title">
-                                                            {screen.label}
-                                                        </Typography>
-                                                        <Typography className="modern-screen-group">
-                                                            {screen.group}
-                                                        </Typography>
-                                                    </Box>
+                                </Box>
 
-                                                    <Box className="modern-check">
-                                                        {selected ? '✓' : '+'}
-                                                    </Box>
+                            </Box>
+
+                            <Alert
+                                severity="info"
+                                className="permission-v2-alert"
+                            >
+                                İşlem yetkileri mevcut sistemde global isimlerle tutulmaktadır.
+                                Ekran erişimleri ayrı kontrol edilmeye devam eder.
+                            </Alert>
+
+                            <Box className="permission-module-list">
+
+                                {PERMISSION_MODULES.map((module) => {
+
+                                    const modulePaths =
+                                        module.screens.map(
+                                            (screen) => screen.path
+                                        );
+
+                                    const selectedCount =
+                                        modulePaths.filter(
+                                            (path) =>
+                                                formData.allowedScreens.includes(path)
+                                        ).length;
+
+                                    const allSelected =
+                                        modulePaths.length > 0 &&
+                                        selectedCount === modulePaths.length;
+
+                                    return (
+
+                                        <Box
+                                            className="permission-module-card"
+                                            key={module.id}
+                                        >
+
+                                            <Box className="permission-module-head">
+
+                                                <Box>
+
+                                                    <Typography className="permission-module-title">
+                                                        {module.label}
+                                                    </Typography>
+
+                                                    <Typography className="permission-module-description">
+                                                        {module.description}
+                                                    </Typography>
+
                                                 </Box>
-                                            );
-                                        })}
-                                    </Box>
-                                </Box>
 
-                                <Box className="permission-block">
-                                    <Box className="permission-block-head">
-                                        <Typography className="permission-block-title">
-                                            Buton Yetkileri
-                                        </Typography>
-                                        <Chip label={`${formData.allowedButtons.length} seçili`} className="count-chip purple" />
-                                    </Box>
+                                                <Box className="permission-module-actions">
 
-                                    {availableButtons.length === 0 ? (
-                                        <Box className="empty-permission-box">
-                                            Önce ekran seçin.
-                                        </Box>
-                                    ) : (
-                                        <Box className="modern-button-grid">
-                                            {availableButtons.map((button) => {
-                                                const selected = formData.allowedButtons.includes(button);
+                                                    <Chip
+                                                        label={`${selectedCount}/${module.screens.length} ekran`}
+                                                        className="count-chip"
+                                                    />
 
-                                                return (
-                                                    <Box
-                                                        key={button}
-                                                        className={`modern-button-card ${selected ? 'selected' : ''}`}
-                                                        onClick={() => handleButtonChange(button)}
+                                                    <Button
+                                                        size="small"
+                                                        onClick={() =>
+                                                            handleModuleToggle(module)
+                                                        }
                                                     >
-                                                        <span>{button}</span>
-                                                        <strong>{selected ? '✓' : '+'}</strong>
-                                                    </Box>
-                                                );
-                                            })}
+                                                        {
+                                                            allSelected
+                                                                ? 'Modülü Kaldır'
+                                                                : 'Tüm Ekranları Seç'
+                                                        }
+                                                    </Button>
+
+                                                </Box>
+
+                                            </Box>
+
+                                            <Box className="permission-screen-list">
+
+                                                {module.screens.map((screen) => {
+
+                                                    const selected =
+                                                        formData.allowedScreens.includes(
+                                                            screen.path
+                                                        );
+
+                                                    const actions =
+                                                        screenButtons[screen.path] || [];
+
+                                                    const selectedActions =
+                                                        actions.filter(
+                                                            (button) =>
+                                                                formData.allowedButtons.includes(
+                                                                    button
+                                                                )
+                                                        ).length;
+
+                                                    return (
+
+                                                        <Box
+                                                            key={screen.path}
+                                                            className={`permission-screen-row ${
+                                                                selected
+                                                                    ? 'selected'
+                                                                    : ''
+                                                            }`}
+                                                        >
+
+                                                            <Box className="permission-screen-main">
+
+                                                                <Box
+                                                                    className={`permission-screen-check ${
+                                                                        selected
+                                                                            ? 'selected'
+                                                                            : ''
+                                                                    }`}
+                                                                    onClick={() =>
+                                                                        handleScreenChange(
+                                                                            screen.path
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        selected
+                                                                            ? '✓'
+                                                                            : '+'
+                                                                    }
+                                                                </Box>
+
+                                                                <Box className="permission-screen-copy">
+
+                                                                    <Typography className="permission-screen-title">
+                                                                        {screen.label}
+                                                                    </Typography>
+
+                                                                    <Typography className="permission-screen-path">
+                                                                        {screen.path}
+                                                                    </Typography>
+
+                                                                </Box>
+
+                                                                <Chip
+                                                                    label={`${selectedActions}/${actions.length} işlem`}
+                                                                    className="permission-action-count"
+                                                                />
+
+                                                                <Button
+                                                                    size="small"
+                                                                    className="permission-full-button"
+                                                                    onClick={() =>
+                                                                        handleScreenFullAccess(
+                                                                            screen
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Tam Yetki
+                                                                </Button>
+
+                                                            </Box>
+
+                                                            {selected && (
+
+                                                                <Box className="permission-action-grid">
+
+                                                                    {actions.map((button) => {
+
+                                                                        const buttonSelected =
+                                                                            formData.allowedButtons.includes(
+                                                                                button
+                                                                            );
+
+                                                                        return (
+
+                                                                            <button
+                                                                                type="button"
+                                                                                key={`${screen.path}-${button}`}
+                                                                                className={`permission-action-chip ${
+                                                                                    buttonSelected
+                                                                                        ? 'selected'
+                                                                                        : ''
+                                                                                }`}
+                                                                                onClick={() =>
+                                                                                    handleButtonChange(
+                                                                                        button
+                                                                                    )
+                                                                                }
+                                                                            >
+
+                                                                                <span>
+                                                                                    {button}
+                                                                                </span>
+
+                                                                                <strong>
+                                                                                    {
+                                                                                        buttonSelected
+                                                                                            ? '✓'
+                                                                                            : '+'
+                                                                                    }
+                                                                                </strong>
+
+                                                                            </button>
+
+                                                                        );
+
+                                                                    })}
+
+                                                                </Box>
+
+                                                            )}
+
+                                                        </Box>
+
+                                                    );
+
+                                                })}
+
+                                            </Box>
+
                                         </Box>
-                                    )}
-                                </Box>
+
+                                    );
+
+                                })}
+
                             </Box>
+
                         </Box>
                     </DialogContent>
 

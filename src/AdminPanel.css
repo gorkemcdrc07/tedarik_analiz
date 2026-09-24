@@ -193,3 +193,265 @@
 html[data-odak-theme="dark"] .admin-container { background:#07131f!important; color:#edf4fb!important; }
 html[data-odak-theme="dark"] .admin-container :is(.admin-shell,.admin-card,.admin-toolbar,.admin-table-card,.MuiPaper-root,.MuiDialog-paper) { background:#0d1b2a!important; border-color:#20364a!important; color:#edf4fb!important; }
 html[data-odak-theme="dark"] .admin-container :is(input,select,textarea) { background:#0a1724!important; color:#edf4fb!important; border-color:#29445e!important; color-scheme:dark; }
+
+/* =========================================================
+   YONETIM PANELI V2
+   ========================================================= */
+
+.permission-v2 {
+    margin-top: 4px;
+}
+
+.permission-v2-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 12px;
+}
+
+.permission-v2-subtitle {
+    margin-top: 4px !important;
+    color: #7b8798 !important;
+    font-size: 11px !important;
+}
+
+.permission-v2-counters {
+    display: flex;
+    gap: 8px;
+}
+
+.permission-v2-counters > div {
+    min-width: 76px;
+    padding: 10px 12px;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px solid #e7edf4;
+    border-radius: 11px;
+}
+
+.permission-v2-counters strong {
+    display: block;
+    color: #0f172a;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.permission-v2-counters span {
+    display: block;
+    margin-top: 5px;
+    color: #94a3b8;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.permission-v2-alert {
+    margin-bottom: 12px !important;
+    border-radius: 10px !important;
+    font-size: 10.5px !important;
+}
+
+.permission-module-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.permission-module-card {
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    transition: 0.18s ease;
+}
+
+.permission-module-card:hover {
+    border-color: #d8dee8;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+
+.permission-module-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 14px;
+    background: linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #fbfcfe 100%
+    );
+    border-bottom: 1px solid #eef2f7;
+}
+
+.permission-module-title {
+    color: #0f172a !important;
+    font-size: 13px !important;
+    font-weight: 850 !important;
+}
+
+.permission-module-description {
+    margin-top: 3px !important;
+    color: #94a3b8 !important;
+    font-size: 9.5px !important;
+}
+
+.permission-module-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.permission-module-actions .MuiButton-root,
+.permission-full-button {
+    color: #d92329 !important;
+    font-size: 9.5px !important;
+    font-weight: 800 !important;
+    text-transform: none !important;
+}
+
+.permission-screen-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.permission-screen-row {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f0f3f7;
+    transition: 0.15s ease;
+}
+
+.permission-screen-row:last-child {
+    border-bottom: 0;
+}
+
+.permission-screen-row.selected {
+    background: #fffafa;
+}
+
+.permission-screen-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.permission-screen-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    color: #64748b;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    user-select: none;
+}
+
+.permission-screen-check:hover {
+    border-color: #ef4444;
+}
+
+.permission-screen-check.selected {
+    color: #ffffff;
+    background: #e5252a;
+    border-color: #e5252a;
+}
+
+.permission-screen-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.permission-screen-title {
+    color: #334155 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+}
+
+.permission-screen-path {
+    margin-top: 2px !important;
+    overflow: hidden;
+    color: #a0aec0 !important;
+    font-size: 8.5px !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.permission-action-count {
+    height: 24px !important;
+    color: #64748b !important;
+    background: #f8fafc !important;
+    font-size: 9px !important;
+}
+
+.permission-action-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: 10px 0 0 36px;
+}
+
+.permission-action-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 10px;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 9.5px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.permission-action-chip:hover {
+    border-color: #fca5a5;
+}
+
+.permission-action-chip strong {
+    font-size: 11px;
+}
+
+.permission-action-chip.selected {
+    color: #b91c1c;
+    background: #fff1f2;
+    border-color: #fca5a5;
+}
+
+@media (max-width: 760px) {
+
+    .permission-v2-head,
+    .permission-module-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .permission-module-actions {
+        justify-content: space-between;
+    }
+
+    .permission-screen-main {
+        flex-wrap: wrap;
+    }
+
+    .permission-screen-copy {
+        min-width: calc(100% - 40px);
+    }
+
+    .permission-action-count {
+        margin-left: 36px;
+    }
+
+    .permission-action-grid {
+        margin-left: 0;
+    }
+}
