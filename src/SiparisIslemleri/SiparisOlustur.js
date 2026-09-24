@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
     getProjeOptions,
-    getTeslimNoktalariAll,
+    getSiparisOlusturTeslimNoktalariAll,
     getSiparisOlusturProjectRows,
     getSiparisOlusturBallogTeslimNoktalari,
     createSiparisOlusturBallogTeslimNoktalariBulk,
@@ -541,7 +541,7 @@ export default function SiparisOlustur() {
             setDlPhase("fetch");
 
             const allData =
-                await getTeslimNoktalariAll();
+                await getSiparisOlusturTeslimNoktalariAll();
 
             setDlProgress(75);
 
@@ -898,7 +898,7 @@ export default function SiparisOlustur() {
                     await getSiparisOlusturBallogTeslimNoktalari();
             } else {
                 allAdresler =
-                    await getTeslimNoktalariAll();
+                    await getSiparisOlusturTeslimNoktalariAll();
             }
 
             const keyFn = (s) => compactAddr(String(s ?? "").replace(/\u00A0/g, " "));

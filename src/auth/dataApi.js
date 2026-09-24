@@ -460,6 +460,15 @@ export async function getSiparisOlusturProjectRows(projeAdi) {
 
 // SIPARIS_OLUSTUR_BALLOG_HELPERS_V1
 
+export async function getSiparisOlusturTeslimNoktalariAll() {
+    const data = await request(
+        "/siparis-olustur/teslim-noktalari"
+    );
+
+    return Array.isArray(data?.data)
+        ? data.data
+        : [];
+}
 export async function getSiparisOlusturBallogTeslimNoktalari() {
     const body = await request(
         "/siparis-olustur/ballog-teslim-noktalari"
