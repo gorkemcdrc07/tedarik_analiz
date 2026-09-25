@@ -1,6 +1,12 @@
-.env
+﻿.env
+.env.*
+!.env.example
+
 .vs/
 node_modules/
+
+build/
+dist/
 
 tedarik_analiz/.env
 tedarik_analiz/server/.env
@@ -8,6 +14,7 @@ tedarik_analiz/node_modules/
 tedarik_analiz/.vs/
 
 tedarik_analiz-clean.git/
+
 *.before-*-backup.js
 *.email-otp-backup.js
 *.before-*-backup.jsx

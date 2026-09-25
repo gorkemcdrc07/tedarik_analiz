@@ -1,21 +1,36 @@
-const express = require("express");
+﻿const express = require("express");
 const fetch = require("node-fetch");
 const cors = require("cors");
 const path = require("path");
-// .env dosyasını process.cwd() yerine doğrudan server klasöründen yükle.
-// Böylece `npm --prefix server start` ve farklı çalışma dizinlerinde aynı davranır.
+// .env dosyasÄ±nÄ± process.cwd() yerine doÄŸrudan server klasÃ¶rÃ¼nden yÃ¼kle.
+// BÃ¶ylece `npm --prefix server start` ve farklÄ± Ã§alÄ±ÅŸma dizinlerinde aynÄ± davranÄ±r.
 const envPath = path.resolve(__dirname, ".env");
 require("dotenv").config({ path: envPath, override: true });
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("CORS tarafindan izin verilmeyen origin."));
+  },
+  credentials: true
+}));
 app.use(express.json());
 
-// Güvenli giriş: kullanıcı adı/şifre + e-posta OTP
+// GÃ¼venli giriÅŸ: kullanÄ±cÄ± adÄ±/ÅŸifre + e-posta OTP
 require("./auth2fa").install(app);
 
 const PORT = process.env.PORT || 5000;
-console.log(`🔐 Supabase env: URL=${Boolean(process.env.SUPABASE_URL)} KEY=${Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)}`);
+console.log(`ğŸ” Supabase env: URL=${Boolean(process.env.SUPABASE_URL)} KEY=${Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)}`);
 
 // ===============================
 // 1) TMS PROD / ADD EXPENSE
@@ -66,7 +81,7 @@ app.post("/api/reel-api/tmsdespatchincomeexpenses/addincome", async (req, res) =
 });
 
 // ===============================
-// 3) TMS PROD / ADD ORDER  ✅ YENİ
+// 3) TMS PROD / ADD ORDER  âœ… YENÄ°
 // ===============================
 app.post("/api/reel-api/tmsorders/add", async (req, res) => {
     try {
@@ -114,9 +129,9 @@ app.post("/reel-auth/api/auth/login", async (req, res) => {
 const trAscii = (value = "") => String(value)
     .trim()
     .toLocaleUpperCase("tr-TR")
-    .replace(/İ/g, "I").replace(/İ/g, "I")
-    .replace(/Ş/g, "S").replace(/Ğ/g, "G")
-    .replace(/Ü/g, "U").replace(/Ö/g, "O").replace(/Ç/g, "C")
+    .replace(/Ä°/g, "I").replace(/IÌ‡/g, "I")
+    .replace(/Å/g, "S").replace(/Ä/g, "G")
+    .replace(/Ãœ/g, "U").replace(/Ã–/g, "O").replace(/Ã‡/g, "C")
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 const citySlug = (value = "") => trAscii(value)
@@ -129,12 +144,12 @@ const decodeHtml = (value = "") => String(value)
     .replace(/&amp;/gi, "&")
     .replace(/&quot;/gi, '"')
     .replace(/&#39;|&apos;/gi, "'")
-    .replace(/&ccedil;/gi, "ç").replace(/&Ccedil;/gi, "Ç")
-    .replace(/&ouml;/gi, "ö").replace(/&Ouml;/gi, "Ö")
-    .replace(/&uuml;/gi, "ü").replace(/&Uuml;/gi, "Ü")
-    .replace(/&#287;/g, "ğ").replace(/&#286;/g, "Ğ")
-    .replace(/&#351;/g, "ş").replace(/&#350;/g, "Ş")
-    .replace(/&#305;/g, "ı").replace(/&#304;/g, "İ");
+    .replace(/&ccedil;/gi, "Ã§").replace(/&Ccedil;/gi, "Ã‡")
+    .replace(/&ouml;/gi, "Ã¶").replace(/&Ouml;/gi, "Ã–")
+    .replace(/&uuml;/gi, "Ã¼").replace(/&Uuml;/gi, "Ãœ")
+    .replace(/&#287;/g, "ÄŸ").replace(/&#286;/g, "Ä")
+    .replace(/&#351;/g, "ÅŸ").replace(/&#350;/g, "Å")
+    .replace(/&#305;/g, "Ä±").replace(/&#304;/g, "Ä°");
 
 const textOnly = (html = "") => decodeHtml(html)
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
@@ -150,8 +165,8 @@ const firstPrice = (value = "") => {
 
 function parsePetrolOfisiPrice(html, district, fuel, city = "", vatIncluded = true) {
     const wantedDistrict = trAscii(district);
-    // Petrol Ofisi bazı illerde merkez satırını "MERKEZ" yerine doğrudan il adıyla yayımlıyor.
-    // Örn: Eskişehir merkez = ESKISEHIR, Adana merkez = ADANA.
+    // Petrol Ofisi bazÄ± illerde merkez satÄ±rÄ±nÄ± "MERKEZ" yerine doÄŸrudan il adÄ±yla yayÄ±mlÄ±yor.
+    // Ã–rn: EskiÅŸehir merkez = ESKISEHIR, Adana merkez = ADANA.
     const acceptedDistricts = new Set([wantedDistrict]);
     if (wantedDistrict === "MERKEZ" && city) acceptedDistricts.add(trAscii(city));
     const rows = [...html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)];
@@ -159,23 +174,23 @@ function parsePetrolOfisiPrice(html, district, fuel, city = "", vatIncluded = tr
         const cells = [...row[1].matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)].map(m => textOnly(m[1]));
         if (cells.length < 4 || !acceptedDistricts.has(trAscii(cells[0]))) continue;
         const index = fuel === "Benzin" ? 1 : fuel === "Motorin" ? 2 : fuel === "LPG" ? 6 : -1;
-        if (index < 0 || !cells[index]) throw new Error(`Desteklenmeyen yakıt türü: ${fuel}`);
+        if (index < 0 || !cells[index]) throw new Error(`Desteklenmeyen yakÄ±t tÃ¼rÃ¼: ${fuel}`);
         const matches = String(cells[index]).match(/\d{1,3}(?:[.,]\d{1,2})/g) || [];
-        // Petrol Ofisi hücresinde ilk değer KDV dahil, ikinci değer +KDV (KDV hariç) olarak yayınlanır.
-        // BİM sözleşmesi için "KDV dahil fiyatlar gösterilsin" kapalı olduğundan ikinci değer kullanılır.
+        // Petrol Ofisi hÃ¼cresinde ilk deÄŸer KDV dahil, ikinci deÄŸer +KDV (KDV hariÃ§) olarak yayÄ±nlanÄ±r.
+        // BÄ°M sÃ¶zleÅŸmesi iÃ§in "KDV dahil fiyatlar gÃ¶sterilsin" kapalÄ± olduÄŸundan ikinci deÄŸer kullanÄ±lÄ±r.
         const grossRaw = matches[0];
         const grossPrice = grossRaw ? Number(grossRaw.replace(",", ".")) : NaN;
-        // KDV kapalı görünümde PO'nun +KDV (net) değeri kullanılır. Bazı upstream HTML
-        // cevaplarında ikinci değer gizli/dinamik geldiği için tek değer görülürse brüt fiyatı
-        // %20 KDV'den arındırıp PO ekranındaki kuruş yukarı yuvarlama davranışıyla üretiriz.
+        // KDV kapalÄ± gÃ¶rÃ¼nÃ¼mde PO'nun +KDV (net) deÄŸeri kullanÄ±lÄ±r. BazÄ± upstream HTML
+        // cevaplarÄ±nda ikinci deÄŸer gizli/dinamik geldiÄŸi iÃ§in tek deÄŸer gÃ¶rÃ¼lÃ¼rse brÃ¼t fiyatÄ±
+        // %20 KDV'den arÄ±ndÄ±rÄ±p PO ekranÄ±ndaki kuruÅŸ yukarÄ± yuvarlama davranÄ±ÅŸÄ±yla Ã¼retiriz.
         const netFromGross = Number.isFinite(grossPrice) ? Math.ceil((grossPrice / 1.20) * 100 - 1e-9) / 100 : NaN;
         const raw = (!vatIncluded && matches.length > 1) ? matches[matches.length - 1] : grossRaw;
         const parsed = raw ? Number(raw.replace(",", ".")) : NaN;
         const price = !vatIncluded && matches.length === 1 ? netFromGross : parsed;
-        if (!Number.isFinite(price)) throw new Error(`${district} için ${fuel} fiyatı ayrıştırılamadı.`);
+        if (!Number.isFinite(price)) throw new Error(`${district} iÃ§in ${fuel} fiyatÄ± ayrÄ±ÅŸtÄ±rÄ±lamadÄ±.`);
         return price;
     }
-    throw new Error(`${district} ilçesi Petrol Ofisi fiyat tablosunda bulunamadı.`);
+    throw new Error(`${district} ilÃ§esi Petrol Ofisi fiyat tablosunda bulunamadÄ±.`);
 }
 
 function shellProductCode(data, fuel) {
@@ -189,7 +204,7 @@ function shellProductCode(data, fuel) {
         return wanted.some((name) => text.includes(trAscii(name)));
     });
     if (!product?.fepProductCode) {
-        throw new Error(`Shell ürün kodu bulunamadı: ${fuel}`);
+        throw new Error(`Shell Ã¼rÃ¼n kodu bulunamadÄ±: ${fuel}`);
     }
     return String(product.fepProductCode);
 }
@@ -199,11 +214,11 @@ function parseShellApiPrice(data, city, district, fuel) {
     const wantedCity = trAscii(city);
     const wantedDistrict = trAscii(district);
     const cityNode = groups.find((g) => trAscii(g?.cityName || "") === wantedCity);
-    if (!cityNode) throw new Error(`Shell resmi API yanıtında ${city} ili bulunamadı.`);
+    if (!cityNode) throw new Error(`Shell resmi API yanÄ±tÄ±nda ${city} ili bulunamadÄ±.`);
 
     const counties = Array.isArray(cityNode.counties) ? cityNode.counties : [];
     const county = counties.find((c) => trAscii(c?.countyName || "") === wantedDistrict);
-    if (!county) throw new Error(`Shell resmi API yanıtında ${city} / ${district} ilçesi bulunamadı.`);
+    if (!county) throw new Error(`Shell resmi API yanÄ±tÄ±nda ${city} / ${district} ilÃ§esi bulunamadÄ±.`);
 
     const productCode = shellProductCode(data, fuel);
     const prices = county.prices || {};
@@ -215,7 +230,7 @@ function parseShellApiPrice(data, city, district, fuel) {
     }
     const price = Number(rawPrice);
     if (!Number.isFinite(price)) {
-        throw new Error(`Shell resmi API yanıtında ${city} / ${district} / ${fuel} fiyatı bulunamadı.`);
+        throw new Error(`Shell resmi API yanÄ±tÄ±nda ${city} / ${district} / ${fuel} fiyatÄ± bulunamadÄ±.`);
     }
     return price;
 }
@@ -233,10 +248,10 @@ async function fetchShellPrice(city, district, fuel) {
         redirect: "follow"
     });
     const raw = await upstream.text();
-    if (!upstream.ok) throw new Error(`Shell resmi fiyat API'si HTTP ${upstream.status} döndürdü.`);
+    if (!upstream.ok) throw new Error(`Shell resmi fiyat API'si HTTP ${upstream.status} dÃ¶ndÃ¼rdÃ¼.`);
     let data;
     try { data = JSON.parse(raw); }
-    catch (_) { throw new Error("Shell resmi fiyat API'si JSON döndürmedi."); }
+    catch (_) { throw new Error("Shell resmi fiyat API'si JSON dÃ¶ndÃ¼rmedi."); }
     const price = parseShellApiPrice(data, city, district, fuel);
     return { price, sourceUrl: url };
 }
@@ -249,20 +264,20 @@ app.get("/api/fuel-check", async (req, res) => {
         const district = String(req.query.district || "").trim();
         const fuel = String(req.query.fuel || "Motorin").trim();
         const vatIncluded = String(req.query.vatIncluded ?? "true").toLowerCase() !== "false";
-        if (!city || !district) return res.status(400).json({ ok: false, error: "İl ve ilçe zorunludur." });
+        if (!city || !district) return res.status(400).json({ ok: false, error: "Ä°l ve ilÃ§e zorunludur." });
 
         let sourceUrl, price, providerName, sourceLabel;
         if (provider === "petrol-ofisi") {
             const slug = citySlug(city);
             sourceUrl = `https://www.petrolofisi.com.tr/akaryakit-fiyatlari/${slug}-akaryakit-fiyatlari`;
             providerName = "Petrol Ofisi";
-            sourceLabel = "Petrol Ofisi resmi fiyat sayfası";
+            sourceLabel = "Petrol Ofisi resmi fiyat sayfasÄ±";
         } else if (provider === "shell") {
             sourceUrl = "https://www.shell.com.tr/suruculer/shell-yakitlari/akaryakit-pompa-satis-fiyatlari.html";
             providerName = "Shell";
             sourceLabel = "Shell resmi pompa fiyat API'si";
         } else {
-            return res.status(400).json({ ok: false, error: "Bilinmeyen akaryakıt sağlayıcısı." });
+            return res.status(400).json({ ok: false, error: "Bilinmeyen akaryakÄ±t saÄŸlayÄ±cÄ±sÄ±." });
         }
 
         if (provider === "shell") {
@@ -279,13 +294,13 @@ app.get("/api/fuel-check", async (req, res) => {
                 redirect: "follow",
             });
             const html = await upstream.text();
-            if (!upstream.ok) throw new Error(`${providerName} fiyat sayfası HTTP ${upstream.status} döndürdü.`);
+            if (!upstream.ok) throw new Error(`${providerName} fiyat sayfasÄ± HTTP ${upstream.status} dÃ¶ndÃ¼rdÃ¼.`);
             price = parsePetrolOfisiPrice(html, district, fuel, city, vatIncluded);
         }
-        return res.json({ ok: true, provider: providerName, city, district, fuel, price, vatIncluded: provider === "petrol-ofisi" ? vatIncluded : null, priceMode: provider === "petrol-ofisi" ? (vatIncluded ? "KDV dahil" : "KDV hariç (+KDV)") : "Pompa fiyatı", sourceUrl, sourceLabel, checkedAt: new Date().toISOString() });
+        return res.json({ ok: true, provider: providerName, city, district, fuel, price, vatIncluded: provider === "petrol-ofisi" ? vatIncluded : null, priceMode: provider === "petrol-ofisi" ? (vatIncluded ? "KDV dahil" : "KDV hariÃ§ (+KDV)") : "Pompa fiyatÄ±", sourceUrl, sourceLabel, checkedAt: new Date().toISOString() });
     } catch (err) {
         console.error("[fuel-check]", err);
-        return res.status(502).json({ ok: false, error: err.message || "Fiyat kontrolü başarısız." });
+        return res.status(502).json({ ok: false, error: err.message || "Fiyat kontrolÃ¼ baÅŸarÄ±sÄ±z." });
     }
 });
 
@@ -300,19 +315,19 @@ async function getAutomationFuelPrice(ref) {
     const upstream = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "text/html", "Accept-Language": "tr-TR,tr;q=0.9" }, redirect: "follow" });
     const html = await upstream.text();
     if (!upstream.ok) throw new Error(`Petrol Ofisi HTTP ${upstream.status}`);
-    // BİM için Supabase'teki eski kural kaydında vatIncluded alanı olmasa bile
-    // sözleşme gereği KDV dahil seçeneği HER ZAMAN kapalıdır.
-    const isBim = String(ref.customer || "").trim().toLocaleUpperCase("tr-TR") === "BİM" || String(ref.customer || "").trim().toUpperCase() === "BIM";
+    // BÄ°M iÃ§in Supabase'teki eski kural kaydÄ±nda vatIncluded alanÄ± olmasa bile
+    // sÃ¶zleÅŸme gereÄŸi KDV dahil seÃ§eneÄŸi HER ZAMAN kapalÄ±dÄ±r.
+    const isBim = String(ref.customer || "").trim().toLocaleUpperCase("tr-TR") === "BÄ°M" || String(ref.customer || "").trim().toUpperCase() === "BIM";
     const vatIncluded = isBim ? false : ref.vatIncluded !== false;
     return parsePetrolOfisiPrice(html, ref.district, ref.fuel, ref.city, vatIncluded);
 }
 installFuelAutomation(app, getAutomationFuelPrice);
 
-// API isteklerinde HTML 404 yerine her zaman JSON döndür.
+// API isteklerinde HTML 404 yerine her zaman JSON dÃ¶ndÃ¼r.
 app.use('/api', (req, res) => {
-    res.status(404).json({ error: 'API endpoint bulunamadı.', path: req.originalUrl });
+    res.status(404).json({ error: 'API endpoint bulunamadÄ±.', path: req.originalUrl });
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Backend çalışıyor: http://localhost:${PORT}`);
+    console.log(`ğŸš€ Backend Ã§alÄ±ÅŸÄ±yor: http://localhost:${PORT}`);
 });

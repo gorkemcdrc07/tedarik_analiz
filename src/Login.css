@@ -98,3 +98,16 @@
     width: min(200px, 100%);
   }
 }
+
+/* 2026 Login refresh */
+.ots-login-container{max-width:1180px;min-height:680px;border-radius:30px;box-shadow:0 36px 100px rgba(7,26,45,.16),0 1px 0 rgba(255,255,255,.9) inset;backdrop-filter:blur(18px)}
+.ots-login-showcase{padding:50px;background:radial-gradient(circle at 20% 12%,rgba(229,37,42,.18),transparent 32%),linear-gradient(150deg,#061827 0%,#0a2742 55%,#0d3558 100%)}
+.ots-login-showcase:after{content:"";position:absolute;width:420px;height:420px;right:-210px;bottom:-180px;border:1px solid rgba(255,255,255,.08);border-radius:50%;box-shadow:0 0 0 70px rgba(255,255,255,.018),0 0 0 140px rgba(255,255,255,.012)}
+.ots-login-form-section{padding:58px 68px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(248,250,252,.96))}
+.ots-login-input-wrapper{height:54px;border-radius:14px;transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}.ots-login-input-wrapper:focus-within{transform:translateY(-1px);box-shadow:0 0 0 4px rgba(229,37,42,.09),0 10px 28px rgba(15,23,42,.06)}
+.ots-login-submit{min-height:54px;border-radius:14px;box-shadow:0 14px 30px rgba(229,37,42,.18);transition:transform .2s ease,box-shadow .2s ease}.ots-login-submit:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 18px 34px rgba(229,37,42,.24)}
+.ots-otp-input{height:64px}.ots-otp-input input{font-size:25px;letter-spacing:.42em;font-variant-numeric:tabular-nums}
+.ots-totp-qr{position:relative;border-radius:22px;box-shadow:0 16px 40px rgba(15,23,42,.08)}
+.ots-totp-timer{padding:10px 12px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0}
+@media(max-width:900px){.ots-login-container{min-height:auto}.ots-login-form-section{padding:42px 32px}}
+@media(max-width:520px){.ots-login{padding:14px}.ots-login-form-section{padding:32px 20px}.ots-login-container{border-radius:22px}.ots-otp-input input{font-size:22px;letter-spacing:.3em}}
