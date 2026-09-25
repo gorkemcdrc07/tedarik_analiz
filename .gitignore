@@ -21,3 +21,10 @@ tedarik_analiz-clean.git/
 *.before-*-backup.ts
 *.before-*-backup.tsx
 *.email-otp-backup.jsx
+
+# Local development backups
+server/*-before.js
+server/*-backup.js
+src/components/*-before-*.css
+src/components/*-backup.css
+src/components/*-backup/
