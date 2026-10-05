@@ -37,6 +37,12 @@ import TestGider from "./GelirGider/TestGider";
 
 // Fiyatlandırma
 import SeferFiyatlandirma from "./fiyatlandirma/seferFiyatlandirma";
+import YakitDegisimMerkezi from "./Finans/YakitDegisimMerkezi";
+import YakitHesaplama from "./Finans/YakitHesaplama";
+import YakitKontrolMerkezi from "./Finans/YakitKontrolMerkezi";
+import YakitOnayMerkezi from "./Finans/YakitOnayMerkezi";
+import YakitYonetimMerkeziV3 from "./Finans/YakitYonetimMerkeziV3";
+import MusteriKurulumSihirbazi from "./Finans/MusteriKurulumSihirbazi";
 
 // Analiz
 import OzetTablo from "./analiz/ozetTablo";
@@ -373,6 +379,73 @@ export default function App() {
                         element={
                             <ProtectedPage>
                                 <SeferFiyatlandirma />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    {/* ========================= */}
+                    {/* YAKIT / ESKALASYON */}
+                    {/* ========================= */}
+
+                    <Route
+                        path="/finans/yakit-hesaplama"
+                        element={
+                            <ProtectedPage>
+                                <YakitHesaplama />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/musteri-kurulum"
+                        element={
+                            <ProtectedPage>
+                                <MusteriKurulumSihirbazi />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/yakit-yonetim-v3"
+                        element={
+                            <ProtectedPage>
+                                <YakitYonetimMerkeziV3 />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/yakit-onaylar"
+                        element={
+                            <ProtectedPage>
+                                <YakitOnayMerkezi />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/yakit-kontrol-merkezi"
+                        element={
+                            <ProtectedPage>
+                                <YakitKontrolMerkezi />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/akaryakit-fiyat-takip"
+                        element={
+                            <ProtectedPage>
+                                <YakitDegisimMerkezi />
+                            </ProtectedPage>
+                        }
+                    />
+
+                    <Route
+                        path="/finans/yakit-otomasyon-merkezi"
+                        element={
+                            <ProtectedPage>
+                                <YakitDegisimMerkezi />
                             </ProtectedPage>
                         }
                     />

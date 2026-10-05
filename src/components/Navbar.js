@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ClipboardList,
   FilePlus2,
+  FileSpreadsheet,
   FolderKanban,
   HelpCircle,
   LayoutDashboard,
@@ -49,7 +50,12 @@ const PAGE_CONFIG = {
   "/GelirGider/TestGider": { title: "Test Gider", description: "Gider kayıtlarını kontrol edin.", icon: ReceiptText },
   "/fiyatlandirma/seferFiyatlandirma": { title: "Sefer Fiyatlandırma", description: "Sefer maliyetlerini hesaplayın ve fiyatlandırmaları yönetin.", icon: Calculator },
   "/analiz/ozet": { title: "Özet Analiz", description: "Operasyon verilerini özet metriklerle analiz edin.", icon: ChartNoAxesCombined },
-  "/gorsel": { title: "Görsel Analiz", description: "Operasyon verilerini grafikler üzerinden inceleyin.", icon: BarChart3 }
+  "/gorsel": { title: "Görsel Analiz", description: "Operasyon verilerini grafikler üzerinden inceleyin.", icon: BarChart3 },
+  "/finans/yakit-hesaplama": { title: "Yakıt Hesaplama", description: "Müşteri yakıt tarifelerini hesaplayın ve yönetin.", icon: Calculator },
+  "/finans/musteri-kurulum": { title: "Müşteri Kurulum Sihirbazı", description: "Yeni müşteri ve tarife kurallarını yapılandırın.", icon: FileSpreadsheet },
+  "/finans/yakit-onaylar": { title: "Yakıt Onay Merkezi", description: "Bekleyen tarife güncellemelerini inceleyin ve yönetin.", icon: ShieldCheck },
+  "/finans/yakit-yonetim-v3": { title: "Yakıt Yönetim Merkezi V3", description: "Yakıt kuralları, yetkiler ve otomasyon süreçlerini yönetin.", icon: ShieldCheck },
+  "/finans/yakit-kontrol-merkezi": { title: "Tarife Kontrol Merkezi", description: "Eskalasyon ve tarife güvenlik kontrollerini yönetin.", icon: ShieldCheck },
 };
 
 const getUser = () => {

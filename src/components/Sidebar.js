@@ -13,6 +13,8 @@ import {
   CircleDollarSign,
   ReceiptText,
   Calculator,
+  Fuel,
+  FileSpreadsheet,
   ChartNoAxesCombined,
   BarChart3,
   ShieldCheck,
@@ -133,6 +135,31 @@ const GROUPS = [
         label: "Sefer Fiyatlandırma",
         route: "/fiyatlandirma/seferFiyatlandirma",
         icon: Calculator
+      },
+      {
+        label: "Yakıt Hesaplama",
+        route: "/finans/yakit-hesaplama",
+        icon: Fuel
+      },
+      {
+        label: "Müşteri Kurulum",
+        route: "/finans/musteri-kurulum",
+        icon: FileSpreadsheet
+      },
+      {
+        label: "Yakıt Onayları",
+        route: "/finans/yakit-onaylar",
+        icon: ShieldCheck
+      },
+      {
+        label: "Yakıt Yönetim V3",
+        route: "/finans/yakit-yonetim-v3",
+        icon: ShieldCheck
+      },
+      {
+        label: "Tarife Kontrol Merkezi",
+        route: "/finans/yakit-kontrol-merkezi",
+        icon: ShieldCheck
       }
     ]
   },
