@@ -26,7 +26,6 @@ import {
     ArrowRight,
 } from "lucide-react";
 import supabase from "../supabaseClient";
-import { getTmsToken } from "./tmsService";
 
 const emptyRow = () => ({
     plaka: "",
@@ -1750,7 +1749,6 @@ export default function ParsiyelSiparisOlustur() {
     const [customerOptions, setCustomerOptions] = useState([]);
     const [loadingProjects, setLoadingProjects] = useState(false);
     const [loadError, setLoadError] = useState("");
-    const [tmsToken, setTmsToken] = useState("");
     const [resultModal, setResultModal] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveProgress, setSaveProgress] = useState({ current: 0, total: 0, label: "" });
@@ -1848,21 +1846,6 @@ export default function ParsiyelSiparisOlustur() {
 
     useEffect(() => {
         fetchProjectsAndCustomers();
-    }, []);
-
-    useEffect(() => {
-        let interval;
-        const fetch = async () => {
-            try {
-                const t = await getTmsToken();
-                setTmsToken(t);
-            } catch (err) {
-                console.error("TOKEN HATASI:", err);
-            }
-        };
-        fetch();
-        interval = setInterval(fetch, 300000);
-        return () => clearInterval(interval);
     }, []);
 
     const getProjectsByCustomer = (name) => {
@@ -2061,14 +2044,6 @@ export default function ParsiyelSiparisOlustur() {
     const readiness = rows.length ? Math.round((readyRowCount / rows.length) * 100) : 0;
 
     const handleSave = async () => {
-        if (!tmsToken) {
-            setResultModal({
-                sent: [],
-                skipped: [{ title: "Token alınamadı", reason: "Token henüz hazır değil." }]
-            });
-            return;
-        }
-
         const sent = [];
         const skipped = [];
 
@@ -2131,9 +2106,9 @@ export default function ParsiyelSiparisOlustur() {
                 };
                 const res = await fetch(process.env.REACT_APP_TMS_ORDER_ADD_URL, {
                     method: "POST",
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${tmsToken}`,
                     },
                     body: JSON.stringify(body),
                 });
