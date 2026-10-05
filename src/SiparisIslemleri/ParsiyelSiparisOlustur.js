@@ -27,6 +27,13 @@ import {
 } from "lucide-react";
 import supabase from "../supabaseClient";
 
+const API_BASE = (
+    process.env.REACT_APP_API_BASE_URL ||
+    "https://tedarik-analiz-backend.onrender.com"
+)
+    .trim()
+    .replace(/\/+$/, "");
+
 const emptyRow = () => ({
     plaka: "",
     vkn: "",
@@ -2104,14 +2111,18 @@ export default function ParsiyelSiparisOlustur() {
                         waybillNumbers: []
                     }]
                 };
-                const res = await fetch(process.env.REACT_APP_TMS_ORDER_ADD_URL, {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(body),
-                });
+                const res = await fetch(
+                    `${API_BASE}/api/reel-api/tmsorders/add`,
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        cache: "no-store",
+                        body: JSON.stringify(body),
+                    }
+                );
                 const text = await res.text();
 
                 if (!res.ok) {
