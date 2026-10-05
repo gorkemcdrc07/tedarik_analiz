@@ -14,8 +14,7 @@ let timerId = null;
 
 // ✅ Frontend her zaman bunu çağıracak (proxy route)
 const TOKEN_URLS = [
-    "/reel-auth/api/auth/login",
-    "/api/reel-auth/login",
+    "https://tedarik-analiz-backend.onrender.com/reel-auth/api/auth/login",
 ];
 
 // Yardımcı
