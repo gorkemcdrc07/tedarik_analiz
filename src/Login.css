@@ -5,3 +5,17 @@
 @media(max-width:760px){.ots-login{justify-content:flex-start;padding:24px 18px}.ots-login-container{display:block;max-width:500px;min-height:0;margin:auto}.ots-login-showcase{display:none}.ots-login-form-section{padding:38px}.ots-login-mobile-brand{display:flex}}@media(max-width:480px){.ots-login{padding:14px 12px}.ots-login-container{border-radius:18px}.ots-login-form-section{padding:28px 22px}.ots-login-options{align-items:flex-start;flex-direction:column;gap:10px}}
 
 .ots-login-showcase:after{content:"";position:absolute;right:-90px;bottom:-110px;width:330px;height:330px;border:1px solid rgba(255,255,255,.06);border-radius:50%;box-shadow:0 0 0 55px rgba(255,255,255,.022),0 0 0 110px rgba(255,255,255,.018);pointer-events:none}.ots-login-submit{background:linear-gradient(135deg,#ef3539,#d91f25)!important;box-shadow:0 10px 24px rgba(229,37,42,.22)!important}.ots-login-submit:hover{background:linear-gradient(135deg,#e5252a,#c9181e)!important}.ots-login-eyebrow{color:#e5252a!important}.ots-login-input-wrapper:focus-within{border-color:#e5252a!important;box-shadow:0 0 0 3px rgba(229,37,42,.08)!important}.ots-login-forgot{color:#e5252a!important}
+
+/* Password reset */
+.ots-login-success{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:40px;
+  padding:9px 11px;
+  color:#166534;
+  background:#f0fdf4;
+  border:1px solid #bbf7d0;
+  border-radius:9px;
+  font-size:10.5px;
+}
