@@ -28,16 +28,6 @@ const safeParse = (s, fallback = null) => {
 };
 
 // LocalStorage'dan kullanıcı adı/şifreyi alır
-function getUserCredentials() {
-    const u = localStorage.getItem("Reel_kullanici") || "";
-    const p = localStorage.getItem("Reel_sifre") || "";
-
-    if (!u || !p) {
-        throw new Error("Kullanıcı bilgileri LocalStorage'da bulunamadı.");
-    }
-    return { userName: u, password: p };
-}
-
 // Storage'dan token yükle
 function loadFromStorage() {
     const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -74,8 +64,6 @@ function scheduleRefresh() {
 
 // Token alma
 async function requestNewToken() {
-    const { userName, password } = getUserCredentials();
-
     let res = null;
     let lastNetworkError = null;
 
@@ -83,8 +71,8 @@ async function requestNewToken() {
         try {
             const candidate = await fetch(url, {
                 method: "POST",
+                credentials: "include",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userName, password }),
             });
 
             // Local geliştirmede /api/reel-auth/login CRA tarafından karşılanmaz ve 404 döner.

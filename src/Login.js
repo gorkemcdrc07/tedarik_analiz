@@ -21,6 +21,7 @@ export default function Login({onLoginSuccess}){
   try{
     const response=await fetch(`${API_BASE}/api/auth/login`,{
       method:"POST",
+      credentials:"include",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
         username:email.trim(),
@@ -69,19 +70,10 @@ export default function Login({onLoginSuccess}){
       localStorage.removeItem("kullanici");
     }
 
-    localStorage.setItem(
-      "Reel_kullanici",
-      data.Reel_kullanici??email.trim()
-    );
-
-    if(data.Reel_sifre){
-      localStorage.setItem(
-        "Reel_sifre",
-        data.Reel_sifre
-      );
-    }else{
-      localStorage.removeItem("Reel_sifre");
-    }
+    // TMS parolasi artik tarayiciya alinmaz.
+    // Eski surumlerden kalmis credential varsa temizle.
+    localStorage.removeItem("Reel_sifre");
+    localStorage.removeItem("Reel_kullanici");
 
     localStorage.setItem(
       "userName",
