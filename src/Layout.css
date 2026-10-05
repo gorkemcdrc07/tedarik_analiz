@@ -1,29 +1,66 @@
+
+/* === ODAK APPLICATION SHELL V2 === */
+
 .ots-layout {
+    position: relative;
+
     width: 100%;
     min-height: 100vh;
-    background: var(--ots-bg);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(225, 50, 56, 0.025),
+            transparent 28rem
+        ),
+        var(--ots-bg);
 }
 
+/* MAIN SHELL */
+
 .ots-layout-main {
+    position: relative;
+
     width: auto;
     min-width: 0;
     min-height: 100vh;
+
     margin-left: var(--ots-sidebar-collapsed-width);
-    transition: margin-left .22s cubic-bezier(.4, 0, .2, 1);
+
+    transition:
+        margin-left 220ms cubic-bezier(.4, 0, .2, 1);
 }
 
+/* PAGE AREA */
+
 .ots-layout-content {
+    position: relative;
+
     width: 100%;
     min-width: 0;
+
     min-height: calc(100vh - var(--ots-topbar-height));
-    padding: 22px 24px 30px;
+
+    padding:
+        clamp(18px, 1.6vw, 28px)
+        clamp(18px, 1.8vw, 32px)
+        clamp(28px, 2.2vw, 40px);
+
     overflow-x: clip;
 }
 
+/*
+ * Sayfalar kendi grid/table yapilarini korur.
+ * Shell yalnizca ortak genislik ve hizalamayi yonetir.
+ */
+
 .ots-content-container {
+    position: relative;
+
     width: 100%;
     min-width: 0;
-    max-width: 1920px;
+    max-width: 1880px;
+
     margin: 0 auto;
 }
 
@@ -32,24 +69,104 @@
     max-width: 100%;
 }
 
-.ots-sidebar-overlay { display: none; }
+/* PAGE TRANSITION */
+
+.ots-page-enter {
+    animation:
+        otsPageEnter 220ms cubic-bezier(.2, .75, .25, 1) both;
+}
+
+@keyframes otsPageEnter {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* MOBILE DRAWER OVERLAY */
+
+.ots-sidebar-overlay {
+    display: none;
+}
+
+/* LARGE DESKTOP */
+
+@media (min-width: 1700px) {
+    .ots-layout-content {
+        padding-left: 34px;
+        padding-right: 34px;
+    }
+}
+
+/* TABLET / MOBILE */
 
 @media (max-width: 1024px) {
-    .ots-layout-main { margin-left: 0; }
+    .ots-layout-main {
+        margin-left: 0;
+    }
 
     .ots-sidebar-overlay {
         position: fixed;
         inset: 0;
         z-index: 980;
+
         display: block;
+
         border: 0;
-        background: rgba(7, 26, 45, .48);
-        backdrop-filter: blur(4px);
+
+        background: rgba(5, 18, 31, 0.5);
+
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+
+        animation: otsOverlayEnter 160ms ease both;
     }
 
-    .ots-layout-content { padding: 18px 16px 26px; }
+    .ots-layout-content {
+        padding:
+            18px
+            16px
+            28px;
+    }
 }
 
+@keyframes otsOverlayEnter {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* PHONE */
+
 @media (max-width: 640px) {
-    .ots-layout-content { padding: 14px 10px 22px; }
+    .ots-layout-content {
+        padding:
+            13px
+            10px
+            22px;
+    }
+
+    .ots-content-container {
+        max-width: none;
+    }
+}
+
+/* ACCESSIBILITY */
+
+@media (prefers-reduced-motion: reduce) {
+    .ots-layout-main,
+    .ots-page-enter,
+    .ots-sidebar-overlay {
+        transition: none;
+        animation: none;
+    }
 }
