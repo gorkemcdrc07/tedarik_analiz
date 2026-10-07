@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import supabase from "./supabaseClient";
+import {
+    getAdminUsers,
+    createAdminUser,
+    updateAdminUser,
+    changeAdminUserPassword,
+    deleteAdminUser
+} from "./adminUsersApi";
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Calculator, ChartNoAxesCombined, FilePlus2, MapPinned, PackagePlus, Route, WalletCards } from 'lucide-react';
 
@@ -180,31 +186,29 @@ export default function AdminPanel() {
         setLoading(true);
         setErrorText('');
 
-        const { data, error } = await supabase
-            .from('Login')
-            .select('*')
-            .order('id', { ascending: true });
+        try {
+            const data = await getAdminUsers();
 
-        if (error) {
-            setErrorText(error.message);
-            setUsers([]);
-        } else {
             const mappedUsers = data.map((item) => ({
                 id: item.id,
                 kullanici_adi: item.kullanici_adi || '',
-                sifre: item.sifre || '',
+                sifre: '',
                 kullanici: item.kullanici || '',
                 Reel_kullanici: item.Reel_kullanici || '',
-                Reel_sifre: item.Reel_sifre || '',
+                Reel_sifre: '',
+                hasReelCredential: Boolean(item.hasReelCredential),
                 rol: item.rol || 'kullanici',
                 allowedScreens: parseArray(item.allowedScreens),
                 allowedButtons: parseArray(item.allowedButtons)
             }));
 
             setUsers(mappedUsers);
+        } catch (error) {
+            setErrorText(error?.message || 'Kullanicilar alinamadi.');
+            setUsers([]);
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     const filteredUsers = useMemo(() => {
@@ -278,20 +282,21 @@ export default function AdminPanel() {
     };
 
     const handleDelete = async (id) => {
-        const confirmDelete = window.confirm('Bu kullanıcıyı silmek istiyor musunuz?');
+        const confirmDelete = window.confirm(
+            'Bu kullaniciyi silmek istiyor musunuz?'
+        );
+
         if (!confirmDelete) return;
 
-        const { error } = await supabase
-            .from('Login')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            alert('Silme hatası: ' + error.message);
-            return;
+        try {
+            await deleteAdminUser(id);
+            await fetchLoginUsers();
+        } catch (error) {
+            alert(
+                'Silme hatasi: ' +
+                (error?.message || 'Bilinmeyen hata')
+            );
         }
-
-        await fetchLoginUsers();
     };
 
     const handleScreenChange = (screenPath) => {
@@ -329,32 +334,58 @@ export default function AdminPanel() {
 
     const handleSave = async () => {
         if (!formData.kullanici_adi || !formData.kullanici) {
-            alert('Kullanıcı maili ve kullanıcı adı zorunludur.');
+            alert(
+                'Kullanici maili ve kullanici adi zorunludur.'
+            );
+            return;
+        }
+
+        if (!editingUserId && !formData.sifre) {
+            alert('Yeni kullanici icin sifre zorunludur.');
             return;
         }
 
         const payload = {
             kullanici_adi: formData.kullanici_adi,
-            sifre: formData.sifre,
             kullanici: formData.kullanici,
             Reel_kullanici: formData.Reel_kullanici || null,
-            Reel_sifre: formData.Reel_sifre || null,
             rol: formData.rol,
-            allowedScreens: JSON.stringify(formData.allowedScreens),
-            allowedButtons: JSON.stringify(formData.allowedButtons)
+            allowedScreens: formData.allowedScreens,
+            allowedButtons: formData.allowedButtons
         };
 
-        const result = editingUserId
-            ? await supabase.from('Login').update(payload).eq('id', editingUserId)
-            : await supabase.from('Login').insert([payload]);
-
-        if (result.error) {
-            alert('Kayıt hatası: ' + result.error.message);
-            return;
+        if (formData.Reel_sifre) {
+            payload.Reel_sifre = formData.Reel_sifre;
         }
 
-        handleClose();
-        await fetchLoginUsers();
+        try {
+            if (editingUserId) {
+                await updateAdminUser(
+                    editingUserId,
+                    payload
+                );
+
+                if (formData.sifre) {
+                    await changeAdminUserPassword(
+                        editingUserId,
+                        formData.sifre
+                    );
+                }
+            } else {
+                await createAdminUser({
+                    ...payload,
+                    password: formData.sifre
+                });
+            }
+
+            handleClose();
+            await fetchLoginUsers();
+        } catch (error) {
+            alert(
+                'Kayit hatasi: ' +
+                (error?.message || 'Bilinmeyen hata')
+            );
+        }
     };
 
     return (
