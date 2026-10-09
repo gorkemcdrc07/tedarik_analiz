@@ -1,0 +1,102 @@
+
+import React,{useState} from "react";
+import {AnimatePresence,motion} from "framer-motion";
+import {ArrowRight,BarChart3,CheckCircle2,Eye,EyeOff,Headphones,LockKeyhole,PackageCheck,ShieldCheck,Truck,UserRound} from "lucide-react";
+import "./Login.css";
+
+const API_BASE = (
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://tedarik-analiz-backend.onrender.com"
+)
+  .trim()
+  .replace(/\/+$/, "");
+export default function Login({onLoginSuccess}){
+ const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[loading,setLoading]=useState(false),[error,setError]=useState(""),[showPassword,setShowPassword]=useState(false),[remember,setRemember]=useState(true);
+ const safeParse=v=>{if(!v)return[];if(Array.isArray(v))return v;try{const p=JSON.parse(v);return Array.isArray(p)?p:[]}catch{return[]}};
+ const handleLogin=async e=>{
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+
+  try{
+    const response=await fetch(`${API_BASE}/api/auth/login`,{
+      method:"POST",
+      credentials:"include",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        username:email.trim(),
+        password
+      })
+    });
+
+    let result=null;
+
+    try{
+      result=await response.json();
+    }catch{
+      result=null;
+    }
+
+    if(!response.ok||!result?.ok||!result?.user){
+      setError(
+        result?.error||
+        "Kullan?c? ad? veya ?ifre hatal?."
+      );
+      return;
+    }
+
+    const data=result.user;
+
+    const userData={
+      id:data.id,
+      kullanici:data.kullanici,
+      kullanici_adi:data.kullanici_adi,
+      rol:data.rol,
+      allowedScreens:safeParse(data.allowedScreens),
+      allowedButtons:safeParse(data.allowedButtons)
+    };
+
+    localStorage.setItem(
+      "loginUser",
+      JSON.stringify(userData)
+    );
+
+    if(remember){
+      localStorage.setItem(
+        "kullanici",
+        JSON.stringify(data)
+      );
+    }else{
+      localStorage.removeItem("kullanici");
+    }
+
+    // TMS parolasi artik tarayiciya alinmaz.
+    // Eski surumlerden kalmis credential varsa temizle.
+    localStorage.removeItem("Reel_sifre");
+    localStorage.removeItem("Reel_kullanici");
+
+    localStorage.setItem(
+      "userName",
+      data.kullanici??email.trim()
+    );
+
+    localStorage.setItem(
+      "userRole",
+      data.rol??"kullanici"
+    );
+
+    onLoginSuccess?.();
+
+  }catch(err){
+    console.error(err);
+    setError(
+      "Sunucu ba?lant?s? kurulamad?. L?tfen tekrar deneyin."
+    );
+  }finally{
+    setLoading(false);
+  }
+};
+ return <main className="ots-login"><div className="ots-login-bg-grid"/><div className="ots-login-orb ots-login-orb-blue"/><div className="ots-login-orb ots-login-orb-orange"/><motion.section className="ots-login-container" initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} transition={{duration:.45}}><div className="ots-login-showcase"><div><div className="ots-login-brand"><div className="ots-login-logo-box"><img src="/odak-logo.png" alt="Odak Lojistik"/></div><div className="ots-login-brand-text"><strong>ODAK</strong><span>LOJİSTİK · OPERASYON SİSTEMİ</span></div></div><div className="ots-login-hero"><div className="ots-login-hero-badge"><ShieldCheck size={14}/><span>Operasyon Yönetim Sistemi</span></div><h1>Her yükte <span>daha ileriye.</span></h1><p>Sipariş, operasyon, gelir-gider, fiyatlandırma ve analiz süreçlerinizi Odak Lojistik yönetim sistemi üzerinden tek merkezden yönetin.</p></div><div className="ots-login-features"><Feature icon={<PackageCheck size={18}/>} title="Sipariş Yönetimi" text="Siparişleri oluşturun, aktarın ve takip edin."/><Feature icon={<Truck size={18}/>} title="Operasyon Yönetimi" text="Sefer ve müşteri süreçlerini tek ekrandan yönetin."/><Feature icon={<BarChart3 size={18}/>} title="Analiz ve Raporlama" text="Operasyon verilerinizi anlık olarak analiz edin."/></div></div><div className="ots-login-showcase-footer"><div className="ots-login-secure"><CheckCircle2 size={15}/><span>Güvenli sistem erişimi</span></div><span className="ots-login-version">ODAK LOJİSTİK</span></div></div><div className="ots-login-form-section"><div className="ots-login-mobile-brand"><div className="ots-login-logo-box"><img src="/odak-logo.png" alt="Odak Lojistik"/></div><div className="ots-login-brand-text"><strong>ODAK</strong><span>LOJİSTİK · OPERASYON SİSTEMİ</span></div></div><header className="ots-login-form-header"><span className="ots-login-eyebrow">Hoş Geldiniz</span><h2>Sisteme Giriş</h2><p>Odak Lojistik yönetim sistemine erişmek için kullanıcı bilgilerinizi girin.</p></header><form className="ots-login-form" onSubmit={handleLogin}><Field label="Kullanıcı Adı"><div className="ots-login-input-wrapper"><UserRound className="ots-login-input-icon" size={18}/><input type="text" autoComplete="username" placeholder="Kullanıcı adınızı girin" value={email} onChange={e=>{setEmail(e.target.value);if(error)setError("")}} required/></div></Field><Field label="Şifre"><div className="ots-login-input-wrapper"><LockKeyhole className="ots-login-input-icon" size={18}/><input type={showPassword?"text":"password"} autoComplete="current-password" placeholder="Şifrenizi girin" value={password} onChange={e=>{setPassword(e.target.value);if(error)setError("")}} required/><button type="button" className="ots-login-password-toggle" onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></div></Field><div className="ots-login-options"><label className="ots-login-checkbox"><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)}/><span className="ots-login-checkbox-ui"/><span>Beni hatırla</span></label><button type="button" className="ots-login-forgot">Şifremi unuttum</button></div><AnimatePresence>{error&&<motion.div className="ots-login-error" initial={{opacity:0,y:-4}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-4}}><span className="ots-login-error-dot"/><span>{error}</span></motion.div>}</AnimatePresence><motion.button type="submit" className="ots-login-submit" disabled={loading||!email||!password} whileTap={loading?undefined:{scale:.985}}>{loading?<><span className="ots-login-spinner"/><span>Giriş yapılıyor...</span></>:<><span>Sisteme Giriş Yap</span><ArrowRight size={18}/></>}</motion.button></form><div className="ots-login-support"><div className="ots-login-support-icon"><Headphones size={17}/></div><div><span>Erişim sorunu mu yaşıyorsunuz?</span><strong>Sistem yöneticiniz ile iletişime geçin.</strong></div></div></div></motion.section><footer className="ots-login-footer"><span>© {new Date().getFullYear()} Odak Lojistik</span><span className="ots-login-footer-dot"/><span>Operasyon Takip Sistemi</span></footer></main>
+}
+function Feature({icon,title,text}){return <div className="ots-login-feature"><div className="ots-login-feature-icon">{icon}</div><div><strong>{title}</strong><span>{text}</span></div></div>}
+function Field({label,children}){return <div className="ots-login-field"><label>{label}</label>{children}</div>}

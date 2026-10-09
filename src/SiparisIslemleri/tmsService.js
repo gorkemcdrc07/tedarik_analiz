@@ -1,17 +1,19 @@
+const TMS_AUTH_URL =
+    "https://tedarik-analiz-backend.onrender.com/reel-auth/api/auth/login";
+
 export async function getTmsToken() {
-    const res = await fetch(process.env.REACT_APP_TMS_AUTH_URL, {
+    const res = await fetch(TMS_AUTH_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            userName: "Müsteri",
-            password: "013777+-?.1905+3+0",
-        }),
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
     });
 
     const text = await res.text();
 
     if (!res.ok) {
-        throw new Error(`Token hatası: ${res.status} - ${text}`);
+        throw new Error(`Token hatas?: ${res.status} - ${text}`);
     }
 
     const data = JSON.parse(text);
